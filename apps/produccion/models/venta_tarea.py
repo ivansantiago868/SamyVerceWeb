@@ -7,20 +7,21 @@ from .impresora import Impresora
 
 class Venta(models.Model):
 
-    fecha     = models.DateField(verbose_name="Fecha de venta")
-    articulo  = models.CharField(max_length=255, verbose_name="Artículo vendido")
-    cantidad  = models.PositiveIntegerField(default=1)
-    pedido    = models.ForeignKey(Pedido,  on_delete=models.SET_NULL, null=True, blank=True, related_name="ventas")
-    cliente   = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
+    pedidos   = models.ManyToManyField(Pedido, blank=True, related_name="ventas", verbose_name="Pedidos")
+    fecha     = models.DateField(verbose_name="Fecha de cotización")
+    notas     = models.TextField(blank=True, verbose_name="Notas adicionales")
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering        = ["-fecha"]
-        verbose_name    = "Venta"
-        verbose_name_plural = "Ventas"
+        ordering            = ["-fecha"]
+        verbose_name        = "Cotización"
+        verbose_name_plural = "Cotizaciones"
 
     def __str__(self):
-        return f"{self.fecha} — {self.articulo} x{self.cantidad}"
+        nums = [p.numero_pedido for p in self.pedidos.all() if p.numero_pedido]
+        if nums:
+            return f"Cotización #{self.id} — {', '.join(nums)}"
+        return f"Cotización #{self.id}"
 
 
 class Tarea(models.Model):
