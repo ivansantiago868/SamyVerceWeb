@@ -2,6 +2,9 @@ from django import forms
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import path
+from decimal import Decimal
+
+from django.db.models import F
 from django.utils.html import format_html, mark_safe
 import datetime
 
@@ -300,10 +303,18 @@ class TareaAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if change and obj.pedido_id:
-            anterior_estado = Tarea.objects.values_list("estado", flat=True).get(pk=obj.pk)
+            anterior = Tarea.objects.values("estado", "realizados").get(pk=obj.pk)
             super().save_model(request, obj, form, change)
-            if obj.estado != anterior_estado:
+            if obj.estado != anterior["estado"]:
                 Pedido.objects.filter(pk=obj.pedido_id).update(estado=obj.estado)
+            delta = obj.realizados - anterior["realizados"]
+            if delta > 0:
+                Pedido.objects.filter(pk=obj.pedido_id).update(realizados=F("realizados") + delta)
+                pedido = Pedido.objects.select_related("material").get(pk=obj.pedido_id)
+                if pedido.material_id and pedido.gr_pieza:
+                    insumo = pedido.material
+                    insumo.cantidad_inicial = insumo.cantidad_inicial + (Decimal(delta) * pedido.gr_pieza)
+                    insumo.save()
         else:
             super().save_model(request, obj, form, change)
 
