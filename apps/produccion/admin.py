@@ -254,9 +254,9 @@ class InventarioPiezaAdmin(admin.ModelAdmin):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display        = ("id", "numero_pedido", "prioridad", "cliente", "pieza",
-                           "cantidad", "realizados", "restantes", "precio_total",
-                           "fecha_entrega", "maquina", "estado")
+    list_display        = ("id", "numero_pedido", "cliente", "pieza",
+                           "cantidad", "realizados", "restantes", "estado",
+                           "fecha_entrega", "prioridad", "maquina")
     list_editable       = ("estado",)
     list_filter         = ("estado", "prioridad", "maquina")
     search_fields       = ("numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion")
