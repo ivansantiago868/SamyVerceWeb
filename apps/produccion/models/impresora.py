@@ -1,7 +1,9 @@
 from django.db import models
+from .empresa import Empresa
 
 
 class Impresora(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="impresoras", verbose_name="Empresa")
 
     class Tipo(models.TextChoices):
         FILAMENTO = "Filamento", "Filamento (FDM)"

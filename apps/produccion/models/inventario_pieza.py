@@ -1,7 +1,9 @@
 from django.db import models
+from .empresa import Empresa
 
 
 class InventarioPieza(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="piezas", verbose_name="Empresa")
     """
     Catálogo de piezas con estructura de costos completa.
     Sirve de base para el Cotizador y guarda histórico de cálculos.

@@ -8,6 +8,11 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from apps.produccion.controllers.auth_controller import (
     RegistroView,
     LogoutView,
@@ -38,6 +43,11 @@ urlpatterns = [
 
     # ── Interfaces gráficas ───────────────────────────────────────
     path("cotizador/", TemplateView.as_view(template_name="cotizador/index.html"), name="cotizador-ui"),
+
+    # ── Documentación API (Swagger / ReDoc) ───────────────────────
+    path("api/schema/",     SpectacularAPIView.as_view(permission_classes=[]),                             name="schema"),
+    path("api/docs/",       SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[]),      name="swagger-ui"),
+    path("api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema",   permission_classes=[]),      name="redoc"),
 ]
 
 # Agrega este bloque de código al final del archivo

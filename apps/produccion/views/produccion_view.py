@@ -10,25 +10,65 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea
-from apps.produccion.controllers import (
-    VariablesFijasSerializer,  VariablesFijasController,
-    InventarioPiezaSerializer, InventarioController,
-    PedidoSerializer,          PedidoController,
-    VentaSerializer,           VentaController,
-    TareaSerializer,           TareaController,
+from apps.produccion.serializers import (
+    VariablesFijasSerializer, InventarioPiezaSerializer,
+    PedidoSerializer, VentaSerializer, TareaSerializer,
 )
+from apps.produccion.services import PedidoService, VentaService, TareaService
+from apps.produccion.controllers.variables_fijas_controller import VariablesFijasController
 
 
-class VariablesFijasView(viewsets.ModelViewSet):
+# ── Mixin multi-tenant para ViewSets ─────────────────────────
+class EmpresaViewSetMixin:
     """
-    Singleton — solo existe el registro pk=1.
-    Usar: GET/PATCH /api/v1/variables-fijas/1/
+    Filtra queryset y asigna empresa según el usuario autenticado.
+
+    Flujo de empresa:
+      request.user → auth_user
+        → PerfilUsuario.usuario_id = auth_user.id
+        → PerfilUsuario.empresa_id → Empresa
     """
+
+    def _get_empresa(self):
+        """
+        Obtiene la empresa del usuario autenticado siguiendo la cadena:
+        request.user → PerfilUsuario → Empresa
+        """
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return None
+        if user.is_superuser:
+            return None
+        try:
+            # auth_user → perfil_usuario → empresa
+            return user.perfil.empresa
+        except Exception:
+            return None
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        empresa = self._get_empresa()
+        if empresa is not None:
+            qs = qs.filter(empresa=empresa)
+        return qs
+
+    def perform_create(self, serializer):
+        # empresa es read_only en el serializer — solo el servidor la asigna
+        empresa = self._get_empresa()
+        serializer.save(empresa=empresa)
+
+    def perform_update(self, serializer):
+        empresa = self._get_empresa()
+        serializer.save(empresa=empresa)
+
+
+# ── ViewSets ──────────────────────────────────────────────────
+class VariablesFijasView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     queryset         = VariablesFijas.objects.all()
     serializer_class = VariablesFijasSerializer
 
 
-class InventarioPiezaView(viewsets.ModelViewSet):
+class InventarioPiezaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     queryset         = InventarioPieza.objects.all()
     serializer_class = InventarioPiezaSerializer
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
@@ -36,7 +76,7 @@ class InventarioPiezaView(viewsets.ModelViewSet):
     ordering_fields  = ["nombre", "precio_venta_sugerido", "costo_total_real"]
 
 
-class PedidoView(viewsets.ModelViewSet):
+class PedidoView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     queryset         = Pedido.objects.select_related("cliente", "pieza", "material", "maquina")
     serializer_class = PedidoSerializer
     filter_backends  = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -46,7 +86,7 @@ class PedidoView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dashboard")
     def dashboard(self, request):
-        return Response(PedidoController.dashboard())
+        return Response(PedidoService.dashboard())
 
     @action(detail=True, methods=["patch"], url_path="cambiar-estado")
     def cambiar_estado(self, request, pk=None):
@@ -54,26 +94,26 @@ class PedidoView(viewsets.ModelViewSet):
         if not nuevo_estado:
             return Response({"error": "Campo 'estado' requerido."}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            pedido = PedidoController.cambiar_estado(pk, nuevo_estado)
+            pedido = PedidoService.cambiar_estado(pk, nuevo_estado)
             return Response(PedidoSerializer(pedido).data)
         except Pedido.DoesNotExist:
             return Response({"error": "Pedido no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 
-class VentaView(viewsets.ModelViewSet):
-    queryset         = Venta.objects.select_related("cliente", "pedido")
+class VentaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
+    queryset         = Venta.objects.prefetch_related("pedidos")
     serializer_class = VentaSerializer
     filter_backends  = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["fecha", "cliente"]
-    search_fields    = ["articulo"]
-    ordering_fields  = ["fecha", "cantidad"]
+    filterset_fields = ["fecha"]
+    search_fields    = ["pedidos__numero_pedido"]
+    ordering_fields  = ["fecha"]
 
     @action(detail=False, methods=["get"], url_path="resumen")
     def resumen(self, request):
-        return Response(VentaController.resumen())
+        return Response(VentaService.resumen())
 
 
-class TareaView(viewsets.ModelViewSet):
+class TareaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     queryset         = Tarea.objects.select_related("pedido", "maquina")
     serializer_class = TareaSerializer
     filter_backends  = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -83,9 +123,8 @@ class TareaView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="pendientes")
     def pendientes(self, request):
-        qs = TareaController.pendientes()
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+        qs = TareaService.pendientes()
+        return Response(self.get_serializer(qs, many=True).data)
 
     @action(detail=True, methods=["patch"], url_path="cambiar-estado")
     def cambiar_estado(self, request, pk=None):
@@ -93,7 +132,7 @@ class TareaView(viewsets.ModelViewSet):
         if not nuevo_estado:
             return Response({"error": "Campo 'estado' requerido."}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            tarea = TareaController.cambiar_estado(pk, nuevo_estado)
+            tarea = TareaService.cambiar_estado(pk, nuevo_estado)
             return Response(TareaSerializer(tarea).data)
         except Tarea.DoesNotExist:
             return Response({"error": "Tarea no encontrada."}, status=status.HTTP_404_NOT_FOUND)

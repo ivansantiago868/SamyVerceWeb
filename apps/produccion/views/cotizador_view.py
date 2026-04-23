@@ -9,13 +9,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from apps.produccion.controllers import (
+from apps.produccion.serializers import (
     CotizadorInputSerializer,
     CotizadorLoteInputSerializer,
     CotizadorDesdeCatalogoSerializer,
     CotizadorDesdeCatalogoLoteSerializer,
-    CotizadorController,
 )
+from apps.produccion.controllers.cotizador_controller import CotizadorController
 
 
 class CotizadorView(APIView):

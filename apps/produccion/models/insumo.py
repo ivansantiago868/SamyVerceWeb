@@ -1,9 +1,10 @@
 from django.db import models
+from .empresa import Empresa
 from .material import Material
 
 
 class Insumo(models.Model):
-
+    empresa  = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="insumos", verbose_name="Empresa")
     producto = models.CharField(max_length=255, verbose_name="Producto")
     material = models.ForeignKey(Material, on_delete=models.PROTECT,
                                  null=True, blank=True, verbose_name="Material")
