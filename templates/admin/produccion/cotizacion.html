@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotización #{{ venta.id }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #333; background: #e9ecef; }
+
+    .print-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #417690; color: #fff;
+      padding: 10px 24px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+    .btn { padding: 6px 18px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; border: none; text-decoration: none; }
+    .btn-print { background: #fff; color: #417690; }
+    .btn-back  { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5) !important; }
+    .print-bar span { margin-left: auto; font-size: 12px; opacity: .8; }
+
+    .page {
+      max-width: 820px; margin: 70px auto 40px;
+      background: #fff; padding: 48px 52px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12); border-radius: 4px;
+    }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 3px solid #417690; margin-bottom: 32px; }
+    .brand-name { font-size: 30px; font-weight: 900; color: #417690; letter-spacing: -1px; }
+    .brand-sub  { font-size: 12px; color: #888; margin-top: 3px; }
+    .doc-title  { font-size: 24px; font-weight: 800; color: #417690; text-transform: uppercase; letter-spacing: 1px; text-align: right; }
+    .doc-meta   { font-size: 13px; color: #555; margin-top: 4px; text-align: right; }
+
+    .section { margin-bottom: 28px; }
+    .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #417690; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; margin-bottom: 14px; }
+
+    .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 40px; }
+    .field-label { font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 2px; }
+    .field-value { font-size: 13px; color: #222; font-weight: 500; }
+    .full-width  { grid-column: 1 / -1; }
+
+    table.items { width: 100%; border-collapse: collapse; }
+    table.items thead th { background: #417690; color: #fff; padding: 9px 14px; font-size: 12px; text-align: left; }
+    table.items thead th.r { text-align: right; }
+    table.items tbody td  { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    table.items tbody tr:nth-child(even) td { background: #f8f9fa; }
+    .desc-main  { font-weight: 600; }
+    .desc-notes { font-size: 11px; color: #888; margin-top: 2px; }
+    .tr { text-align: right; }
+    .tc { text-align: center; }
+
+    .totals-wrap { display: flex; justify-content: flex-end; margin-top: 16px; }
+    .totals-box  { width: 300px; }
+    .total-row   { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #555; }
+    .total-final { display: flex; justify-content: space-between; padding: 12px 0 0; font-size: 17px; font-weight: 800; color: #417690; border-top: 2px solid #417690; margin-top: 4px; }
+
+    .notes-box { margin-top: 24px; padding: 12px 16px; background: #f8f9fa; border-left: 3px solid #417690; font-size: 12px; color: #555; line-height: 1.6; }
+
+    .footer { margin-top: 44px; padding-top: 14px; border-top: 1px solid #dee2e6; font-size: 11px; color: #aaa; text-align: center; line-height: 1.8; }
+
+    @media print {
+      body { background: #fff; }
+      .print-bar { display: none !important; }
+      .page { margin: 0; padding: 32px 40px; box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-bar">
+  <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <a class="btn btn-back" href="javascript:history.back()">← Volver</a>
+  <span>Cotización #{{ venta.id }}</span>
+</div>
+
+<div class="page">
+
+  <!-- Encabezado -->
+  <div class="header">
+    <div>
+      <div class="brand-name">SamyVerce</div>
+      <div class="brand-sub">Impresión 3D · Fabricación Digital</div>
+    </div>
+    <div>
+      <div class="doc-title">Cotización</div>
+      <div class="doc-meta">Fecha: {{ venta.fecha }}</div>
+    </div>
+  </div>
+
+  <!-- Datos del(los) cliente(s) -->
+  {% for pedido in pedidos %}
+  {% if pedido.cliente %}
+  <div class="section">
+    <div class="section-title">
+      Cliente{% if pedidos|length > 1 %} — Pedido {{ pedido.numero_pedido }}{% endif %}
+    </div>
+    <div class="client-grid">
+      <div>
+        <div class="field-label">Nombre / Razón social</div>
+        <div class="field-value">{{ pedido.cliente.nombre }}</div>
+      </div>
+      {% if pedido.cliente.documento %}
+      <div>
+        <div class="field-label">{{ pedido.cliente.get_tipo_documento_display }}</div>
+        <div class="field-value">{{ pedido.cliente.documento }}</div>
+      </div>
+      {% endif %}
+      {% if pedido.cliente.email %}
+      <div>
+        <div class="field-label">Email</div>
+        <div class="field-value">{{ pedido.cliente.email }}</div>
+      </div>
+      {% endif %}
+      {% if pedido.cliente.telefono %}
+      <div>
+        <div class="field-label">Teléfono</div>
+        <div class="field-value">{{ pedido.cliente.telefono }}</div>
+      </div>
+      {% endif %}
+      {% if pedido.cliente.direccion %}
+      <div class="full-width">
+        <div class="field-label">Dirección</div>
+        <div class="field-value">{{ pedido.cliente.direccion }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  <!-- Detalle de pedidos -->
+  <div class="section">
+    <div class="section-title">Detalle del pedido</div>
+    <table class="items">
+      <thead>
+        <tr>
+          <th>N° Pedido</th>
+          <th>Descripción</th>
+          <th class="r" style="width:80px">Cant.</th>
+          <th class="r" style="width:140px">Precio unit.</th>
+          <th class="r" style="width:140px">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pedido in pedidos %}
+        <tr>
+          <td>{{ pedido.numero_pedido|default:"—" }}</td>
+          <td>
+            <div class="desc-main">{% if pedido.pieza %}{{ pedido.pieza.nombre }}{% else %}—{% endif %}</div>
+            {% if pedido.descripcion %}<div class="desc-notes">{{ pedido.descripcion }}</div>{% endif %}
+          </td>
+          <td class="tc">{{ pedido.cantidad }}</td>
+          <td class="tr">$ {{ pedido.precio_unidad|floatformat:"0g" }} COP</td>
+          <td class="tr">$ {{ pedido.precio_total|floatformat:"0g" }} COP</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totales -->
+  <div class="totals-wrap">
+    <div class="totals-box">
+      {% for pedido in pedidos %}
+      {% if pedidos|length > 1 %}
+      <div class="total-row">
+        <span>Pedido {{ pedido.numero_pedido|default:pedido.id }}</span>
+        <span>$ {{ pedido.precio_total|floatformat:"0g" }} COP</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+      <div class="total-final">
+        <span>TOTAL</span>
+        <span>$ {{ total|floatformat:"0g" }} COP</span>
+      </div>
+    </div>
+  </div>
+
+  {% if venta.notas %}
+  <div class="notes-box"><strong>Notas:</strong> {{ venta.notas }}</div>
+  {% endif %}
+
+  <div class="footer">
+    <p>Esta cotización es válida por 30 días a partir de la fecha de emisión.</p>
+    <p>SamyVerce · Impresión 3D · Fabricación Digital</p>
+  </div>
+
+</div>
+</body>
+</html>

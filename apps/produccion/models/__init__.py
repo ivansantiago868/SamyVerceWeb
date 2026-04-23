@@ -8,7 +8,7 @@ from .material         import TipoMaterial, Material
 from .insumo           import Insumo
 from .gasto            import Gasto
 from .variables_fijas  import VariablesFijas
-from .inventario_pieza import InventarioPieza
+from .inventario_pieza import InventarioPieza, PiezaImagen
 from .pedido           import Pedido
 from .venta_tarea      import Venta, Tarea
 
@@ -16,6 +16,6 @@ __all__ = [
     "Cliente", "Impresora",
     "TipoMaterial", "Material",
     "Insumo", "Gasto",
-    "VariablesFijas", "InventarioPieza",
+    "VariablesFijas", "InventarioPieza", "PiezaImagen",
     "Pedido", "Venta", "Tarea",
 ]

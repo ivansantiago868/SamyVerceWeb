@@ -1,7 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".drag-drop-input").forEach(initDragDrop);
   document.querySelectorAll(".drag-drop-img-input").forEach(initDragDropImage);
+  document.querySelectorAll(".pieza-carousel").forEach(initCarrusel);
 });
+
+/* ── Carrusel de imágenes ─────────────────────────────────── */
+function initCarrusel(carousel) {
+  const track  = carousel.querySelector(".pc-track");
+  const dots   = carousel.querySelectorAll(".pc-dot");
+  const prev   = carousel.querySelector(".pc-prev");
+  const next   = carousel.querySelector(".pc-next");
+  const total  = parseInt(carousel.dataset.count, 10) || 1;
+  let current  = 0;
+
+  function goTo(n) {
+    current = (n + total) % total;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle("active", i === current));
+  }
+
+  if (prev) prev.addEventListener("click", () => goTo(current - 1));
+  if (next) next.addEventListener("click", () => goTo(current + 1));
+  dots.forEach((d, i) => d.addEventListener("click", () => goTo(i)));
+
+  if (total <= 1) {
+    if (prev) prev.style.display = "none";
+    if (next) next.style.display = "none";
+  }
+}
 
 /* ── Widget genérico (archivos) ───────────────────────────── */
 function initDragDrop(input) {
