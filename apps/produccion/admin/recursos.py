@@ -82,8 +82,10 @@ class GastoAdmin(EmpresaMixin, admin.ModelAdmin):
             form = GastoMultipleForm(request.POST)
             if form.is_valid():
                 d = form.cleaned_data
+                empresa = self._empresa(request)
                 for _ in range(d["unidades"]):
                     g = Gasto.objects.create(
+                        empresa=empresa,
                         articulo=d["articulo"],
                         material=d.get("material"),
                         peso=d["peso"],

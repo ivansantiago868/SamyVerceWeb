@@ -29,6 +29,9 @@ class VariablesFijasAdmin(EmpresaMixin, admin.ModelAdmin):
 class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
     form            = InventarioPiezaForm
+
+    def has_add_permission(self, request):
+        return False
     inlines         = [PiezaImagenInline]
     list_display    = ("miniatura", "id", "nombre", "peso_gramos", "tiempo_impresion_horas",
                        "costo_total_real", "precio_venta_sugerido", "actualizado_en")
