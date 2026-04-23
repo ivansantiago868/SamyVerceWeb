@@ -2,12 +2,13 @@ from django import forms
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import path
+from django.utils.html import format_html, mark_safe
 import datetime
 
 from apps.produccion.models import (
     Cliente, Impresora, TipoMaterial, Material,
     Insumo, Gasto,
-    VariablesFijas, InventarioPieza,
+    VariablesFijas, InventarioPieza, PiezaImagen,
     Pedido, Venta, Tarea,
 )
 
@@ -36,6 +37,20 @@ class InventarioPiezaForm(forms.ModelForm):
             "archivo_3mf": DragDropFileWidget(),
             "imagen":      DragDropImageWidget(),
         }
+
+
+class PiezaImagenInlineForm(forms.ModelForm):
+    class Meta:
+        model   = PiezaImagen
+        fields  = ("imagen", "orden")
+        widgets = {"imagen": DragDropImageWidget()}
+
+
+class PiezaImagenInline(admin.TabularInline):
+    model  = PiezaImagen
+    form   = PiezaImagenInlineForm
+    extra  = 1
+    fields = ("imagen", "orden")
 
 
 class GastoMultipleForm(forms.Form):
@@ -160,11 +175,12 @@ class VariablesFijasAdmin(admin.ModelAdmin):
 @admin.register(InventarioPieza)
 class InventarioPiezaAdmin(admin.ModelAdmin):
     form            = InventarioPiezaForm
-    list_display    = ("id", "nombre", "peso_gramos", "tiempo_impresion_horas",
+    inlines         = [PiezaImagenInline]
+    list_display    = ("miniatura", "id", "nombre", "peso_gramos", "tiempo_impresion_horas",
                        "costo_total_real", "precio_venta_sugerido", "actualizado_en")
     search_fields   = ("nombre",)
     ordering        = ("nombre",)
-    readonly_fields = ("actualizado_en",)
+    readonly_fields = ("actualizado_en", "carrusel_imagenes")
     fieldsets = (
         (None, {
             "fields": (
@@ -181,10 +197,54 @@ class InventarioPiezaAdmin(admin.ModelAdmin):
                 "actualizado_en",
             )
         }),
+        ("Galería de imágenes", {
+            "fields": ("carrusel_imagenes",),
+            "description": "Agrega imágenes en el panel inferior. El carrusel se actualiza al guardar.",
+        }),
         ("Archivos y referencias", {
             "fields": ("imagen", "archivo_3mf", "url_referencia"),
         }),
     )
+
+    def miniatura(self, obj):
+        img = obj.imagen or (obj.imagenes.first().imagen if obj.imagenes.exists() else None)
+        if not img:
+            return "—"
+        return format_html('<img src="{}" style="height:48px;border-radius:4px;object-fit:cover">', img.url)
+    miniatura.short_description = "Imagen"
+
+    def carrusel_imagenes(self, obj):
+        if not obj or not obj.pk:
+            return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la pieza primero para agregar imágenes.</p>')
+        imagenes = list(obj.imagenes.all())
+        if not imagenes:
+            return mark_safe('<p style="color:#6c757d;font-style:italic">Sin imágenes. Usa el panel inferior para agregar.</p>')
+        count = len(imagenes)
+        slides_html = "".join(
+            format_html('<div class="pc-slide"><img src="{}" alt="Imagen {}"></div>', img.imagen.url, i + 1)
+            for i, img in enumerate(imagenes)
+        )
+        dots_html = "".join(
+            format_html(
+                '<button type="button" class="pc-dot{}" data-index="{}"></button>',
+                " active" if i == 0 else "",
+                i,
+            )
+            for i in range(count)
+        )
+        return format_html(
+            '<div class="pieza-carousel" data-count="{}">'
+            '<div class="pc-track">{}</div>'
+            '<button class="pc-btn pc-prev" type="button">&#8249;</button>'
+            '<button class="pc-btn pc-next" type="button">&#8250;</button>'
+            '<div class="pc-dots">{}</div>'
+            '</div>',
+            count,
+            mark_safe(slides_html),
+            mark_safe(dots_html),
+        )
+
+    carrusel_imagenes.short_description = "Carrusel de imágenes"
 
 
 @admin.register(Pedido)
@@ -194,14 +254,8 @@ class PedidoAdmin(admin.ModelAdmin):
                            "fecha_entrega", "maquina", "estado")
     list_filter         = ("estado", "prioridad", "maquina")
     search_fields       = ("numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion")
-    readonly_fields     = ("restantes", "peso_total", "precio_total", "gr_pieza", "precio_unidad")
+    readonly_fields     = ("restantes", "realizados", "peso_total", "precio_total", "gr_pieza", "precio_unidad")
     autocomplete_fields = ["cliente", "material", "pieza"]
-
-    def get_readonly_fields(self, request, obj=None):
-        base = list(self.readonly_fields)
-        if obj is None:  # creación
-            base.append("realizados")
-        return base
 
     class Media:
         js = ('admin/js/pedido_producto.js',)
@@ -223,3 +277,15 @@ class TareaAdmin(admin.ModelAdmin):
     search_fields       = ("producto", "cliente_texto", "cliente__nombre")
     readonly_fields     = ("restantes",)
     autocomplete_fields = ["cliente"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return (
+                "restantes", "prioridad", "pedido", "cliente", "cliente_texto",
+                "producto", "cantidad", "precio_total", "fecha_entrega",
+                "maquina", "descripcion", "creado_en",
+            )
+        return ("restantes",)
+
+    def has_add_permission(self, _request):
+        return False
