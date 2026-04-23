@@ -1,0 +1,33 @@
+<div class="drag-drop-wrapper">
+
+  <div class="drag-drop-zone" id="zone-{{ widget.attrs.id }}"
+       style="{% if widget.value %}display:none{% endif %}">
+    <div class="drag-drop-icon">🖼️</div>
+    <div class="drag-drop-label">
+      Arrastra una imagen aquí o <strong>selecciona una</strong>
+    </div>
+    <div class="drag-drop-hint">PNG, JPG, WEBP</div>
+    <input type="file"
+           name="{{ widget.name }}"
+           id="{{ widget.attrs.id }}"
+           class="drag-drop-img-input"
+           accept="image/*"
+           {% if widget.attrs.required %}required{% endif %}>
+  </div>
+
+  <div class="drag-drop-img-preview" id="img-preview-{{ widget.attrs.id }}"
+       style="display:{% if widget.value %}block{% else %}none{% endif %}">
+    {% if widget.value %}
+    <img src="{{ widget.value.url }}" alt="Imagen actual">
+    {% else %}
+    <img src="" alt="Previsualización">
+    {% endif %}
+    <div class="drag-drop-preview">
+      <span class="drag-drop-preview-icon">🖼️</span>
+      <span class="drag-drop-preview-name"></span>
+      <button type="button" class="drag-drop-clear"
+              data-target="{{ widget.attrs.id }}" title="Quitar imagen">✕</button>
+    </div>
+  </div>
+
+</div>

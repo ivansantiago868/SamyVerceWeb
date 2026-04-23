@@ -1,0 +1,28 @@
+<div class="drag-drop-wrapper">
+
+  {% if widget.value %}
+  <div class="drag-drop-existing">
+    Archivo actual: <a href="{{ widget.value.url }}" target="_blank">{{ widget.value }}</a>
+  </div>
+  {% endif %}
+
+  <div class="drag-drop-zone" style="{% if widget.value %}display:none{% endif %}">
+    <div class="drag-drop-icon">📂</div>
+    <div class="drag-drop-label">
+      Arrastra tu archivo aquí o <strong>selecciona uno</strong>
+    </div>
+    <div class="drag-drop-hint">Formato: .3mf</div>
+    <input type="file"
+           name="{{ widget.name }}"
+           class="drag-drop-input"
+           accept=".3mf"
+           {% if widget.attrs.required %}required{% endif %}>
+  </div>
+
+  <div class="drag-drop-preview" style="display:{% if widget.value %}flex{% else %}none{% endif %}">
+    <span class="drag-drop-preview-icon">📄</span>
+    <span class="drag-drop-preview-name">{% if widget.value %}{{ widget.value }}{% endif %}</span>
+    <button type="button" class="drag-drop-clear" title="Quitar archivo">✕</button>
+  </div>
+
+</div>

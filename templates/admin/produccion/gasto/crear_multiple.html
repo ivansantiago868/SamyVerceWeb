@@ -1,0 +1,76 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Agregar múltiples gastos{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Inicio</a> ›
+  <a href="{% url 'admin:produccion_gasto_changelist' %}">Gastos</a> ›
+  Agregar múltiple
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Agregar múltiples gastos</h1>
+
+{% if creados %}
+  <p class="success">
+    ✅ Se crearon <strong>{{ creados }}</strong> gasto(s) con CUUI
+    {% for c in cuuis %}{{ c }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+  </p>
+{% endif %}
+
+{% if form.errors %}
+  <p class="errornote">Corrige los errores a continuación.</p>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <fieldset class="module aligned">
+
+    <div class="form-row{% if form.articulo.errors %} errors{% endif %}">
+      <label class="required" for="{{ form.articulo.id_for_label }}">{{ form.articulo.label }}:</label>
+      {{ form.articulo }}
+      {{ form.articulo.errors }}
+    </div>
+
+    <div class="form-row{% if form.material.errors %} errors{% endif %}">
+      <label for="{{ form.material.id_for_label }}">{{ form.material.label }}:</label>
+      {{ form.material }}
+      {{ form.material.errors }}
+    </div>
+
+    <div class="form-row{% if form.peso.errors %} errors{% endif %}">
+      <label for="{{ form.peso.id_for_label }}">{{ form.peso.label }}:</label>
+      {{ form.peso }}
+      {{ form.peso.errors }}
+    </div>
+
+    <div class="form-row{% if form.costo.errors %} errors{% endif %}">
+      <label class="required" for="{{ form.costo.id_for_label }}">{{ form.costo.label }}:</label>
+      {{ form.costo }}
+      {{ form.costo.errors }}
+    </div>
+
+    <div class="form-row{% if form.fecha.errors %} errors{% endif %}">
+      <label class="required" for="{{ form.fecha.id_for_label }}">{{ form.fecha.label }}:</label>
+      {{ form.fecha }}
+      {{ form.fecha.errors }}
+    </div>
+
+    <div class="form-row{% if form.unidades.errors %} errors{% endif %}">
+      <label class="required" for="{{ form.unidades.id_for_label }}">{{ form.unidades.label }}:</label>
+      {{ form.unidades }}
+      <p class="help">Número de registros individuales que se crearán, uno por cada unidad.</p>
+      {{ form.unidades.errors }}
+    </div>
+
+  </fieldset>
+
+  <div class="submit-row">
+    <input type="submit" value="Crear gastos" class="default">
+    <a href="{% url 'admin:produccion_gasto_changelist' %}" class="closelink">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
