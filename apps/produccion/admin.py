@@ -252,10 +252,20 @@ class PedidoAdmin(admin.ModelAdmin):
     list_display        = ("id", "numero_pedido", "prioridad", "cliente", "pieza",
                            "cantidad", "realizados", "restantes", "precio_total",
                            "fecha_entrega", "maquina", "estado")
+    list_editable       = ("estado",)
     list_filter         = ("estado", "prioridad", "maquina")
     search_fields       = ("numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion")
     readonly_fields     = ("restantes", "realizados", "peso_total", "precio_total", "gr_pieza", "precio_unidad")
     autocomplete_fields = ["cliente", "material", "pieza"]
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            anterior_estado = Pedido.objects.values_list("estado", flat=True).get(pk=obj.pk)
+            super().save_model(request, obj, form, change)
+            if obj.estado != anterior_estado:
+                Tarea.objects.filter(pedido=obj).update(estado=obj.estado)
+        else:
+            super().save_model(request, obj, form, change)
 
     class Media:
         js = ('admin/js/pedido_producto.js',)
@@ -271,8 +281,9 @@ class VentaAdmin(admin.ModelAdmin):
 
 @admin.register(Tarea)
 class TareaAdmin(admin.ModelAdmin):
-    list_display        = ("id", "prioridad", "cliente", "cliente_texto", "producto",
+    list_display        = ("id", "prioridad", "cliente", "producto",
                            "cantidad", "realizados", "restantes", "fecha_entrega", "maquina", "estado")
+    list_editable       = ("realizados", "estado")
     list_filter         = ("estado", "prioridad", "maquina")
     search_fields       = ("producto", "cliente_texto", "cliente__nombre")
     readonly_fields     = ("restantes",)
@@ -286,6 +297,15 @@ class TareaAdmin(admin.ModelAdmin):
                 "maquina", "descripcion", "creado_en",
             )
         return ("restantes",)
+
+    def save_model(self, request, obj, form, change):
+        if change and obj.pedido_id:
+            anterior_estado = Tarea.objects.values_list("estado", flat=True).get(pk=obj.pk)
+            super().save_model(request, obj, form, change)
+            if obj.estado != anterior_estado:
+                Pedido.objects.filter(pk=obj.pedido_id).update(estado=obj.estado)
+        else:
+            super().save_model(request, obj, form, change)
 
     def has_add_permission(self, _request):
         return False
