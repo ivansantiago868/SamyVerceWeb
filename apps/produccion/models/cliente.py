@@ -1,7 +1,9 @@
 from django.db import models
+from .empresa import Empresa
 
 
 class Cliente(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="clientes", verbose_name="Empresa")
 
     class TipoDocumento(models.TextChoices):
         CC  = "CC",  "Cédula de Ciudadanía"

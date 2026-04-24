@@ -1,12 +1,11 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from .empresa import Empresa
 
 
 class VariablesFijas(models.Model):
-    """
-    Singleton: siempre existe un solo registro con pk=1.
-    Contiene todos los parámetros globales del cotizador.
-    """
+    """Un registro por empresa con los parámetros globales del cotizador."""
+    empresa = models.OneToOneField(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="variables_fijas", verbose_name="Empresa")
 
     precio_rollo_filamento    = models.DecimalField(max_digits=12, decimal_places=2, default=80000,   verbose_name="Precio del rollo de filamento (COP)")
     peso_rollo_gramos         = models.DecimalField(max_digits=8,  decimal_places=2, default=1000,    verbose_name="Peso del rollo (g)")
@@ -29,6 +28,9 @@ class VariablesFijas(models.Model):
         return "Configuración global"
 
     def save(self, *args, **kwargs):
-        # Garantiza que solo exista un registro
-        self.pk = 1
+        # Un registro por empresa
+        if self.empresa_id and not self.pk:
+            existing = VariablesFijas.objects.filter(empresa=self.empresa).first()
+            if existing:
+                self.pk = existing.pk
         super().save(*args, **kwargs)

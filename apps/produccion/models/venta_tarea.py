@@ -1,12 +1,13 @@
 from django.db import models
 from .cliente import Cliente
+from .empresa import Empresa
 from .pedido import Pedido
 from .impresora import Impresora
 
 
 
 class Venta(models.Model):
-
+    empresa   = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="ventas", verbose_name="Empresa")
     pedidos   = models.ManyToManyField(Pedido, blank=True, related_name="ventas", verbose_name="Pedidos")
     fecha     = models.DateField(verbose_name="Fecha de cotización")
     notas     = models.TextField(blank=True, verbose_name="Notas adicionales")
@@ -14,8 +15,8 @@ class Venta(models.Model):
 
     class Meta:
         ordering            = ["-fecha"]
-        verbose_name        = "Cotización"
-        verbose_name_plural = "Cotizaciones"
+        verbose_name        = "Venta"
+        verbose_name_plural = "Ventas"
 
     def __str__(self):
         nums = [p.numero_pedido for p in self.pedidos.all() if p.numero_pedido]
@@ -25,6 +26,7 @@ class Venta(models.Model):
 
 
 class Tarea(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="tareas", verbose_name="Empresa")
 
     class Prioridad(models.TextChoices):
         ALTO  = "Alto",  "Alto"

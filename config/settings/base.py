@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
+    # Docs
+    "drf_spectacular",
     # Local
     "apps.produccion",
 ]
@@ -87,6 +89,33 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SamyVerce API",
+    "DESCRIPTION": (
+        "API de gestión para negocios de impresión 3D (roll makers).\n\n"
+        "## Autenticación\n"
+        "Usa JWT Bearer token. Obtén tu token en `/api/auth/token/` y "
+        "envíalo en el header: `Authorization: Bearer <token>`"
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "TAGS": [
+        {"name": "Auth",         "description": "Registro, login y perfil de usuario"},
+        {"name": "Cotizador",    "description": "Cálculo de precios de piezas 3D"},
+        {"name": "Piezas",       "description": "Inventario de piezas"},
+        {"name": "Pedidos",      "description": "Gestión de pedidos de clientes"},
+        {"name": "Tareas",       "description": "Tareas de producción"},
+        {"name": "Ventas",       "description": "Cotizaciones y ventas"},
+        {"name": "Clientes",     "description": "Directorio de clientes"},
+        {"name": "Impresoras",   "description": "Inventario de impresoras"},
+        {"name": "Insumos",      "description": "Stock de materiales"},
+        {"name": "Gastos",       "description": "Registro de compras"},
+        {"name": "Materiales",   "description": "Variables fijas y parámetros"},
+    ],
 }
 
 SIMPLE_JWT = {

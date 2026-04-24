@@ -8,10 +8,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from apps.produccion.controllers.auth_controller import (
     RegistroView,
     LogoutView,
     PerfilView,
+    TokenFromSessionView,
 )
 
 urlpatterns = [
@@ -31,13 +37,19 @@ urlpatterns = [
     path("api/auth/token/verify/",  TokenVerifyView.as_view(),     name="token_verify"),
     path("api/auth/registro/",      RegistroView.as_view(),        name="registro"),
     path("api/auth/logout/",        LogoutView.as_view(),          name="logout"),
-    path("api/auth/perfil/",        PerfilView.as_view(),          name="perfil"),
+    path("api/auth/perfil/",        PerfilView.as_view(),           name="perfil"),
+    path("api/auth/token-session/", TokenFromSessionView.as_view(), name="token-from-session"),
 
     # ── API v1 ────────────────────────────────────────────────────
     path("api/v1/", include("apps.produccion.urls")),
 
     # ── Interfaces gráficas ───────────────────────────────────────
     path("cotizador/", TemplateView.as_view(template_name="cotizador/index.html"), name="cotizador-ui"),
+
+    # ── Documentación API (Swagger / ReDoc) ───────────────────────
+    path("api/schema/",     SpectacularAPIView.as_view(permission_classes=[]),                             name="schema"),
+    path("api/docs/",       SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[]),      name="swagger-ui"),
+    path("api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema",   permission_classes=[]),      name="redoc"),
 ]
 
 # Agrega este bloque de código al final del archivo

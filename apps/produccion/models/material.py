@@ -1,8 +1,10 @@
 from django.db import models
+from .empresa import Empresa
 
 
 class TipoMaterial(models.Model):
-    nombre = models.CharField(max_length=50, unique=True, verbose_name="Tipo")
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="tipos_material", verbose_name="Empresa")
+    nombre  = models.CharField(max_length=50, verbose_name="Tipo")
 
     class Meta:
         ordering        = ["nombre"]
@@ -14,8 +16,9 @@ class TipoMaterial(models.Model):
 
 
 class Material(models.Model):
-    nombre = models.CharField(max_length=100, verbose_name="Material")
-    tipo   = models.ForeignKey(TipoMaterial, on_delete=models.PROTECT,
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="materiales", verbose_name="Empresa")
+    nombre  = models.CharField(max_length=100, verbose_name="Material")
+    tipo    = models.ForeignKey(TipoMaterial, on_delete=models.PROTECT,
                                related_name="materiales", verbose_name="Tipo")
 
     class Meta:
