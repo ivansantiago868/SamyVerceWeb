@@ -9,6 +9,7 @@ from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth.models import User
@@ -113,6 +114,24 @@ class LogoutView(APIView):
                 {"error": "Token inválido o ya expirado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class TokenFromSessionView(APIView):
+    """
+    GET /api/auth/token-from-session/
+    Si el usuario tiene sesión activa en el admin Django, devuelve tokens JWT.
+    Permite al cotizador detectar la sesión del admin automáticamente.
+    """
+    authentication_classes = [SessionAuthentication]
+    permission_classes     = [IsAuthenticated]
+
+    def get(self, request):
+        refresh = RefreshToken.for_user(request.user)
+        return Response({
+            "access":   str(refresh.access_token),
+            "refresh":  str(refresh),
+            "username": request.user.username,
+        })
 
 
 class PerfilView(APIView):

@@ -1,7 +1,9 @@
 from django.db import models
+from .empresa import Empresa
 
 
 class InventarioPieza(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="piezas", verbose_name="Empresa")
     """
     Catálogo de piezas con estructura de costos completa.
     Sirve de base para el Cotizador y guarda histórico de cálculos.
@@ -34,3 +36,22 @@ class InventarioPieza(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class PiezaImagen(models.Model):
+    pieza  = models.ForeignKey(
+        InventarioPieza,
+        on_delete=models.CASCADE,
+        related_name="imagenes",
+        verbose_name="Pieza",
+    )
+    imagen = models.ImageField(upload_to="piezas/imagenes/", verbose_name="Imagen")
+    orden  = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        ordering            = ["orden", "id"]
+        verbose_name        = "Imagen de pieza"
+        verbose_name_plural = "Imágenes de pieza"
+
+    def __str__(self):
+        return f"Imagen #{self.orden} — {self.pieza.nombre}"

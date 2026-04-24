@@ -1,11 +1,13 @@
 from django.db import models
 from .cliente import Cliente
+from .empresa import Empresa
 from .insumo import Insumo
 from .impresora import Impresora
 from .inventario_pieza import InventarioPieza
 
 
 class Pedido(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="pedidos", verbose_name="Empresa")
 
     class Prioridad(models.TextChoices):
         ALTO  = "Alto",  "Alto"

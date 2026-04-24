@@ -1,20 +1,24 @@
-# controllers/__init__.py
-from .cliente_controller        import ClienteSerializer,        ClienteController
-from .impresora_controller      import ImpresoraSerializer,      ImpresoraController
-from .insumo_controller         import InsumoSerializer,         InsumoController
-from .gasto_controller          import GastoSerializer,          GastoController
-from .variables_fijas_controller import VariablesFijasSerializer, VariablesFijasController
-from .inventario_controller     import InventarioPiezaSerializer, InventarioController
-from .pedido_controller         import PedidoSerializer,         PedidoController
-from .venta_controller          import VentaSerializer,          VentaController
-from .tarea_controller          import TareaSerializer,          TareaController
-from .cotizador_controller      import (
-    CotizadorInputSerializer,
-    CotizadorLoteInputSerializer,
-    CotizadorDesdeCatalogoSerializer,
-    CotizadorDesdeCatalogoLoteSerializer,
-    CotizadorController,
+# controllers/__init__.py — re-exporta desde serializers/ y services/
+from apps.produccion.serializers import (
+    ClienteSerializer, ImpresoraSerializer, InsumoSerializer,
+    GastoSerializer, VariablesFijasSerializer, InventarioPiezaSerializer,
+    PedidoSerializer, VentaSerializer, TareaSerializer,
+    CotizadorInputSerializer, CotizadorLoteInputSerializer,
+    CotizadorDesdeCatalogoSerializer, CotizadorDesdeCatalogoLoteSerializer,
 )
+from apps.produccion.services import (
+    ClienteService    as ClienteController,
+    ImpresoraService  as ImpresoraController,
+    InsumoService     as InsumoController,
+    GastoService      as GastoController,
+    PedidoService     as PedidoController,
+    VentaService      as VentaController,
+    TareaService      as TareaController,
+)
+from apps.produccion.controllers.cotizador_controller      import CotizadorController
+from apps.produccion.controllers.variables_fijas_controller import VariablesFijasController
+
+InventarioController = InventarioPiezaSerializer.__class__  # alias placeholder
 
 __all__ = [
     "ClienteSerializer",         "ClienteController",
@@ -22,13 +26,11 @@ __all__ = [
     "InsumoSerializer",          "InsumoController",
     "GastoSerializer",           "GastoController",
     "VariablesFijasSerializer",  "VariablesFijasController",
-    "InventarioPiezaSerializer", "InventarioController",
+    "InventarioPiezaSerializer",
     "PedidoSerializer",          "PedidoController",
     "VentaSerializer",           "VentaController",
     "TareaSerializer",           "TareaController",
-    "CotizadorInputSerializer",
-    "CotizadorLoteInputSerializer",
-    "CotizadorDesdeCatalogoSerializer",
-    "CotizadorDesdeCatalogoLoteSerializer",
+    "CotizadorInputSerializer", "CotizadorLoteInputSerializer",
+    "CotizadorDesdeCatalogoSerializer", "CotizadorDesdeCatalogoLoteSerializer",
     "CotizadorController",
 ]

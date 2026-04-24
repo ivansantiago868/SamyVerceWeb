@@ -102,3 +102,80 @@
 .drag-drop-img-preview .drag-drop-preview {
   margin-top: 6px;
 }
+
+/* ── Carrusel de imágenes (pieza galería) ─────────────── */
+.pieza-carousel {
+  position: relative;
+  max-width: 480px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  margin-bottom: 12px;
+  user-select: none;
+}
+
+.pc-track {
+  display: flex;
+  transition: transform .35s ease;
+}
+
+.pc-slide {
+  min-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.pc-slide img {
+  max-height: 300px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+.pc-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, .45);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  line-height: 1;
+  transition: background .2s;
+}
+
+.pc-btn:hover { background: rgba(0, 0, 0, .7); }
+.pc-prev { left: 8px; }
+.pc-next { right: 8px; }
+
+.pc-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0 10px;
+}
+
+.pc-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #adb5bd;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: background .2s;
+}
+
+.pc-dot.active { background: #417690; }

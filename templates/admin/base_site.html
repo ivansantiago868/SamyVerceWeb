@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block userlinks %}
+  <a href="/cotizador/"
+     target="_blank"
+     style="display:inline-flex;align-items:center;gap:6px;
+            background:#417690;color:#fff;
+            padding:5px 14px;border-radius:4px;font-size:13px;
+            font-weight:bold;text-decoration:none;
+            margin-right:12px;border:1px solid rgba(255,255,255,.3)">
+    🧮 Cotizador Piezas
+  </a>
+  {{ block.super }}
+{% endblock %}

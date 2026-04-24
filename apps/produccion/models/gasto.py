@@ -1,9 +1,10 @@
 from django.db import models, transaction
+from .empresa import Empresa
 from .material import Material
 
 
 class Gasto(models.Model):
-
+    empresa  = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name="gastos", verbose_name="Empresa")
     cuui     = models.PositiveIntegerField(unique=True, editable=False, verbose_name="CUUI")
     articulo = models.CharField(max_length=255, verbose_name="Artículo")
     material = models.ForeignKey(Material, on_delete=models.PROTECT,
