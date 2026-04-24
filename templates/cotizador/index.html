@@ -185,17 +185,22 @@
 </head>
 <body>
 
-<!-- ═══════════════════ LOGIN ═══════════════════ -->
-<div id="login-overlay">
+<!-- ═══════════════════ LOGIN MODAL ═══════════════════ -->
+<div id="login-overlay" style="display:none">
   <div class="login-card">
-    <div class="logo"><i class="bi bi-printer-fill"></i> 3D</div>
-    <p class="text-muted mb-4" style="font-size:.9rem">Inicia sesión para acceder al cotizador</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div class="logo" style="margin-bottom:0"><i class="bi bi-printer-fill"></i> 3D</div>
+      <button onclick="cerrarLogin()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.25rem">Inicia sesión para guardar piezas en el inventario</p>
 
     <div id="login-error" class="alert-dark-danger mb-3" style="display:none"></div>
 
     <div class="mb-3">
       <label class="form-label">Usuario</label>
-      <input id="inp-username" type="text" class="form-control" placeholder="kivandy">
+      <input id="inp-username" type="text" class="form-control" placeholder="usuario">
     </div>
     <div class="mb-4">
       <label class="form-label">Contraseña</label>
@@ -210,12 +215,9 @@
 <!-- ═══════════════════ APP ═══════════════════ -->
 <header>
   <span class="brand"><i class="bi bi-printer-fill me-2"></i>Cotizador 3D</span>
-  <div class="badge-user">
-    <i class="bi bi-person-circle"></i>
-    <span id="label-user">—</span>
-    <span style="color:var(--border)">|</span>
-    <a href="#" onclick="logout()" style="color:var(--muted);text-decoration:none;font-size:.78rem">
-      <i class="bi bi-box-arrow-right"></i>
+  <div class="badge-user" id="header-auth">
+    <a href="#" onclick="mostrarLogin()" style="color:var(--primary);text-decoration:none;font-size:.85rem;font-weight:600">
+      <i class="bi bi-person-circle me-1"></i>Iniciar sesión
     </a>
   </div>
 </header>
@@ -340,6 +342,9 @@
     <button id="btn-guardar" class="btn-primary-custom" style="background:var(--success)" onclick="guardarEnInventario()">
       <i class="bi bi-floppy me-2"></i>Guardar en piezas
     </button>
+    <p id="save-login-hint" style="display:none;text-align:center;margin-top:.6rem;font-size:.82rem;color:var(--muted)">
+      <a href="#" onclick="mostrarLogin()" style="color:var(--primary)">Inicia sesión</a> para guardar en el inventario
+    </p>
   </div>
 
 </main>
@@ -354,12 +359,66 @@
   const BASE = '';   // mismo origen
 
   // ── Arranque ─────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
-    if (accessToken) mostrarApp();
+  window.addEventListener('DOMContentLoaded', async () => {
+    await detectarSesionAdmin();
+    actualizarEstadoAuth();
+    cargarCatalogo();
     document.getElementById('inp-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
   });
+
+  async function detectarSesionAdmin() {
+    if (accessToken) return;          // ya tiene token JWT
+    try {
+      const res = await fetch(`${BASE}/api/auth/token-session/`, {
+        credentials: 'same-origin',   // envía la cookie de sesión del admin
+      });
+      if (!res.ok) return;
+      const data   = await res.json();
+      accessToken  = data.access;
+      refreshToken = data.refresh;
+      localStorage.setItem('access',   accessToken);
+      localStorage.setItem('refresh',  refreshToken);
+      localStorage.setItem('username', data.username);
+    } catch { /* sin sesión admin, continuar como anónimo */ }
+  }
+
+  function mostrarLogin() {
+    document.getElementById('login-overlay').style.display = 'flex';
+  }
+
+  function cerrarLogin() {
+    document.getElementById('login-overlay').style.display = 'none';
+  }
+
+  function actualizarEstadoAuth() {
+    const logueado = !!accessToken;
+    const headerAuth = document.getElementById('header-auth');
+    const btnGuardar = document.getElementById('btn-guardar');
+    const hint       = document.getElementById('save-login-hint');
+
+    if (logueado) {
+      const user = localStorage.getItem('username') || 'usuario';
+      headerAuth.innerHTML =
+        `<i class="bi bi-person-circle"></i>
+         <span>${user}</span>
+         <span style="color:var(--border)">|</span>
+         <a href="#" onclick="logout()" style="color:var(--muted);text-decoration:none;font-size:.78rem">
+           <i class="bi bi-box-arrow-right"></i> Salir
+         </a>`;
+    } else {
+      headerAuth.innerHTML =
+        `<a href="#" onclick="mostrarLogin()" style="color:var(--primary);text-decoration:none;font-size:.85rem;font-weight:600">
+           <i class="bi bi-person-circle me-1"></i>Iniciar sesión
+         </a>`;
+    }
+
+    if (btnGuardar) {
+      btnGuardar.disabled = !logueado;
+      if (hint) hint.style.display = logueado ? 'none' : 'block';
+    }
+  }
 
   // ── Autenticación ────────────────────────────────────────
   async function login() {
@@ -386,7 +445,8 @@
       localStorage.setItem('access',   accessToken);
       localStorage.setItem('refresh',  refreshToken);
       localStorage.setItem('username', username);
-      mostrarApp();
+      cerrarLogin();
+      actualizarEstadoAuth();
     } catch (e) {
       errEl.textContent    = e.message;
       errEl.style.display  = 'block';
@@ -399,64 +459,61 @@
   function logout() {
     localStorage.clear();
     accessToken = refreshToken = '';
-    document.getElementById('login-overlay').style.display = 'flex';
+    actualizarEstadoAuth();
+  }
+
+  function authHeaders(extra = {}) {
+    const h = { 'Content-Type': 'application/json', ...extra };
+    if (accessToken) h['Authorization'] = `Bearer ${accessToken}`;
+    return h;
   }
 
   async function refrescarToken() {
-    const res  = await fetch(`${BASE}/api/auth/token/refresh/`, {
+    if (!refreshToken) throw new Error('no_session');
+    const res = await fetch(`${BASE}/api/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh: refreshToken }),
     });
     if (!res.ok) { logout(); throw new Error('Sesión expirada'); }
-    const data    = await res.json();
-    accessToken   = data.access;
+    const data  = await res.json();
+    accessToken = data.access;
     localStorage.setItem('access', accessToken);
   }
 
   async function apiFetch(url, body) {
     let res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: authHeaders(),
       body: JSON.stringify(body),
     });
-    if (res.status === 401) {
-      await refrescarToken();
-      res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(body),
-      });
+    if (res.status === 401 && refreshToken) {
+      try {
+        await refrescarToken();
+        res = await fetch(url, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(body),
+        });
+      } catch (e) {
+        if (e.message === 'no_session') throw new Error('Debes iniciar sesión');
+        throw e;
+      }
     }
     return res;
   }
 
   async function apiGet(url) {
-    let res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
-    if (res.status === 401) {
-      await refrescarToken();
-      res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-      });
+    let res = await fetch(url, { headers: authHeaders() });
+    if (res.status === 401 && refreshToken) {
+      try {
+        await refrescarToken();
+        res = await fetch(url, { headers: authHeaders() });
+      } catch { /* sin sesión, devolver respuesta original */ }
     }
     return res;
   }
 
-  // ── Mostrar app ──────────────────────────────────────────
-  function mostrarApp() {
-    document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('label-user').textContent =
-      localStorage.getItem('username') || 'usuario';
-    cargarCatalogo();
-  }
 
   // ── Modos ────────────────────────────────────────────────
   function setMode(mode) {
@@ -479,17 +536,21 @@
 
   // ── Catálogo ─────────────────────────────────────────────
   async function cargarCatalogo() {
+    const sel = document.getElementById('f-pieza-id');
+    if (!accessToken) {
+      sel.innerHTML = '<option value="">Inicia sesión para ver el catálogo</option>';
+      return;
+    }
     try {
-      const res  = await apiGet(`${BASE}/api/v1/piezas/?page_size=200`);
-      const data = await res.json();
+      const res   = await apiGet(`${BASE}/api/v1/piezas/?page_size=200`);
+      if (!res.ok) { sel.innerHTML = '<option value="">Sin acceso al catálogo</option>'; return; }
+      const data  = await res.json();
       const items = data.results || data;
-      const sel  = document.getElementById('f-pieza-id');
       sel.innerHTML = items.length
         ? items.map(p => `<option value="${p.id}">${p.nombre} (${p.peso_gramos}g)</option>`).join('')
         : '<option value="">Sin piezas en catálogo</option>';
     } catch {
-      document.getElementById('f-pieza-id').innerHTML =
-        '<option value="">Error cargando catálogo</option>';
+      sel.innerHTML = '<option value="">Error cargando catálogo</option>';
     }
   }
 
@@ -629,9 +690,10 @@
     lastResult = d;
     document.getElementById('save-feedback').style.display = 'none';
     const btnG = document.getElementById('btn-guardar');
-    btnG.disabled = false;
+    btnG.disabled = !accessToken;
     btnG.innerHTML = '<i class="bi bi-floppy me-2"></i>Guardar en piezas';
     btnG.style.background = 'var(--success)';
+    actualizarEstadoAuth();
 
     panel.style.display = 'block';
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
