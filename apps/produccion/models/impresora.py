@@ -15,6 +15,7 @@ class Impresora(models.Model):
     costo                     = models.DecimalField(max_digits=14, decimal_places=2, verbose_name="Costo (COP)")
     vida_util_horas           = models.PositiveIntegerField(verbose_name="Vida útil estimada (horas)")
     costo_mantenimiento_anual = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Costo mantenimiento anual (COP)")
+    consumo_promedio_kw       = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True, verbose_name="Consumo promedio (kW)")
     activa                    = models.BooleanField(default=True)
 
     @property

@@ -973,6 +973,10 @@
       overrideKeys.add('costo_impresora');
       overrideKeys.add('vida_util_horas');
       overrideKeys.add('costo_mantenimiento_anual');
+      if (imp.consumo_promedio_kw !== null) {
+        merged.consumo_impresora_kw = imp.consumo_promedio_kw;
+        overrideKeys.add('consumo_impresora_kw');
+      }
     }
     if (ins) {
       // Peso rollo: stock actual (cantidad_final)

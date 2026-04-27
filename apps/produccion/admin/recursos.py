@@ -21,7 +21,7 @@ class ClienteAdmin(EmpresaMixin, admin.ModelAdmin):
 @admin.register(Impresora)
 class ImpresoraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
-    list_display    = ("id", "nombre", "tipo", "costo", "vida_util_horas", "activa")
+    list_display    = ("id", "nombre", "tipo", "costo", "vida_util_horas", "consumo_promedio_kw", "activa")
     list_filter     = ("tipo", "activa")
     search_fields   = ("nombre",)
     readonly_fields = ("depreciacion_por_hora", "mantenimiento_por_hora")

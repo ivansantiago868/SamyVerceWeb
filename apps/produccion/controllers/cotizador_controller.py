@@ -112,6 +112,7 @@ class CotizadorController:
                 "costo": float(imp.costo),
                 "vida_util_horas": imp.vida_util_horas,
                 "costo_mantenimiento_anual": float(imp.costo_mantenimiento_anual),
+                "consumo_promedio_kw": float(imp.consumo_promedio_kw) if imp.consumo_promedio_kw is not None else None,
             }
             for imp in imp_qs
         ]
