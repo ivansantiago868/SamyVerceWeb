@@ -3,316 +3,694 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cotizador 3D</title>
+  <title>Cotizador 3D — SamyVerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
+    /* ── Design tokens ──────────────────────────────────── */
     :root {
-      --primary: #FF6B35;
-      --primary-dark: #e55a25;
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #232636;
-      --border: #2e3147;
-      --text: #e8e9f0;
-      --muted: #7b7f96;
-      --success: #22c55e;
-      --danger: #ef4444;
+      --brand:        #FF6B35;
+      --brand-dark:   #e55a25;
+      --brand-glow:   rgba(255,107,53,.18);
+      --brand-subtle: rgba(255,107,53,.08);
+
+      --bg:        #080b11;
+      --surface-0: #0d1117;
+      --surface-1: #161b22;
+      --surface-2: #1e2530;
+      --surface-3: #262d3a;
+
+      --border:       rgba(255,255,255,.07);
+      --border-hover: rgba(255,255,255,.13);
+
+      --text-1: #f0f2f5;
+      --text-2: #8b949e;
+      --text-3: #4d5566;
+
+      --success:      #22c55e;
+      --success-glow: rgba(34,197,94,.15);
+      --danger:       #ef4444;
+      --danger-glow:  rgba(239,68,68,.12);
+      --info:         #6366f1;
+      --info-glow:    rgba(99,102,241,.12);
+
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.5);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,.6);
+
+      --ease: cubic-bezier(.4,0,.2,1);
+      --t:   150ms;
+      --ts:  300ms;
     }
 
-    * { box-sizing: border-box; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,107,53,.07) 0%, transparent 60%);
+      color: var(--text-1);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
+
+    /* ── Skip link (a11y) ── */
+    .skip-link {
+      position: absolute; top: -100%; left: 50%;
+      transform: translateX(-50%);
+      background: var(--brand); color: #fff;
+      padding: .5rem 1.25rem;
+      border-radius: 0 0 var(--r-sm) var(--r-sm);
+      font-weight: 600; text-decoration: none; z-index: 10000;
+      transition: top var(--t) var(--ease);
+    }
+    .skip-link:focus { top: 0; }
 
     /* ── Login overlay ── */
     #login-overlay {
       position: fixed; inset: 0;
-      background: rgba(15,17,23,.97);
+      background: rgba(8,11,17,.93);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: flex; align-items: center; justify-content: center;
       z-index: 9999;
+      padding: 1rem;
     }
+
     .login-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.5rem 2rem;
-      width: 100%; max-width: 380px;
-      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      background: var(--surface-1);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--r-xl);
+      padding: 2.25rem 2rem;
+      width: 100%; max-width: 400px;
+      box-shadow: var(--shadow-lg), 0 0 80px rgba(255,107,53,.07);
+      animation: slideUp var(--ts) var(--ease) both;
     }
-    .login-card .logo {
-      font-size: 2.2rem; font-weight: 800;
-      color: var(--primary); letter-spacing: -1px;
-      margin-bottom: .25rem;
+
+    .login-brand {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 1.5rem;
     }
+    .login-brand-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.15rem;
+      box-shadow: 0 4px 14px var(--brand-glow);
+    }
+    .login-brand-text  { font-size: 1.05rem; font-weight: 700; color: var(--text-1); }
+    .login-brand-sub   { font-size: .75rem; color: var(--text-2); margin-top: 1px; }
 
     /* ── Header ── */
     header {
-      background: var(--surface);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
-      padding: .9rem 1.5rem;
+      padding: .875rem 1.5rem;
       display: flex; align-items: center; justify-content: space-between;
-    }
-    .brand { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
-    .badge-user {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: .3rem .85rem;
-      font-size: .8rem; color: var(--muted);
-      display: flex; align-items: center; gap: .4rem;
+      gap: 1rem;
     }
 
+    .brand {
+      display: flex; align-items: center; gap: .6rem;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--brand), #ff9a6c);
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .9rem;
+      box-shadow: 0 2px 10px var(--brand-glow);
+    }
+    .brand-name {
+      font-size: 1rem; font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -.025em;
+    }
+
+    #header-auth {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .4rem 1rem;
+      font-size: .82rem; color: var(--text-2);
+      display: flex; align-items: center; gap: .5rem;
+      transition: border-color var(--t) var(--ease);
+    }
+    #header-auth:hover { border-color: var(--border-hover); }
+    #header-auth a { text-decoration: none; }
+
     /* ── Layout ── */
-    main { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Variables fijas panel ── */
+    .vars-panel {
+      position: sticky;
+      top: 72px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .vars-panel-title {
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .vars-panel-badge {
+      font-size: .6rem; font-weight: 600;
+      background: var(--brand-subtle);
+      color: var(--brand);
+      border: 1px solid rgba(255,107,53,.2);
+      border-radius: 999px;
+      padding: .1rem .5rem;
+      text-transform: none; letter-spacing: 0;
+    }
+    .var-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .5rem;
+      padding: .45rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .var-row:last-child { border-bottom: none; }
+    .var-label {
+      font-size: .74rem; color: var(--text-2);
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .var-value {
+      font-size: .78rem; font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #vars-loading {
+      color: var(--text-3); font-size: .8rem; text-align: center;
+      padding: .75rem 0;
+    }
+
+    /* ── Page hero ── */
+    .page-hero { margin-bottom: 1.75rem; }
+    .page-hero h1 {
+      font-size: 1.55rem; font-weight: 800;
+      color: var(--text-1); letter-spacing: -.035em; line-height: 1.2;
+      margin-bottom: .3rem;
+    }
+    .page-hero p { font-size: .875rem; color: var(--text-2); }
 
     /* ── Mode tabs ── */
     .mode-tabs {
-      display: grid; grid-template-columns: repeat(2,1fr);
-      gap: .6rem; margin-bottom: 2rem;
-    }
-    @media(min-width:600px){ .mode-tabs { grid-template-columns: repeat(4,1fr); } }
-    .mode-tab {
-      background: var(--surface);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .4rem;
+      margin-bottom: 1.25rem;
+      background: var(--surface-1);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: .85rem .75rem;
+      border-radius: var(--r-lg);
+      padding: .35rem;
+    }
+    @media (min-width: 520px) { .mode-tabs { grid-template-columns: repeat(4, 1fr); } }
+
+    .mode-tab {
+      background: transparent; border: none;
+      border-radius: var(--r-md);
+      padding: .6rem .4rem;
       cursor: pointer; text-align: center;
-      transition: all .15s;
-      color: var(--muted);
+      color: var(--text-2);
+      font-size: .78rem; font-weight: 500;
+      min-height: 56px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: .22rem;
+      transition: all var(--t) var(--ease);
+      touch-action: manipulation;
     }
-    .mode-tab:hover { border-color: var(--primary); color: var(--text); }
+    .mode-tab i { font-size: 1.1rem; }
+    .mode-tab:hover  { background: var(--surface-2); color: var(--text-1); }
+    .mode-tab:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
     .mode-tab.active {
-      background: var(--primary); border-color: var(--primary);
+      background: var(--brand);
       color: #fff; font-weight: 600;
+      box-shadow: 0 2px 12px var(--brand-glow);
     }
-    .mode-tab i { font-size: 1.4rem; display: block; margin-bottom: .35rem; }
 
     /* ── Card ── */
     .card-dark {
-      background: var(--surface);
+      background: var(--surface-1);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--r-lg);
       padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-label {
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--text-3);
+      margin-bottom: 1.25rem;
     }
 
     /* ── Inputs ── */
-    .form-label { color: var(--muted); font-size: .82rem; font-weight: 500; margin-bottom: .35rem; }
+    .form-label {
+      display: block;
+      color: var(--text-2);
+      font-size: .79rem; font-weight: 500;
+      margin-bottom: .38rem;
+    }
     .form-control, .form-select {
-      background: var(--surface2);
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
+      color: var(--text-1);
+      border-radius: var(--r-sm);
+      padding: .6rem .85rem;
+      font-size: .9rem;
+      font-family: inherit;
+      min-height: 44px;
+      transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
     }
     .form-control:focus, .form-select:focus {
-      background: var(--surface2);
-      border-color: var(--primary);
-      color: var(--text);
-      box-shadow: 0 0 0 3px rgba(255,107,53,.15);
+      background: var(--surface-2);
+      border-color: var(--brand);
+      color: var(--text-1);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+      outline: none;
     }
-    .form-control::placeholder { color: var(--muted); }
-    .form-select option { background: var(--surface2); }
+    .form-control::placeholder { color: var(--text-3); }
+    .form-select option { background: var(--surface-2); }
 
-    /* ── Button ── */
-    .btn-primary-custom {
-      background: var(--primary); border: none; color: #fff;
-      border-radius: 10px; padding: .7rem 2rem;
-      font-weight: 600; font-size: 1rem;
-      transition: background .15s;
-      width: 100%;
-    }
-    .btn-primary-custom:hover { background: var(--primary-dark); }
-    .btn-primary-custom:disabled { opacity: .6; cursor: not-allowed; }
-
-    /* ── Result panel ── */
-    #result-panel {
-      margin-top: 2rem;
-      display: none;
-    }
-    .result-title {
-      font-size: 1rem; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .08em;
-      margin-bottom: 1.25rem;
-    }
-    .result-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: .75rem;
-    }
-    .result-item {
-      background: var(--surface2);
+    /* ── Checkbox row ── */
+    .check-row {
+      display: flex; align-items: center; gap: .75rem;
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem;
+      border-radius: var(--r-sm);
+      padding: .6rem .85rem;
+      cursor: pointer;
+      min-height: 44px;
+      transition: border-color var(--t) var(--ease);
     }
-    .result-item.highlight {
-      border-color: var(--primary);
-      background: rgba(255,107,53,.08);
+    .check-row:hover { border-color: var(--border-hover); }
+    .check-row input[type="checkbox"] {
+      width: 1.05rem; height: 1.05rem; flex-shrink: 0;
+      cursor: pointer; accent-color: var(--brand); margin: 0;
     }
-    .result-item .label {
-      font-size: .75rem; color: var(--muted); margin-bottom: .3rem;
+    .check-row .check-label { flex: 1; }
+    .check-row .check-label strong {
+      display: block; font-size: .875rem;
+      font-weight: 500; color: var(--text-1);
     }
-    .result-item .value {
-      font-size: 1.25rem; font-weight: 700; color: var(--text);
+    .check-row .check-label span {
+      font-size: .73rem; color: var(--text-3);
     }
-    .result-item.highlight .value { color: var(--primary); }
 
-    /* ── Error / success alerts ── */
-    .alert-dark-danger {
-      background: rgba(239,68,68,.12);
-      border: 1px solid rgba(239,68,68,.35);
-      color: #fca5a5; border-radius: 10px; padding: .85rem 1rem;
-      font-size: .9rem;
+    /* ── Buttons ── */
+    .btn-primary-custom {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      border: none;
+      border-radius: var(--r-md);
+      padding: .8rem 2rem;
+      color: #fff; font-size: .95rem; font-weight: 700;
+      font-family: inherit; letter-spacing: -.01em;
+      cursor: pointer;
+      min-height: 48px;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      box-shadow: 0 4px 14px var(--brand-glow);
+      transition: all var(--t) var(--ease);
+      touch-action: manipulation;
     }
-    .alert-dark-info {
-      background: rgba(99,102,241,.12);
-      border: 1px solid rgba(99,102,241,.3);
-      color: #a5b4fc; border-radius: 10px; padding: .85rem 1rem;
-      font-size: .85rem;
+    .btn-primary-custom:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(255,107,53,.38);
+    }
+    .btn-primary-custom:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary-custom:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-primary-custom:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+
+    /* Save button overridden by JS inline style but still needs base */
+    #btn-guardar {
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      box-shadow: 0 4px 14px var(--success-glow);
+    }
+    #btn-guardar:hover:not(:disabled) {
+      box-shadow: 0 6px 22px rgba(34,197,94,.35);
+    }
+
+    /* Login submit */
+    .btn-login-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      border: none; border-radius: var(--r-md);
+      padding: .8rem 2rem;
+      color: #fff; font-size: .95rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; min-height: 48px;
+      transition: filter var(--t) var(--ease);
+      touch-action: manipulation;
+    }
+    .btn-login-submit:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-login-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── Divider ── */
+    hr.dark, .divider {
+      border: none; height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* ── Alerts (keep old class names for JS compatibility) ── */
+    .alert-dark-danger, .alert-danger-ui {
+      background: var(--danger-glow);
+      border: 1px solid rgba(239,68,68,.28);
+      color: #fca5a5;
+      border-radius: var(--r-sm);
+      padding: .75rem 1rem;
+      font-size: .875rem;
+    }
+    .alert-dark-info, .alert-info-ui {
+      background: var(--info-glow);
+      border: 1px solid rgba(99,102,241,.28);
+      color: #a5b4fc;
+      border-radius: var(--r-sm);
+      padding: .75rem 1rem;
+      font-size: .875rem;
+    }
+    .alert-dark-success {
+      background: var(--success-glow);
+      border: 1px solid rgba(34,197,94,.28);
+      color: #86efac;
+      border-radius: var(--r-sm);
+      padding: .75rem 1rem;
+      font-size: .875rem;
     }
 
     /* ── Spinner ── */
     .spin { animation: spin .7s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Separator ── */
-    hr.dark { border-color: var(--border); margin: 1.5rem 0; }
+    /* ── Fade/slide animation ── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── Result panel ── */
+    #result-panel {
+      margin-top: 1.25rem;
+      display: none;
+    }
+    #result-panel.visible {
+      animation: slideUp var(--ts) var(--ease) both;
+    }
+
+    /* Hero price block */
+    .result-hero {
+      background: linear-gradient(135deg, rgba(255,107,53,.13), rgba(255,107,53,.04));
+      border: 1px solid rgba(255,107,53,.22);
+      border-radius: var(--r-lg);
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .result-hero-label {
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--brand);
+      margin-bottom: .35rem;
+    }
+    .result-hero-price {
+      font-size: 2.6rem; font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -.05em;
+      line-height: 1.1;
+    }
+    .result-hero-sub {
+      font-size: .8rem; color: var(--text-2);
+      margin-top: .35rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: .55rem;
+    }
+
+    .result-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: .85rem 1rem;
+      transition: border-color var(--t) var(--ease);
+    }
+    .result-item:hover { border-color: var(--border-hover); }
+    .result-item.highlight {
+      border-color: rgba(255,107,53,.28);
+      background: var(--brand-subtle);
+    }
+    .result-item .label {
+      font-size: .68rem; font-weight: 600;
+      color: var(--text-3);
+      margin-bottom: .3rem;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .result-item .value {
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--text-1);
+    }
+    .result-item.highlight .value { color: var(--brand); }
+
+    /* ── Mobile ── */
+    @media (max-width: 480px) {
+      main { padding: 1.5rem .875rem 3.5rem; }
+      .card-dark { padding: 1.25rem; }
+      .result-hero-price { font-size: 2rem; }
+      .page-hero h1 { font-size: 1.3rem; }
+    }
   </style>
 </head>
 <body>
 
+<a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
 <!-- ═══════════════════ LOGIN MODAL ═══════════════════ -->
-<div id="login-overlay" style="display:none">
+<div id="login-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="login-title">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-      <div class="logo" style="margin-bottom:0"><i class="bi bi-printer-fill"></i> 3D</div>
-      <button onclick="cerrarLogin()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">
-        <i class="bi bi-x-lg"></i>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem">
+      <div class="login-brand">
+        <div class="login-brand-icon" aria-hidden="true"><i class="bi bi-printer-fill"></i></div>
+        <div>
+          <div class="login-brand-text" id="login-title">SamyVerce 3D</div>
+          <div class="login-brand-sub">Cotizador profesional</div>
+        </div>
+      </div>
+      <button onclick="cerrarLogin()" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;
+               min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
+               border-radius:var(--r-sm);transition:color var(--t)"
+        onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-3)'">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.25rem">Inicia sesión para guardar piezas en el inventario</p>
+
+    <p style="color:var(--text-2);font-size:.875rem;margin-bottom:1.4rem;line-height:1.55">
+      Inicia sesión para guardar piezas en el inventario y acceder al catálogo completo.
+    </p>
 
     <div id="login-error" class="alert-dark-danger mb-3" style="display:none"></div>
 
     <div class="mb-3">
-      <label class="form-label">Usuario</label>
-      <input id="inp-username" type="text" class="form-control" placeholder="usuario">
+      <label for="inp-username" class="form-label">Usuario</label>
+      <input id="inp-username" type="text" class="form-control" placeholder="tu usuario" autocomplete="username">
     </div>
-    <div class="mb-4">
-      <label class="form-label">Contraseña</label>
-      <input id="inp-password" type="password" class="form-control" placeholder="••••••••">
+    <div style="margin-bottom:1.4rem">
+      <label for="inp-password" class="form-label">Contraseña</label>
+      <input id="inp-password" type="password" class="form-control" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button id="btn-login" class="btn-primary-custom" onclick="login()">
+    <button id="btn-login" class="btn-login-submit" onclick="login()">
       Ingresar
     </button>
   </div>
 </div>
 
 <!-- ═══════════════════ APP ═══════════════════ -->
-<header>
-  <span class="brand"><i class="bi bi-printer-fill me-2"></i>Cotizador 3D</span>
-  <div class="badge-user" id="header-auth">
-    <a href="#" onclick="mostrarLogin()" style="color:var(--primary);text-decoration:none;font-size:.85rem;font-weight:600">
-      <i class="bi bi-person-circle me-1"></i>Iniciar sesión
+<header role="banner">
+  <a href="/cotizador/" class="brand" aria-label="SamyVerce Cotizador 3D">
+    <div class="brand-icon" aria-hidden="true"><i class="bi bi-printer-fill"></i></div>
+    <span class="brand-name">SamyVerce <span style="color:var(--text-2);font-weight:400;font-size:.9em">3D</span></span>
+  </a>
+  <div id="header-auth" role="navigation" aria-label="Estado de sesión">
+    <a href="#" onclick="mostrarLogin()" style="color:var(--brand);text-decoration:none;font-size:.85rem;font-weight:600">
+      <i class="bi bi-person-circle me-1" aria-hidden="true"></i>Iniciar sesión
     </a>
   </div>
 </header>
 
-<main>
+<main id="main-content" role="main">
 
-  <!-- Tabs de modo -->
-  <div class="mode-tabs">
-    <div class="mode-tab active" onclick="setMode('nueva')" id="tab-nueva">
-      <i class="bi bi-plus-circle"></i>
-      Pieza nueva
-    </div>
-    <div class="mode-tab" onclick="setMode('lote')" id="tab-lote">
-      <i class="bi bi-stack"></i>
-      Pieza × lote
-    </div>
-    <div class="mode-tab" onclick="setMode('catalogo')" id="tab-catalogo">
-      <i class="bi bi-archive"></i>
-      Del catálogo
-    </div>
-    <div class="mode-tab" onclick="setMode('catalogo-lote')" id="tab-catalogo-lote">
-      <i class="bi bi-layers"></i>
-      Catálogo × lote
-    </div>
+  <!-- Page hero -->
+  <div class="page-hero">
+    <h1>
+      <i class="bi bi-calculator-fill me-2" style="color:var(--brand)" aria-hidden="true"></i>Cotizador de piezas
+    </h1>
+    <p>Calcula el precio de venta sugerido para tus impresiones 3D.</p>
   </div>
 
-  <!-- Formulario -->
-  <div class="card-dark">
+  <div class="layout">
 
-    <!-- Campos comunes: pieza nueva -->
+  <!-- ── Panel izquierdo: Variables Fijas ── -->
+  <aside class="vars-panel" aria-label="Variables fijas del cotizador">
+    <div class="vars-panel-title">
+      <i class="bi bi-sliders" aria-hidden="true"></i>
+      Variables Fijas
+      <span class="vars-panel-badge" id="vars-origen">generales</span>
+    </div>
+    <div id="vars-loading">
+      <i class="bi bi-arrow-repeat spin" aria-hidden="true"></i> Cargando…
+    </div>
+    <div id="vars-list" style="display:none"></div>
+  </aside>
+
+  <!-- ── Panel derecho: Formulario + Resultado ── -->
+  <div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs" role="tablist" aria-label="Modo de cotización">
+    <button class="mode-tab active" role="tab" aria-selected="true"
+      onclick="setMode('nueva')" id="tab-nueva">
+      <i class="bi bi-plus-circle" aria-hidden="true"></i>
+      <span>Pieza nueva</span>
+    </button>
+    <button class="mode-tab" role="tab" aria-selected="false"
+      onclick="setMode('lote')" id="tab-lote">
+      <i class="bi bi-stack" aria-hidden="true"></i>
+      <span>Pieza × lote</span>
+    </button>
+    <button class="mode-tab" role="tab" aria-selected="false"
+      onclick="setMode('catalogo')" id="tab-catalogo">
+      <i class="bi bi-archive" aria-hidden="true"></i>
+      <span>Del catálogo</span>
+    </button>
+    <button class="mode-tab" role="tab" aria-selected="false"
+      onclick="setMode('catalogo-lote')" id="tab-catalogo-lote">
+      <i class="bi bi-layers" aria-hidden="true"></i>
+      <span>Catálogo × lote</span>
+    </button>
+  </div>
+
+  <!-- Form card -->
+  <div class="card-dark" id="form-panel" role="tabpanel">
+
+    <!-- Nueva pieza -->
     <div id="fields-nueva">
       <div class="row g-3">
         <div class="col-12">
-          <label class="form-label">Nombre de la pieza</label>
-          <input id="f-nombre" type="text" class="form-control" placeholder="Ej: Soporte de cámara">
+          <label for="f-nombre" class="form-label">Nombre de la pieza</label>
+          <input id="f-nombre" type="text" class="form-control" placeholder="Ej: Soporte de cámara" autocomplete="off">
         </div>
         <div class="col-sm-6">
-          <label class="form-label">Peso (gramos)</label>
+          <label for="f-peso" class="form-label">Peso (gramos)</label>
           <input id="f-peso" type="number" class="form-control" placeholder="45" min="0.1" step="0.1">
         </div>
         <div class="col-sm-6">
-          <label class="form-label">Tiempo impresión (horas)</label>
+          <label for="f-tiempo" class="form-label">Tiempo impresión (horas)</label>
           <input id="f-tiempo" type="number" class="form-control" placeholder="2.5" min="0.01" step="0.01">
         </div>
         <div class="col-sm-6">
-          <label class="form-label">Tiempo post-procesado (horas)</label>
+          <label for="f-postproceso" class="form-label">Post-procesado (horas)</label>
           <input id="f-postproceso" type="number" class="form-control" value="0" min="0" step="0.01">
         </div>
-        <div class="col-sm-6 d-flex align-items-center gap-3 pt-3">
-          <input id="f-empaque" type="checkbox" class="form-check-input mt-0" style="width:1.3rem;height:1.3rem;cursor:pointer">
-          <label class="form-label mb-0" for="f-empaque">
-            Incluir empaque
-            <span style="color:var(--muted);font-size:.75rem;display:block">precio de Variables Fijas</span>
+        <div class="col-sm-6 d-flex align-items-end">
+          <label class="check-row w-100" for="f-empaque">
+            <input id="f-empaque" type="checkbox">
+            <span class="check-label">
+              <strong>Incluir empaque</strong>
+              <span>precio de Variables Fijas</span>
+            </span>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- Campo extra: cantidad (lote) -->
+    <!-- Lote (cantidad) -->
     <div id="fields-lote" style="display:none">
       <hr class="dark">
       <div class="col-sm-6">
-        <label class="form-label">Cantidad de piezas</label>
+        <label for="f-cantidad" class="form-label">Cantidad de piezas</label>
         <input id="f-cantidad" type="number" class="form-control" placeholder="10" min="1" step="1">
       </div>
     </div>
 
-    <!-- Campos catálogo -->
+    <!-- Catálogo -->
     <div id="fields-catalogo" style="display:none">
       <div class="row g-3">
         <div class="col-12">
-          <label class="form-label">Pieza del catálogo</label>
+          <label for="f-pieza-id" class="form-label">Pieza del catálogo</label>
           <select id="f-pieza-id" class="form-select">
             <option value="">Cargando...</option>
           </select>
         </div>
         <div class="col-sm-6">
-          <label class="form-label">Tiempo post-procesado (horas)</label>
+          <label for="f-cat-postproceso" class="form-label">Post-procesado (horas)</label>
           <input id="f-cat-postproceso" type="number" class="form-control" value="0" min="0" step="0.01">
         </div>
-        <div class="col-sm-6 d-flex align-items-center gap-3 pt-3">
-          <input id="f-cat-empaque" type="checkbox" class="form-check-input mt-0" style="width:1.3rem;height:1.3rem;cursor:pointer">
-          <label class="form-label mb-0" for="f-cat-empaque">
-            Incluir empaque
-            <span style="color:var(--muted);font-size:.75rem;display:block">precio de Variables Fijas</span>
+        <div class="col-sm-6 d-flex align-items-end">
+          <label class="check-row w-100" for="f-cat-empaque">
+            <input id="f-cat-empaque" type="checkbox">
+            <span class="check-label">
+              <strong>Incluir empaque</strong>
+              <span>precio de Variables Fijas</span>
+            </span>
           </label>
         </div>
       </div>
     </div>
 
-    <!-- Campo cantidad catálogo lote -->
+    <!-- Catálogo lote (cantidad) -->
     <div id="fields-catalogo-lote" style="display:none">
       <hr class="dark">
       <div class="col-sm-6">
-        <label class="form-label">Cantidad de piezas</label>
+        <label for="f-cat-cantidad" class="form-label">Cantidad de piezas</label>
         <input id="f-cat-cantidad" type="number" class="form-control" placeholder="10" min="1" step="1">
       </div>
     </div>
@@ -322,13 +700,16 @@
     <div id="form-error" class="alert-dark-danger mb-3" style="display:none"></div>
 
     <button id="btn-cotizar" class="btn-primary-custom" onclick="cotizar()">
-      <i class="bi bi-calculator me-2"></i>Calcular precio
+      <i class="bi bi-calculator" aria-hidden="true"></i>Calcular precio
     </button>
   </div>
 
-  <!-- Panel de resultados -->
-  <div id="result-panel" class="card-dark">
-    <div class="result-title"><i class="bi bi-bar-chart-line me-2"></i>Resultado</div>
+  <!-- Result panel -->
+  <div id="result-panel" class="card-dark"
+    role="region" aria-label="Resultados de cotización" aria-live="polite">
+
+    <div class="result-title" style="display:none"></div>
+
     <div id="result-grid" class="result-grid"></div>
 
     <div id="catalogo-diff" style="display:none; margin-top:1rem;">
@@ -339,13 +720,17 @@
     <hr class="dark">
 
     <div id="save-feedback" style="display:none; margin-bottom:.75rem;"></div>
-    <button id="btn-guardar" class="btn-primary-custom" style="background:var(--success)" onclick="guardarEnInventario()">
-      <i class="bi bi-floppy me-2"></i>Guardar en piezas
+    <button id="btn-guardar" class="btn-primary-custom" style="background:var(--success)"
+      onclick="guardarEnInventario()">
+      <i class="bi bi-floppy" aria-hidden="true"></i>Guardar en piezas
     </button>
-    <p id="save-login-hint" style="display:none;text-align:center;margin-top:.6rem;font-size:.82rem;color:var(--muted)">
-      <a href="#" onclick="mostrarLogin()" style="color:var(--primary)">Inicia sesión</a> para guardar en el inventario
+    <p id="save-login-hint" style="display:none;text-align:center;margin-top:.6rem;font-size:.82rem;color:var(--text-2)">
+      <a href="#" onclick="mostrarLogin()" style="color:var(--brand)">Inicia sesión</a> para guardar en el inventario
     </p>
   </div>
+
+  </div><!-- /panel derecho -->
+  </div><!-- /layout -->
 
 </main>
 
@@ -363,6 +748,7 @@
     await detectarSesionAdmin();
     actualizarEstadoAuth();
     cargarCatalogo();
+    cargarVariablesFijas();
     document.getElementById('inp-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
@@ -401,16 +787,16 @@
     if (logueado) {
       const user = localStorage.getItem('username') || 'usuario';
       headerAuth.innerHTML =
-        `<i class="bi bi-person-circle"></i>
+        `<i class="bi bi-person-circle" aria-hidden="true"></i>
          <span>${user}</span>
-         <span style="color:var(--border)">|</span>
-         <a href="#" onclick="logout()" style="color:var(--muted);text-decoration:none;font-size:.78rem">
-           <i class="bi bi-box-arrow-right"></i> Salir
+         <span style="color:var(--border-hover)">|</span>
+         <a href="#" onclick="logout()" style="color:var(--text-2);text-decoration:none;font-size:.78rem">
+           <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Salir
          </a>`;
     } else {
       headerAuth.innerHTML =
-        `<a href="#" onclick="mostrarLogin()" style="color:var(--primary);text-decoration:none;font-size:.85rem;font-weight:600">
-           <i class="bi bi-person-circle me-1"></i>Iniciar sesión
+        `<a href="#" onclick="mostrarLogin()" style="color:var(--brand);text-decoration:none;font-size:.85rem;font-weight:600">
+           <i class="bi bi-person-circle me-1" aria-hidden="true"></i>Iniciar sesión
          </a>`;
     }
 
@@ -447,6 +833,7 @@
       localStorage.setItem('username', username);
       cerrarLogin();
       actualizarEstadoAuth();
+      cargarVariablesFijas();
     } catch (e) {
       errEl.textContent    = e.message;
       errEl.style.display  = 'block';
@@ -460,6 +847,62 @@
     localStorage.clear();
     accessToken = refreshToken = '';
     actualizarEstadoAuth();
+    cargarVariablesFijas();
+  }
+
+  // ── Variables Fijas (panel izquierdo) ────────────────────
+  const VARS_META = [
+    { key: 'precio_rollo_filamento',    label: 'Precio rollo',       fmt: 'cop' },
+    { key: 'peso_rollo_gramos',         label: 'Peso rollo',         fmt: 'g'   },
+    { key: 'costo_electricidad_kwh',    label: 'Electricidad/kWh',   fmt: 'cop' },
+    { key: 'consumo_impresora_kw',      label: 'Consumo impresora',  fmt: 'kw'  },
+    { key: 'valor_hora_trabajo',        label: 'Valor hora trabajo', fmt: 'cop' },
+    { key: 'margen_ganancia',           label: 'Margen ganancia',    fmt: 'pct' },
+    { key: 'margen_fallos',             label: 'Margen fallos',      fmt: 'pct' },
+    { key: 'costo_impresora',           label: 'Costo impresora',    fmt: 'cop' },
+    { key: 'vida_util_horas',           label: 'Vida útil',          fmt: 'h'   },
+    { key: 'costo_mantenimiento_anual', label: 'Mant. anual',        fmt: 'cop' },
+    { key: 'costo_empaque',             label: 'Costo empaque',      fmt: 'cop' },
+  ];
+
+  function fmtVar(value, tipo) {
+    const n = parseFloat(value);
+    if (tipo === 'cop') return cop(n);
+    if (tipo === 'pct') return `${(n * 100).toFixed(0)} %`;
+    if (tipo === 'g')   return `${n.toLocaleString('es-CO')} g`;
+    if (tipo === 'kw')  return `${n} kW`;
+    if (tipo === 'h')   return `${n.toLocaleString('es-CO')} h`;
+    return value;
+  }
+
+  async function cargarVariablesFijas() {
+    const loading = document.getElementById('vars-loading');
+    const list    = document.getElementById('vars-list');
+    const badge   = document.getElementById('vars-origen');
+
+    loading.style.display = 'block';
+    list.style.display    = 'none';
+
+    try {
+      const res  = await apiGet(`${BASE}/api/v1/variables-fijas/para-cotizador/`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+
+      const esEmpresa = accessToken && data.empresa;
+      badge.textContent = esEmpresa ? 'mi empresa' : 'generales';
+
+      list.innerHTML = VARS_META.map(m => `
+        <div class="var-row">
+          <span class="var-label" title="${m.label}">${m.label}</span>
+          <span class="var-value">${fmtVar(data[m.key], m.fmt)}</span>
+        </div>
+      `).join('');
+
+      loading.style.display = 'none';
+      list.style.display    = 'block';
+    } catch {
+      loading.innerHTML = '<span style="color:var(--text-3);font-size:.75rem">Sin variables configuradas</span>';
+    }
   }
 
   function authHeaders(extra = {}) {
@@ -519,7 +962,10 @@
   function setMode(mode) {
     currentMode = mode;
     ['nueva','lote','catalogo','catalogo-lote'].forEach(m => {
-      document.getElementById(`tab-${m}`).classList.toggle('active', m === mode);
+      const tab = document.getElementById(`tab-${m}`);
+      const active = m === mode;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', active);
     });
 
     const isCat = mode.includes('catalogo');
@@ -606,7 +1052,7 @@
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Calculando...';
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2" aria-hidden="true"></i>Calculando...';
 
     try {
       const res  = await apiFetch(url, body);
@@ -617,7 +1063,7 @@
       showErr(e.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-calculator me-2"></i>Calcular precio';
+      btn.innerHTML = '<i class="bi bi-calculator me-2" aria-hidden="true"></i>Calcular precio';
     }
   }
 
@@ -638,33 +1084,53 @@
     const grid   = document.getElementById('result-grid');
     const diff   = document.getElementById('catalogo-diff');
 
-    // La API devuelve: d.inputs / d.desglose / d.resultado / d.escala (lote)
     const inp  = d.inputs    || {};
     const des  = d.desglose  || {};
     const res  = d.resultado || {};
     const esc  = d.escala    || null;
 
+    // Build hero price block
+    const heroPrice  = esc ? esc.precio_total_lote : res.precio_venta_sugerido;
+    const heroLabel  = esc
+      ? `Precio total lote (${esc.cantidad} uds)`
+      : 'Precio de venta sugerido';
+    const heroSub    = esc
+      ? `Precio por unidad: ${cop(res.precio_venta_sugerido)}`
+      : inp.nombre_pieza || '';
+
+    const heroHtml = `
+      <div class="result-hero">
+        <div class="result-hero-label">${heroLabel}</div>
+        <div class="result-hero-price">${cop(heroPrice)}</div>
+        ${heroSub ? `<div class="result-hero-sub">${heroSub}</div>` : ''}
+      </div>
+      <div class="section-label"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i>Desglose de costos</div>
+    `;
+
+    // Remove old hero if exists, then prepend new
+    const oldHero = panel.querySelector('.result-hero');
+    if (oldHero) {
+      oldHero.closest('.result-hero')?.remove();
+      panel.querySelectorAll('.section-label').forEach(el => el.remove());
+    }
+    grid.insertAdjacentHTML('beforebegin', heroHtml);
+
+    // Detail cards (exclude highlighted ones already in hero)
     const campos = esc ? [
-      { label: 'Nombre',             value: inp.nombre_pieza || '—',        highlight: false },
-      { label: 'Cantidad',           value: `${esc.cantidad} uds`,          highlight: false },
-      { label: 'Costo material',     value: cop(des.costo_material),        highlight: false },
-      { label: 'Costo energía',      value: cop(des.costo_energia),         highlight: false },
-      { label: 'Costo tiempo',       value: cop(des.costo_tiempo),          highlight: false },
-      { label: 'Subtotal producción',value: cop(des.subtotal_produccion),   highlight: false },
-      { label: 'Costo total (lote)', value: cop(esc.costo_total_lote),      highlight: false },
-      { label: 'Precio LOTE',        value: cop(esc.precio_total_lote),     highlight: true  },
-      { label: 'Precio por unidad',  value: cop(res.precio_venta_sugerido), highlight: true  },
+      { label: 'Costo material',      value: cop(des.costo_material),       highlight: false },
+      { label: 'Costo energía',       value: cop(des.costo_energia),        highlight: false },
+      { label: 'Costo tiempo',        value: cop(des.costo_tiempo),         highlight: false },
+      { label: 'Subtotal producción', value: cop(des.subtotal_produccion),  highlight: false },
+      { label: 'Costo total lote',    value: cop(esc.costo_total_lote),     highlight: false },
     ] : [
-      { label: 'Nombre',             value: inp.nombre_pieza || '—',        highlight: false },
-      { label: 'Costo material',     value: cop(des.costo_material),        highlight: false },
-      { label: 'Costo energía',      value: cop(des.costo_energia),         highlight: false },
-      { label: 'Costo tiempo',       value: cop(des.costo_tiempo),          highlight: false },
-      { label: 'Subtotal producción',value: cop(des.subtotal_produccion),   highlight: false },
-      { label: 'Amort. fallos',      value: cop(des.amortizacion_fallos),   highlight: false },
-      { label: 'Depreciación',       value: cop(des.depreciacion_pieza),    highlight: false },
-      { label: 'Mantenimiento',      value: cop(des.mantenimiento_preventivo), highlight: false },
-      { label: 'Costo total real',   value: cop(res.costo_total_real),      highlight: false },
-      { label: 'Precio de venta',    value: cop(res.precio_venta_sugerido), highlight: true  },
+      { label: 'Costo material',      value: cop(des.costo_material),          highlight: false },
+      { label: 'Costo energía',       value: cop(des.costo_energia),           highlight: false },
+      { label: 'Costo tiempo',        value: cop(des.costo_tiempo),            highlight: false },
+      { label: 'Subtotal producción', value: cop(des.subtotal_produccion),     highlight: false },
+      { label: 'Amort. fallos',       value: cop(des.amortizacion_fallos),     highlight: false },
+      { label: 'Depreciación',        value: cop(des.depreciacion_pieza),      highlight: false },
+      { label: 'Mantenimiento',       value: cop(des.mantenimiento_preventivo), highlight: false },
+      { label: 'Costo total real',    value: cop(res.costo_total_real),        highlight: false },
     ];
 
     grid.innerHTML = campos.map(c => `
@@ -680,7 +1146,7 @@
       const signo = dif >= 0 ? '+' : '';
       diff.style.display = 'block';
       document.getElementById('catalogo-diff-text').innerHTML =
-        `<i class="bi bi-info-circle me-2"></i>
+        `<i class="bi bi-info-circle me-2" aria-hidden="true"></i>
          Precio guardado en catálogo: <strong>${cop(d.pieza_catalogo.precio_guardado)}</strong> &nbsp;|&nbsp;
          Diferencia con recálculo: <strong>${signo}${cop(dif)}</strong>`;
     } else {
@@ -691,11 +1157,12 @@
     document.getElementById('save-feedback').style.display = 'none';
     const btnG = document.getElementById('btn-guardar');
     btnG.disabled = !accessToken;
-    btnG.innerHTML = '<i class="bi bi-floppy me-2"></i>Guardar en piezas';
+    btnG.innerHTML = '<i class="bi bi-floppy me-2" aria-hidden="true"></i>Guardar en piezas';
     btnG.style.background = 'var(--success)';
     actualizarEstadoAuth();
 
     panel.style.display = 'block';
+    panel.classList.add('visible');
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -710,7 +1177,7 @@
     const fb  = document.getElementById('save-feedback');
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Guardando...';
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2" aria-hidden="true"></i>Guardando...';
     fb.style.display = 'none';
 
     const payload = {
@@ -736,17 +1203,17 @@
       if (!r.ok) throw new Error(JSON.stringify(data));
 
       fb.className   = 'alert-dark-info';
-      fb.innerHTML   = `<i class="bi bi-check-circle me-2"></i>Guardado en piezas con ID <strong>#${data.id}</strong>`;
+      fb.innerHTML   = `<i class="bi bi-check-circle me-2" aria-hidden="true"></i>Guardado en piezas con ID <strong>#${data.id}</strong>`;
       fb.style.display = 'block';
-      btn.innerHTML  = '<i class="bi bi-check-lg me-2"></i>Guardado';
+      btn.innerHTML  = '<i class="bi bi-check-lg me-2" aria-hidden="true"></i>Guardado';
       btn.style.background = '#16a34a';
       cargarCatalogo();
     } catch (e) {
       fb.className   = 'alert-dark-danger';
-      fb.innerHTML   = `<i class="bi bi-x-circle me-2"></i>${e.message}`;
+      fb.innerHTML   = `<i class="bi bi-x-circle me-2" aria-hidden="true"></i>${e.message}`;
       fb.style.display = 'block';
       btn.disabled   = false;
-      btn.innerHTML  = '<i class="bi bi-floppy me-2"></i>Guardar en piezas';
+      btn.innerHTML  = '<i class="bi bi-floppy me-2" aria-hidden="true"></i>Guardar en piezas';
       btn.style.background = 'var(--success)';
     }
   }

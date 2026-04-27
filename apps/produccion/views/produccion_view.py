@@ -6,7 +6,9 @@ Lógica de negocio → controllers/
 """
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea
@@ -66,6 +68,30 @@ class EmpresaViewSetMixin:
 class VariablesFijasView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     queryset         = VariablesFijas.objects.all()
     serializer_class = VariablesFijasSerializer
+
+    @action(
+        detail=False, methods=["get"], url_path="para-cotizador",
+        authentication_classes=[JWTAuthentication],
+        permission_classes=[AllowAny],
+    )
+    def para_cotizador(self, request):
+        """Devuelve las variables aplicables al cotizador público.
+        - Autenticado con empresa → variables de esa empresa.
+        - Anónimo o sin empresa   → variables generales (empresa=None).
+        """
+        obj = None
+        if request.user and request.user.is_authenticated:
+            try:
+                empresa = request.user.perfil.empresa
+                if empresa:
+                    obj = VariablesFijas.objects.filter(empresa=empresa).first()
+            except AttributeError:
+                pass
+        if obj is None:
+            obj = VariablesFijas.objects.filter(empresa__isnull=True).first()
+        if obj is None:
+            return Response({"detail": "No hay Variables Fijas configuradas."}, status=404)
+        return Response(VariablesFijasSerializer(obj).data)
 
 
 class InventarioPiezaView(EmpresaViewSetMixin, viewsets.ModelViewSet):

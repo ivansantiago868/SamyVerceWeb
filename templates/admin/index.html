@@ -13,7 +13,70 @@
 
 {% block content %}
 <div id="content-main">
+
+  {# ── Welcome banner ─────────────────────────────────────── #}
+  <div class="sv-welcome" role="banner" aria-label="Panel principal SamyVerce">
+    <div class="sv-welcome-text">
+      <h2>Panel de operaciones</h2>
+      <p>SamyVerce · Impresión 3D &amp; Fabricación Digital</p>
+    </div>
+    <nav class="sv-quick-links" aria-label="Accesos rápidos">
+      <a href="/admin/produccion/pedido/add/" class="sv-quick-link" aria-label="Nuevo pedido">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Nuevo pedido
+      </a>
+      <a href="/admin/produccion/tarea/" class="sv-quick-link" aria-label="Ver tareas">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Tareas
+      </a>
+      <a href="/admin/produccion/gasto/add/" class="sv-quick-link" aria-label="Registrar gasto">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Gasto
+      </a>
+      <a href="/cotizador/" target="_blank" rel="noopener" class="sv-quick-link" aria-label="Abrir cotizador">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="2" width="16" height="20" rx="2"/>
+          <line x1="8" y1="6" x2="16" y2="6"/>
+          <line x1="8" y1="10" x2="16" y2="10"/>
+          <line x1="8" y1="14" x2="12" y2="14"/>
+        </svg>
+        Cotizador
+      </a>
+      <a href="/admin/produccion/inventariopieza/add/" class="sv-quick-link" aria-label="Nueva pieza al catálogo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        Nueva pieza
+      </a>
+    </nav>
+  </div>
+
+  {# ── App list ────────────────────────────────────────────── #}
   {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+
 </div>
 {% endblock %}
 
@@ -25,7 +88,7 @@
     {% load log %}
     {% get_admin_log 10 as admin_log for_user user %}
     {% if not admin_log %}
-      <p>{% translate 'None available' %}</p>
+      <p style="padding:10px 14px;color:#64748b;font-size:13px;">{% translate 'None available' %}</p>
     {% else %}
       <ul class="actionlist">
       {% for entry in admin_log %}
@@ -33,7 +96,7 @@
           {% if entry.is_deletion or not entry.get_admin_url %}
             {{ entry.object_repr }}
           {% else %}
-            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+            <a href="{{ entry.get_admin_url }}" aria-label="Ver {{ entry.object_repr }}">{{ entry.object_repr }}</a>
           {% endif %}
           <br>
           {% if entry.content_type %}

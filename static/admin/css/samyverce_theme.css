@@ -1,0 +1,474 @@
+/* ============================================================
+   SamyVerce Admin Theme
+   Overrides Django Admin CSS variables + enhances typography,
+   forms, tables, buttons and dashboard layout.
+   Follows ui-ux-pro-max rules: Priority 1-8.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --sv-orange:        #FF6B35;
+  --sv-orange-dark:   #e55a25;
+  --sv-orange-glow:   rgba(255, 107, 53, .15);
+
+  /* Header surfaces */
+  --sv-header:        #0d1117;
+  --sv-header-2:      #161b22;
+  --sv-header-3:      #1e2530;
+
+  /* Body */
+  --sv-body-bg:       #f4f6f9;
+  --sv-surface:       #ffffff;
+  --sv-border:        #e2e8f0;
+  --sv-muted:         #64748b;
+  --sv-text:          #1e293b;
+
+  /* Status */
+  --sv-success:       #16a34a;
+  --sv-warning:       #d97706;
+  --sv-error:         #dc2626;
+
+  /* ── Django Admin Variable Overrides ─────────────────────── */
+  --primary:                  var(--sv-orange);
+  --primary-fg:               #fff;
+  --secondary:                var(--sv-orange-dark);
+
+  --header-bg:                var(--sv-header);
+  --header-color:             #f1f5f9;
+  --header-branding-color:    var(--sv-orange);
+  --header-link-color:        #cbd5e1;
+
+  --breadcrumbs-bg:           var(--sv-header-2);
+  --breadcrumbs-fg:           #94a3b8;
+  --breadcrumbs-link-fg:      var(--sv-orange);
+
+  --body-fg:                  var(--sv-text);
+  --body-bg:                  var(--sv-body-bg);
+  --body-quiet-color:         var(--sv-muted);
+  --body-loud-color:          #0f172a;
+
+  --link-fg:                  var(--sv-orange);
+  --link-hover-color:         var(--sv-orange-dark);
+  --link-selected-fg:         var(--sv-orange-dark);
+
+  --hairline-color:           var(--sv-border);
+  --border-color:             #cbd5e1;
+
+  --error-fg:                 var(--sv-error);
+  --message-success-bg:       #dcfce7;
+  --message-warning-bg:       #fef3c7;
+  --message-error-bg:         #fee2e2;
+
+  --darkened-bg:              #f8fafc;
+  --selected-bg:              #fff4ef;
+  --selected-row:             rgba(255, 107, 53, .06);
+
+  --button-fg:                #fff;
+  --button-bg:                var(--sv-orange);
+  --button-hover-bg:          var(--sv-orange-dark);
+  --default-button-bg:        var(--sv-orange);
+  --default-button-hover-bg:  var(--sv-orange-dark);
+  --close-button-bg:          #64748b;
+  --close-button-hover-bg:    #475569;
+  --delete-button-bg:         var(--sv-error);
+  --delete-button-hover-bg:   #b91c1c;
+
+  --object-tools-fg:          #fff;
+  --object-tools-bg:          var(--sv-orange);
+  --object-tools-hover-bg:    var(--sv-orange-dark);
+}
+
+/* ── Typography ─────────────────────────────────────────────── */
+body,
+#header,
+#content,
+.form-row label,
+input, select, textarea, button,
+.button, input[type=submit], input[type=button],
+a.button, .submit-row input,
+td, th {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Skip link (a11y) ────────────────────────────────────────── */
+.sv-skip-link {
+  position: absolute;
+  top: -48px;
+  left: 0;
+  background: var(--sv-orange);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 0 0 6px 0;
+  z-index: 9999;
+  transition: top .15s;
+}
+
+.sv-skip-link:focus {
+  top: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+#header {
+  background: var(--sv-header);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 12px 20px;
+}
+
+#branding h1,
+#branding h1 a,
+#branding h1 a:link,
+#branding h1 a:visited {
+  color: var(--sv-orange);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -.3px;
+}
+
+#user-tools {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+#user-tools a {
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  transition: color .15s;
+}
+
+#user-tools a:hover {
+  color: var(--sv-orange);
+  border-bottom-color: var(--sv-orange);
+}
+
+/* ── Breadcrumbs ─────────────────────────────────────────────── */
+div.breadcrumbs {
+  background: var(--sv-header-2);
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  padding: 8px 20px;
+  font-size: 13px;
+}
+
+div.breadcrumbs a {
+  color: var(--sv-orange);
+}
+
+/* ── Modules / Cards ─────────────────────────────────────────── */
+.module {
+  border: 1px solid var(--sv-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.module caption,
+.module h2 {
+  background: var(--sv-header);
+  color: #f1f5f9;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding: 10px 14px;
+}
+
+.module caption a.section,
+.module h2 a {
+  color: #f1f5f9;
+}
+
+.module caption a.section:hover,
+.module h2 a:hover {
+  color: var(--sv-orange);
+}
+
+/* ── Result list tables ─────────────────────────────────────── */
+#result_list {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#result_list thead th {
+  background: var(--sv-header-2);
+  color: #e2e8f0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+}
+
+#result_list thead th a,
+#result_list thead th a:visited {
+  color: #cbd5e1;
+}
+
+#result_list thead th a:hover {
+  color: var(--sv-orange);
+}
+
+#result_list tbody tr:hover td,
+#result_list tbody tr:hover th {
+  background-color: var(--selected-row);
+}
+
+#result_list td,
+#result_list th {
+  font-size: 13.5px;
+  padding: 9px 14px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.button:not(.close-link):not(.deletelink):hover,
+input[type=submit]:not([name*="delete"]):hover,
+.default:hover,
+.submit-row input.default:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, .28);
+}
+
+/* Addlink / changelink badges */
+.addlink {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.changelink,
+.viewlink {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Object tools */
+ul.object-tools li a {
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  min-height: 30px;
+}
+
+/* ── Form inputs ─────────────────────────────────────────────── */
+.form-row label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--sv-text);
+}
+
+.form-row input[type=text],
+.form-row input[type=number],
+.form-row input[type=email],
+.form-row input[type=url],
+.form-row input[type=date],
+.form-row input[type=datetime-local],
+.form-row input[type=time],
+.form-row textarea,
+.form-row select {
+  border: 1.5px solid var(--sv-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  transition: border-color .15s, box-shadow .15s;
+  color: var(--sv-text);
+  background: #fff;
+}
+
+.form-row input[type=text]:focus,
+.form-row input[type=number]:focus,
+.form-row input[type=email]:focus,
+.form-row input[type=url]:focus,
+.form-row input[type=date]:focus,
+.form-row input[type=datetime-local]:focus,
+.form-row input[type=time]:focus,
+.form-row textarea:focus,
+.form-row select:focus {
+  border-color: var(--sv-orange);
+  box-shadow: 0 0 0 3px var(--sv-orange-glow);
+  outline: none;
+}
+
+/* ── Messages ─────────────────────────────────────────────────── */
+.messagelist li {
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+}
+
+.messagelist .success {
+  background: #dcfce7;
+  border-left: 4px solid var(--sv-success);
+  color: #15803d;
+}
+
+.messagelist .warning {
+  background: #fef3c7;
+  border-left: 4px solid var(--sv-warning);
+  color: #92400e;
+}
+
+.messagelist .error {
+  background: #fee2e2;
+  border-left: 4px solid var(--sv-error);
+  color: #991b1b;
+}
+
+/* ── Recent actions ──────────────────────────────────────────── */
+#recent-actions-module .actionlist {
+  padding: 6px 0;
+}
+
+#recent-actions-module .actionlist li {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--sv-border);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+#recent-actions-module .actionlist a {
+  color: var(--sv-text);
+  font-weight: 500;
+}
+
+#recent-actions-module .actionlist a:hover {
+  color: var(--sv-orange);
+}
+
+/* ── Dashboard welcome banner ────────────────────────────────── */
+.sv-welcome {
+  background: linear-gradient(135deg, var(--sv-header) 0%, var(--sv-header-3) 100%);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.sv-welcome-text h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.sv-welcome-text p {
+  font-size: 13px;
+  color: #8b949e;
+  margin: 0;
+}
+
+.sv-quick-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sv-quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 107, 53, .12);
+  border: 1px solid rgba(255, 107, 53, .28);
+  color: var(--sv-orange) !important;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .15s, transform .15s, color .15s;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.sv-quick-link:hover {
+  background: rgba(255, 107, 53, .24);
+  transform: translateY(-1px);
+}
+
+.sv-quick-link svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ── Drag-drop widget overrides ─────────────────────────────── */
+.drag-drop-zone:hover,
+.drag-drop-zone.drag-over {
+  border-color: var(--sv-orange);
+  background: #fff4ef;
+}
+
+.drag-drop-zone .drag-drop-label strong {
+  color: var(--sv-orange);
+}
+
+.drag-drop-preview {
+  background: #fff4ef;
+  border-color: rgba(255, 107, 53, .3);
+}
+
+.drag-drop-existing a {
+  color: var(--sv-orange);
+}
+
+.pc-dot.active {
+  background: var(--sv-orange);
+}
+
+/* ── Focus visible (a11y) ───────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--sv-orange);
+  outline-offset: 2px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .sv-welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 20px;
+  }
+
+  .sv-quick-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  #result_list td,
+  #result_list th {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}

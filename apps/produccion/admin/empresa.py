@@ -222,7 +222,7 @@ class UsuarioAdmin(UserAdmin):
                     ("Rol",         {"fields": ("groups",)}),
                 )
             return (
-                (None,          {"fields": ("username",)}),
+                (None,          {"fields": ("username", "password")}),
                 ("Información", {"fields": ("first_name", "last_name", "email")}),
                 ("Estado",      {"fields": ("is_active",)}),
                 ("Rol",         {"fields": ("groups",)}),

@@ -38,18 +38,30 @@ class CotizadorDesdeCatalogoLoteSerializer(CotizadorDesdeCatalogoSerializer):
 class CotizadorController:
 
     @staticmethod
-    def _get_variables():
-        try:
-            return VariablesFijas.objects.get(pk=1)
-        except VariablesFijas.DoesNotExist:
+    def _get_variables(user=None):
+        """
+        - Usuario autenticado con empresa → VariablesFijas de su empresa.
+        - Sin sesión (o sin empresa asignada) → VariablesFijas generales (empresa=None).
+        """
+        if user and user.is_authenticated:
+            try:
+                empresa = user.perfil.empresa
+                if empresa:
+                    return VariablesFijas.objects.get(empresa=empresa)
+            except (VariablesFijas.DoesNotExist, AttributeError):
+                pass
+
+        obj = VariablesFijas.objects.filter(empresa__isnull=True).first()
+        if obj is None:
             raise ValueError(
-                "No existen Variables Fijas configuradas. "
-                "Créalas en /api/v1/variables-fijas/ antes de cotizar."
+                "No existen Variables Fijas generales configuradas. "
+                "Créalas desde el panel de administración (sin empresa asociada)."
             )
+        return obj
 
     @classmethod
-    def cotizar_pieza(cls, datos: dict) -> dict:
-        variables = cls._get_variables()
+    def cotizar_pieza(cls, datos: dict, user=None) -> dict:
+        variables = cls._get_variables(user)
         resultado = cotizar(
             nombre_pieza             = datos["nombre_pieza"],
             peso_gramos              = datos["peso_gramos"],
@@ -61,8 +73,8 @@ class CotizadorController:
         return resultado.to_dict()
 
     @classmethod
-    def cotizar_lote(cls, datos: dict) -> dict:
-        variables = cls._get_variables()
+    def cotizar_lote(cls, datos: dict, user=None) -> dict:
+        variables = cls._get_variables(user)
         return cotizar_por_cantidad(
             nombre_pieza             = datos["nombre_pieza"],
             peso_gramos              = datos["peso_gramos"],
@@ -74,8 +86,8 @@ class CotizadorController:
         )
 
     @classmethod
-    def cotizar_desde_catalogo(cls, datos: dict) -> dict:
-        variables = cls._get_variables()
+    def cotizar_desde_catalogo(cls, datos: dict, user=None) -> dict:
+        variables = cls._get_variables(user)
         try:
             pieza = InventarioPieza.objects.get(pk=datos["pieza_id"])
         except InventarioPieza.DoesNotExist:
@@ -101,8 +113,8 @@ class CotizadorController:
         return data
 
     @classmethod
-    def cotizar_lote_desde_catalogo(cls, datos: dict) -> dict:
-        variables = cls._get_variables()
+    def cotizar_lote_desde_catalogo(cls, datos: dict, user=None) -> dict:
+        variables = cls._get_variables(user)
         try:
             pieza = InventarioPieza.objects.get(pk=datos["pieza_id"])
         except InventarioPieza.DoesNotExist:
