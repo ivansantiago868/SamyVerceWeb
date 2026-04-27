@@ -169,13 +169,19 @@ def cotizar(
     tiempo_postproceso_horas: float = 0.0,
     costo_empaque_override: float = 0.0,
     variables: VariablesFijas = None,
+    impresora=None,
+    insumo=None,
 ) -> ResultadoCotizacion:
     """
     Función principal del cotizador.
     Si no se pasa `variables`, lee el singleton de la BD.
+    Si se pasa `impresora`, sobreescribe costo, vida útil y mantenimiento.
+    Si se pasa `insumo` (con precio definido), sobreescribe precio y peso del rollo.
     """
     if variables is None:
         variables = VariablesFijas.objects.filter(empresa__isnull=True).first()
+
+    insumo_tiene_precio = insumo and insumo.precio is not None
 
     return ResultadoCotizacion(
         nombre_pieza=nombre_pieza,
@@ -183,16 +189,16 @@ def cotizar(
         tiempo_impresion_horas=tiempo_impresion_horas,
         tiempo_postproceso_horas=tiempo_postproceso_horas,
         costo_empaque_override=costo_empaque_override,
-        precio_rollo_filamento=float(variables.precio_rollo_filamento),
-        peso_rollo_gramos=float(variables.peso_rollo_gramos),
+        precio_rollo_filamento=float(insumo.precio) if insumo_tiene_precio else float(variables.precio_rollo_filamento),
+        peso_rollo_gramos=float(insumo.cantidad_inicial) if insumo_tiene_precio else float(variables.peso_rollo_gramos),
         costo_electricidad_kwh=float(variables.costo_electricidad_kwh),
         consumo_impresora_kw=float(variables.consumo_impresora_kw),
         valor_hora_trabajo=float(variables.valor_hora_trabajo),
         margen_ganancia=float(variables.margen_ganancia),
         margen_fallos=float(variables.margen_fallos),
-        costo_impresora=float(variables.costo_impresora),
-        vida_util_horas=variables.vida_util_horas,
-        costo_mantenimiento_anual=float(variables.costo_mantenimiento_anual),
+        costo_impresora=float(impresora.costo) if impresora else float(variables.costo_impresora),
+        vida_util_horas=impresora.vida_util_horas if impresora else variables.vida_util_horas,
+        costo_mantenimiento_anual=float(impresora.costo_mantenimiento_anual) if impresora else float(variables.costo_mantenimiento_anual),
         horas_totales_anio=variables.horas_totales_anio,
         costo_empaque_variable=float(variables.costo_empaque),
     )
@@ -206,6 +212,8 @@ def cotizar_por_cantidad(
     tiempo_postproceso_horas: float = 0.0,
     costo_empaque_override: float = 0.0,
     variables: VariablesFijas = None,
+    impresora=None,
+    insumo=None,
 ) -> dict:
     """
     Cotiza una pieza y escala los resultados por cantidad.
@@ -217,6 +225,8 @@ def cotizar_por_cantidad(
         tiempo_postproceso_horas=tiempo_postproceso_horas,
         costo_empaque_override=costo_empaque_override,
         variables=variables,
+        impresora=impresora,
+        insumo=insumo,
     )
     data = resultado.to_dict()
     data["escala"] = {

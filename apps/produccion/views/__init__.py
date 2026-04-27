@@ -13,6 +13,7 @@ from .produccion_view import (
     TareaView,
 )
 from .cotizador_view import (
+    CotizadorRecursosView,
     CotizadorView,
     CotizadorLoteView,
     CotizadorDesdeCatalogoView,
@@ -22,6 +23,6 @@ from .cotizador_view import (
 __all__ = [
     "ClienteView", "ImpresoraView", "InsumoView", "GastoView",
     "VariablesFijasView", "InventarioPiezaView", "PedidoView", "VentaView", "TareaView",
-    "CotizadorView", "CotizadorLoteView",
+    "CotizadorRecursosView", "CotizadorView", "CotizadorLoteView",
     "CotizadorDesdeCatalogoView", "CotizadorDesdeCatalogoLoteView",
 ]

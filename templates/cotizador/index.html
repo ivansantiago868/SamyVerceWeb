@@ -223,6 +223,7 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
+    .var-value.override { color: var(--brand); }
     #vars-loading {
       color: var(--text-3); font-size: .8rem; text-align: center;
       padding: .75rem 0;
@@ -695,6 +696,31 @@
       </div>
     </div>
 
+    <!-- Impresora / Insumo — solo visible cuando logueado -->
+    <div id="fields-recursos" style="display:none">
+      <hr class="dark">
+      <div style="font-size:.75rem;color:var(--text-2);margin-bottom:.75rem">
+        <i class="bi bi-sliders me-1"></i>Parámetros de empresa
+        <span style="font-size:.7rem;color:var(--text-3)"> — opcional, reemplaza variables generales</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label for="f-impresora" class="form-label">Impresora</label>
+          <select id="f-impresora" class="form-select">
+            <option value="">— Variables fijas —</option>
+          </select>
+          <small style="color:var(--text-3);font-size:.7rem">Sobreescribe costo, vida útil y mantenimiento</small>
+        </div>
+        <div class="col-sm-6">
+          <label for="f-insumo" class="form-label">Insumo / Material</label>
+          <select id="f-insumo" class="form-select">
+            <option value="">— Variables fijas —</option>
+          </select>
+          <small style="color:var(--text-3);font-size:.7rem">Sobreescribe precio y peso del rollo</small>
+        </div>
+      </div>
+    </div>
+
     <hr class="dark">
 
     <div id="form-error" class="alert-dark-danger mb-3" style="display:none"></div>
@@ -736,10 +762,12 @@
 
 <script>
   // ── Estado ──────────────────────────────────────────────
-  let accessToken  = localStorage.getItem('access')  || '';
-  let refreshToken = localStorage.getItem('refresh') || '';
-  let currentMode  = 'nueva';
-  let lastResult   = null;
+  let accessToken   = localStorage.getItem('access')  || '';
+  let refreshToken  = localStorage.getItem('refresh') || '';
+  let currentMode   = 'nueva';
+  let lastResult    = null;
+  let baseVariables = null;                             // variables fijas sin overrides
+  let recursosData  = { impresoras: [], insumos: [] }; // impresoras/insumos de la empresa
 
   const BASE = '';   // mismo origen
 
@@ -749,9 +777,12 @@
     actualizarEstadoAuth();
     cargarCatalogo();
     cargarVariablesFijas();
+    cargarRecursos();
     document.getElementById('inp-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
+    document.getElementById('f-impresora').addEventListener('change', recalcularPanel);
+    document.getElementById('f-insumo').addEventListener('change', recalcularPanel);
   });
 
   async function detectarSesionAdmin() {
@@ -834,6 +865,7 @@
       cerrarLogin();
       actualizarEstadoAuth();
       cargarVariablesFijas();
+      cargarRecursos();
     } catch (e) {
       errEl.textContent    = e.message;
       errEl.style.display  = 'block';
@@ -846,8 +878,13 @@
   function logout() {
     localStorage.clear();
     accessToken = refreshToken = '';
+    baseVariables = null;
+    recursosData  = { impresoras: [], insumos: [] };
     actualizarEstadoAuth();
     cargarVariablesFijas();
+    document.getElementById('fields-recursos').style.display = 'none';
+    document.getElementById('f-impresora').innerHTML = '<option value="">— Variables fijas —</option>';
+    document.getElementById('f-insumo').innerHTML    = '<option value="">— Variables fijas —</option>';
   }
 
   // ── Variables Fijas (panel izquierdo) ────────────────────
@@ -891,6 +928,9 @@
       const esEmpresa = accessToken && data.empresa;
       badge.textContent = esEmpresa ? 'mi empresa' : 'generales';
 
+      // Guardar base para que recalcularPanel pueda hacer overrides
+      if (!baseVariables) baseVariables = { ...data };
+
       list.innerHTML = VARS_META.map(m => `
         <div class="var-row">
           <span class="var-label" title="${m.label}">${m.label}</span>
@@ -903,6 +943,91 @@
     } catch {
       loading.innerHTML = '<span style="color:var(--text-3);font-size:.75rem">Sin variables configuradas</span>';
     }
+  }
+
+  // ── Actualizar panel con overrides de impresora/insumo ──
+  function recalcularPanel() {
+    if (!baseVariables) return;
+    const impId = parseInt(document.getElementById('f-impresora').value) || null;
+    const insId = parseInt(document.getElementById('f-insumo').value)    || null;
+    const imp   = impId ? recursosData.impresoras.find(i => i.id === impId) : null;
+    const ins   = insId ? recursosData.insumos.find(i => i.id === insId)    : null;
+
+    const merged = { ...baseVariables };
+    const overrideKeys = new Set();
+
+    if (imp) {
+      merged.costo_impresora           = imp.costo;
+      merged.vida_util_horas           = imp.vida_util_horas;
+      merged.costo_mantenimiento_anual = imp.costo_mantenimiento_anual;
+      overrideKeys.add('costo_impresora');
+      overrideKeys.add('vida_util_horas');
+      overrideKeys.add('costo_mantenimiento_anual');
+    }
+    if (ins && ins.precio !== null) {
+      merged.precio_rollo_filamento = ins.precio;
+      merged.peso_rollo_gramos      = ins.cantidad_inicial;
+      overrideKeys.add('precio_rollo_filamento');
+      overrideKeys.add('peso_rollo_gramos');
+    }
+
+    const badge = document.getElementById('vars-origen');
+    if (badge) badge.textContent = (imp || ins) ? 'empresa' : (accessToken ? 'mi empresa' : 'generales');
+
+    const list = document.getElementById('vars-list');
+    if (!list) return;
+    list.innerHTML = VARS_META.map(m => {
+      const val = merged[m.key] ?? baseVariables[m.key];
+      const cls = overrideKeys.has(m.key) ? 'var-value override' : 'var-value';
+      return `<div class="var-row">
+        <span class="var-label" title="${m.label}">${m.label}</span>
+        <span class="${cls}">${fmtVar(val, m.fmt)}</span>
+      </div>`;
+    }).join('');
+    list.style.display = 'block';
+    document.getElementById('vars-loading').style.display = 'none';
+  }
+
+  // ── Cargar impresoras e insumos de la empresa ────────────
+  async function cargarRecursos() {
+    if (!accessToken) return;
+    try {
+      const res = await apiGet(`${BASE}/api/v1/cotizador/recursos/`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      recursosData = { impresoras: data.impresoras || [], insumos: data.insumos || [] };
+
+      const selImp = document.getElementById('f-impresora');
+      selImp.innerHTML = '<option value="">— Variables fijas —</option>';
+      recursosData.impresoras.forEach(imp => {
+        selImp.innerHTML += `<option value="${imp.id}">${imp.nombre} (${imp.tipo})</option>`;
+      });
+
+      const selIns = document.getElementById('f-insumo');
+      selIns.innerHTML = '<option value="">— Variables fijas —</option>';
+      recursosData.insumos.forEach(ins => {
+        const mat = ins.material ? ` — ${ins.material}` : '';
+        const precio = ins.precio !== null ? ` · ${cop(ins.precio)}` : ' · sin precio';
+        selIns.innerHTML += `<option value="${ins.id}">${ins.producto}${mat}${precio}</option>`;
+      });
+
+      document.getElementById('fields-recursos').style.display = 'block';
+
+      if (data.variables && !baseVariables) {
+        baseVariables = data.variables;
+        recalcularPanel();
+      }
+    } catch { /* sin acceso */ }
+  }
+
+  // ── Agregar ids al body si logueado ──────────────────────
+  function _agregarRecursosAlBody(body) {
+    if (!accessToken) return;
+    const impId = document.getElementById('f-impresora').value;
+    const insId = document.getElementById('f-insumo').value;
+    if (impId) body.impresora_id = parseInt(impId);
+    if (insId) body.insumo_id   = parseInt(insId);
   }
 
   function authHeaders(extra = {}) {
@@ -1022,6 +1147,7 @@
       body = { nombre_pieza: nombre, peso_gramos: peso,
                tiempo_impresion_horas: tiempo,
                tiempo_postproceso_horas: post, costo_empaque_override: empaque };
+      _agregarRecursosAlBody(body);
 
       if (currentMode === 'lote') {
         const cant = parseInt(document.getElementById('f-cantidad').value);
@@ -1040,6 +1166,7 @@
 
       body = { pieza_id: parseInt(piezaId),
                tiempo_postproceso_horas: post, costo_empaque_override: empaque };
+      _agregarRecursosAlBody(body);
 
       if (currentMode === 'catalogo-lote') {
         const cant = parseInt(document.getElementById('f-cat-cantidad').value);
@@ -1152,6 +1279,10 @@
     } else {
       diff.style.display = 'none';
     }
+
+    // Actualizar panel izquierdo manteniendo el estado de los dropdowns
+    if (d.variables_fijas_usadas && !baseVariables) baseVariables = { ...d.variables_fijas_usadas };
+    recalcularPanel();
 
     lastResult = d;
     document.getElementById('save-feedback').style.display = 'none';

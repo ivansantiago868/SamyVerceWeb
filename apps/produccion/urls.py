@@ -13,6 +13,7 @@ from apps.produccion.views import (
     VariablesFijasView, InventarioPiezaView,
     PedidoView, VentaView, TareaView,
     # Cotizador
+    CotizadorRecursosView,
     CotizadorView, CotizadorLoteView,
     CotizadorDesdeCatalogoView, CotizadorDesdeCatalogoLoteView,
 )
@@ -31,6 +32,7 @@ router.register(r"tareas",          TareaView,           basename="tarea")
 
 # ── Cotizador ─────────────────────────────────────────────────────
 cotizador_urls = [
+    path("cotizador/recursos/",             CotizadorRecursosView.as_view(),          name="cotizador-recursos"),
     path("cotizador/",                     CotizadorView.as_view(),                  name="cotizador"),
     path("cotizador/lote/",                CotizadorLoteView.as_view(),              name="cotizador-lote"),
     path("cotizador/desde-catalogo/",      CotizadorDesdeCatalogoView.as_view(),     name="cotizador-catalogo"),

@@ -7,6 +7,8 @@ class CotizadorInputSerializer(serializers.Serializer):
     tiempo_impresion_horas   = serializers.FloatField(min_value=0.01)
     tiempo_postproceso_horas = serializers.FloatField(min_value=0, default=0.0)
     costo_empaque_override   = serializers.FloatField(min_value=0, default=0.0)
+    impresora_id            = serializers.IntegerField(required=False)
+    insumo_id               = serializers.IntegerField(required=False)
 
 
 class CotizadorLoteInputSerializer(CotizadorInputSerializer):

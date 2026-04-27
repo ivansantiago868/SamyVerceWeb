@@ -45,15 +45,13 @@ class MaterialAdmin(EmpresaMixin, admin.ModelAdmin):
 @admin.register(Insumo)
 class InsumoAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
-    list_display    = ("id", "producto", "material", "cantidad_inicial", "cantidad_final", "diferencia", "actualizado_en")
+    list_display    = ("id", "producto", "material", "precio", "cantidad_inicial", "cantidad_final", "diferencia", "actualizado_en")
     search_fields   = ("producto",)
     list_filter     = ("material__tipo",)
     readonly_fields = ("producto", "material", "cantidad_inicial", "cantidad_final", "diferencia", "stock_disponible", "actualizado_en")
+    fields          = ("producto", "material", "precio", "cantidad_inicial", "cantidad_final", "diferencia", "stock_disponible", "actualizado_en")
 
     def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
         return False
 
 
