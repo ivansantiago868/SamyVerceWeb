@@ -1275,7 +1275,8 @@
       { label: 'Amort. fallos',       value: cop(des.amortizacion_fallos),     highlight: false },
       { label: 'Depreciación',        value: cop(des.depreciacion_pieza),      highlight: false },
       { label: 'Mantenimiento',       value: cop(des.mantenimiento_preventivo), highlight: false },
-      { label: 'Costo total real',    value: cop(res.costo_total_real),        highlight: false },
+      { label: 'Costo total',         value: cop(res.costo_total_real),        highlight: false },
+      { label: 'Precio + Ganacia',    value: cop(res.precio_sin_redondeo),    highlight: false },
     ];
 
     grid.innerHTML = campos.map(c => `
