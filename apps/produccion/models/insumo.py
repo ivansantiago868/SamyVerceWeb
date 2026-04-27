@@ -8,6 +8,7 @@ class Insumo(models.Model):
     producto = models.CharField(max_length=255, verbose_name="Producto")
     material = models.ForeignKey(Material, on_delete=models.PROTECT,
                                  null=True, blank=True, verbose_name="Material")
+    precio           = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True, verbose_name="Precio (COP)")
     cantidad_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Cantidad inicial (g)")
     cantidad_final   = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Cantidad final (g)")
     actualizado_en   = models.DateTimeField(auto_now=True)
