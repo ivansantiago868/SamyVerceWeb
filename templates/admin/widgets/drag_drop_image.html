@@ -2,7 +2,15 @@
 
   <div class="drag-drop-zone" id="zone-{{ widget.attrs.id }}"
        style="{% if widget.value %}display:none{% endif %}">
-    <div class="drag-drop-icon">🖼️</div>
+    <div class="drag-drop-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+    </div>
     <div class="drag-drop-label">
       Arrastra una imagen aquí o <strong>selecciona una</strong>
     </div>
@@ -12,6 +20,7 @@
            id="{{ widget.attrs.id }}"
            class="drag-drop-img-input"
            accept="image/*"
+           aria-label="Seleccionar imagen"
            {% if widget.attrs.required %}required{% endif %}>
   </div>
 
@@ -20,13 +29,29 @@
     {% if widget.value %}
     <img src="{{ widget.value.url }}" alt="Imagen actual">
     {% else %}
-    <img src="" alt="Previsualización">
+    <img src="" alt="Previsualización de imagen">
     {% endif %}
     <div class="drag-drop-preview">
-      <span class="drag-drop-preview-icon">🖼️</span>
+      <span class="drag-drop-preview-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </span>
       <span class="drag-drop-preview-name"></span>
       <button type="button" class="drag-drop-clear"
-              data-target="{{ widget.attrs.id }}" title="Quitar imagen">✕</button>
+              data-target="{{ widget.attrs.id }}"
+              aria-label="Quitar imagen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
   </div>
 

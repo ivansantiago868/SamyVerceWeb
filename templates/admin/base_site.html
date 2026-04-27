@@ -1,15 +1,31 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/samyverce_theme.css' %}">
+{% endblock %}
 
 {% block userlinks %}
   <a href="/cotizador/"
      target="_blank"
-     style="display:inline-flex;align-items:center;gap:6px;
-            background:#417690;color:#fff;
-            padding:5px 14px;border-radius:4px;font-size:13px;
-            font-weight:bold;text-decoration:none;
-            margin-right:12px;border:1px solid rgba(255,255,255,.3)">
-    🧮 Cotizador Piezas
+     rel="noopener"
+     aria-label="Abrir cotizador de piezas"
+     style="display:inline-flex;align-items:center;gap:7px;
+            background:rgba(255,107,53,.14);color:#FF6B35;
+            padding:7px 14px;border-radius:8px;font-size:13px;
+            font-weight:700;text-decoration:none;
+            margin-right:12px;border:1px solid rgba(255,107,53,.3);
+            transition:background .15s;min-height:34px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="2" width="16" height="20" rx="2"/>
+      <line x1="8" y1="6" x2="16" y2="6"/>
+      <line x1="8" y1="10" x2="16" y2="10"/>
+      <line x1="8" y1="14" x2="12" y2="14"/>
+    </svg>
+    Cotizador
   </a>
   {{ block.super }}
 {% endblock %}

@@ -413,6 +413,21 @@ coverage report
 coverage html
 ```
 
+
+## eliminar data 
+
+# Ver cuántos registros hay (sin borrar)
+python manage.py limpiar_datos
+
+# Borrar todo (pide confirmación manual)
+python manage.py limpiar_datos --confirmar
+
+# Solo los datos de la empresa ID=1
+python manage.py limpiar_datos --empresa 1 --confirmar
+
+# Incluir también clientes e impresoras
+python manage.py limpiar_datos --todo --confirmar
+
 ---
 
 ## 🛠️ Solución de problemas

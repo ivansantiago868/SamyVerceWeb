@@ -16,14 +16,16 @@
 
 .drag-drop-zone:hover,
 .drag-drop-zone.drag-over {
-  border-color: #417690;
-  background: #e8f0f5;
+  border-color: var(--sv-orange, #FF6B35);
+  background: #fff4ef;
 }
 
 .drag-drop-zone .drag-drop-icon {
-  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
   line-height: 1;
-  color: #6c757d;
 }
 
 .drag-drop-zone .drag-drop-label {
@@ -32,7 +34,7 @@
 }
 
 .drag-drop-zone .drag-drop-label strong {
-  color: #417690;
+  color: var(--sv-orange, #FF6B35);
   cursor: pointer;
 }
 
@@ -51,15 +53,17 @@
   gap: 10px;
   margin-top: 10px;
   padding: 8px 12px;
-  background: #e8f0f5;
-  border: 1px solid #b8d0df;
+  background: #fff4ef;
+  border: 1px solid rgba(255, 107, 53, .28);
   border-radius: 6px;
   font-size: 13px;
-  color: #2c3e50;
+  color: #1e293b;
 }
 
 .drag-drop-preview .drag-drop-preview-icon {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  color: var(--sv-orange, #FF6B35);
 }
 
 .drag-drop-preview .drag-drop-clear {
@@ -79,7 +83,7 @@
 }
 
 .drag-drop-existing a {
-  color: #417690;
+  color: var(--sv-orange, #FF6B35);
 }
 
 /* ── Imagen preview ─────────────────────────────────── */
