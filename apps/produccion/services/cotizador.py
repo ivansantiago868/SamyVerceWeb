@@ -188,7 +188,7 @@ def cotizar(
         tiempo_postproceso_horas=tiempo_postproceso_horas,
         costo_empaque_override=costo_empaque_override,
         precio_rollo_filamento=float(insumo.precio) if (insumo and insumo.precio is not None) else float(variables.precio_rollo_filamento),
-        peso_rollo_gramos=float(insumo.cantidad_inicial) if insumo else float(variables.peso_rollo_gramos),
+        peso_rollo_gramos=float(insumo.cantidad_final) if insumo else float(variables.peso_rollo_gramos),
         costo_electricidad_kwh=float(variables.costo_electricidad_kwh),
         consumo_impresora_kw=float(variables.consumo_impresora_kw),
         valor_hora_trabajo=float(variables.valor_hora_trabajo),

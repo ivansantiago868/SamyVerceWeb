@@ -121,7 +121,7 @@ class CotizadorController:
                 "producto": ins.producto,
                 "material": str(ins.material) if ins.material else None,
                 "precio": float(ins.precio) if ins.precio is not None else None,
-                "cantidad_inicial": float(ins.cantidad_inicial),
+                "cantidad_final": float(ins.cantidad_final),
                 "stock_disponible": ins.stock_disponible,
             }
             for ins in ins_qs

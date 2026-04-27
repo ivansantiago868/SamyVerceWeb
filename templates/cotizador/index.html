@@ -631,15 +631,15 @@
         </div>
         <div class="col-sm-6">
           <label for="f-peso" class="form-label">Peso (gramos)</label>
-          <input id="f-peso" type="number" class="form-control" placeholder="45" min="0.1" step="0.1">
+          <input id="f-peso" type="text" inputmode="decimal" class="form-control" placeholder="45">
         </div>
         <div class="col-sm-6">
           <label for="f-tiempo" class="form-label">Tiempo impresión (horas)</label>
-          <input id="f-tiempo" type="number" class="form-control" placeholder="2.5" min="0.01" step="0.01">
+          <input id="f-tiempo" type="text" inputmode="decimal" class="form-control" placeholder="2.5">
         </div>
         <div class="col-sm-6">
           <label for="f-postproceso" class="form-label">Post-procesado (horas)</label>
-          <input id="f-postproceso" type="number" class="form-control" value="0" min="0" step="0.01">
+          <input id="f-postproceso" type="text" inputmode="decimal" class="form-control" value="0">
         </div>
         <div class="col-sm-6 d-flex align-items-end">
           <label class="check-row w-100" for="f-empaque">
@@ -658,7 +658,7 @@
       <hr class="dark">
       <div class="col-sm-6">
         <label for="f-cantidad" class="form-label">Cantidad de piezas</label>
-        <input id="f-cantidad" type="number" class="form-control" placeholder="10" min="1" step="1">
+        <input id="f-cantidad" type="text" inputmode="numeric" class="form-control" placeholder="10">
       </div>
     </div>
 
@@ -673,7 +673,7 @@
         </div>
         <div class="col-sm-6">
           <label for="f-cat-postproceso" class="form-label">Post-procesado (horas)</label>
-          <input id="f-cat-postproceso" type="number" class="form-control" value="0" min="0" step="0.01">
+          <input id="f-cat-postproceso" type="text" inputmode="decimal" class="form-control" value="0">
         </div>
         <div class="col-sm-6 d-flex align-items-end">
           <label class="check-row w-100" for="f-cat-empaque">
@@ -692,7 +692,7 @@
       <hr class="dark">
       <div class="col-sm-6">
         <label for="f-cat-cantidad" class="form-label">Cantidad de piezas</label>
-        <input id="f-cat-cantidad" type="number" class="form-control" placeholder="10" min="1" step="1">
+        <input id="f-cat-cantidad" type="text" inputmode="numeric" class="form-control" placeholder="10">
       </div>
     </div>
 
@@ -945,6 +945,16 @@
     }
   }
 
+  // ── Parseo numérico tolerante a coma/punto decimal ──────
+  function parseNum(val) {
+    if (val === '' || val == null) return NaN;
+    // Reemplaza coma decimal por punto (ej: "1,5" → "1.5")
+    return parseFloat(String(val).replace(/\./g, '').replace(',', '.'));
+  }
+  function parseEntero(val) {
+    return parseInt(String(val).replace(/\D/g, ''), 10);
+  }
+
   // ── Actualizar panel con overrides de impresora/insumo ──
   function recalcularPanel() {
     if (!baseVariables) return;
@@ -965,8 +975,8 @@
       overrideKeys.add('costo_mantenimiento_anual');
     }
     if (ins) {
-      // Peso rollo: siempre desde cantidad_inicial del insumo
-      merged.peso_rollo_gramos = ins.cantidad_inicial;
+      // Peso rollo: stock actual (cantidad_final)
+      merged.peso_rollo_gramos = ins.cantidad_final;
       overrideKeys.add('peso_rollo_gramos');
       // Precio rollo: solo si el insumo tiene precio definido
       if (ins.precio !== null) {
@@ -1139,9 +1149,9 @@
 
     if (currentMode === 'nueva' || currentMode === 'lote') {
       const nombre  = document.getElementById('f-nombre').value.trim();
-      const peso    = parseFloat(document.getElementById('f-peso').value);
-      const tiempo  = parseFloat(document.getElementById('f-tiempo').value);
-      const post    = parseFloat(document.getElementById('f-postproceso').value) || 0;
+      const peso    = parseNum(document.getElementById('f-peso').value);
+      const tiempo  = parseNum(document.getElementById('f-tiempo').value);
+      const post    = parseNum(document.getElementById('f-postproceso').value) || 0;
       const empaque = document.getElementById('f-empaque').checked ? 1 : 0;
 
       if (!nombre)         return showErr('Ingresa el nombre de la pieza.');
@@ -1154,7 +1164,7 @@
       _agregarRecursosAlBody(body);
 
       if (currentMode === 'lote') {
-        const cant = parseInt(document.getElementById('f-cantidad').value);
+        const cant = parseEntero(document.getElementById('f-cantidad').value);
         if (isNaN(cant) || cant < 1) return showErr('Ingresa una cantidad válida.');
         body.cantidad = cant;
         url = `${BASE}/api/v1/cotizador/lote/`;
@@ -1163,7 +1173,7 @@
       }
     } else {
       const piezaId = document.getElementById('f-pieza-id').value;
-      const post    = parseFloat(document.getElementById('f-cat-postproceso').value) || 0;
+      const post    = parseNum(document.getElementById('f-cat-postproceso').value) || 0;
       const empaque = document.getElementById('f-cat-empaque').checked ? 1 : 0;
 
       if (!piezaId) return showErr('Selecciona una pieza del catálogo.');
@@ -1173,7 +1183,7 @@
       _agregarRecursosAlBody(body);
 
       if (currentMode === 'catalogo-lote') {
-        const cant = parseInt(document.getElementById('f-cat-cantidad').value);
+        const cant = parseEntero(document.getElementById('f-cat-cantidad').value);
         if (isNaN(cant) || cant < 1) return showErr('Ingresa una cantidad válida.');
         body.cantidad = cant;
         url = `${BASE}/api/v1/cotizador/desde-catalogo/lote/`;
