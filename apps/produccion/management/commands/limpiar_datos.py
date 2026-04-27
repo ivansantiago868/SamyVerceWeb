@@ -109,6 +109,12 @@ class Command(BaseCommand):
             qs = TipoMaterial.objects.all()
             return qs.filter(empresa_id=eid) if eid else qs
 
+        def qs_usuarios(eid):
+            qs = User.objects.exclude(username="kivandy")
+            if eid:
+                qs = qs.filter(perfil__empresa_id=eid)
+            return qs
+
         def qs_empresas(eid):
             qs = Empresa.objects.all()
             return qs.filter(id=eid) if eid else qs
@@ -137,7 +143,8 @@ class Command(BaseCommand):
                 ("Impresoras",  qs_impresoras),
             ]
 
-        pasos.append(("Empresas", qs_empresas))
+        pasos.append(("Usuarios (excl. kivandy)", qs_usuarios))
+        pasos.append(("Empresas",                 qs_empresas))
 
         # ── Mostrar resumen ────────────────────────────────────────────
         total_registros = 0
