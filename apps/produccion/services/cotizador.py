@@ -175,7 +175,7 @@ def cotizar(
     Si no se pasa `variables`, lee el singleton de la BD.
     """
     if variables is None:
-        variables = VariablesFijas.objects.get(pk=1)
+        variables = VariablesFijas.objects.filter(empresa__isnull=True).first()
 
     return ResultadoCotizacion(
         nombre_pieza=nombre_pieza,

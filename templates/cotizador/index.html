@@ -165,7 +165,68 @@
     #header-auth a { text-decoration: none; }
 
     /* ── Layout ── */
-    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Variables fijas panel ── */
+    .vars-panel {
+      position: sticky;
+      top: 72px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .vars-panel-title {
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .vars-panel-badge {
+      font-size: .6rem; font-weight: 600;
+      background: var(--brand-subtle);
+      color: var(--brand);
+      border: 1px solid rgba(255,107,53,.2);
+      border-radius: 999px;
+      padding: .1rem .5rem;
+      text-transform: none; letter-spacing: 0;
+    }
+    .var-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .5rem;
+      padding: .45rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .var-row:last-child { border-bottom: none; }
+    .var-label {
+      font-size: .74rem; color: var(--text-2);
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .var-value {
+      font-size: .78rem; font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #vars-loading {
+      color: var(--text-3); font-size: .8rem; text-align: center;
+      padding: .75rem 0;
+    }
 
     /* ── Page hero ── */
     .page-hero { margin-bottom: 1.75rem; }
@@ -515,6 +576,24 @@
     <p>Calcula el precio de venta sugerido para tus impresiones 3D.</p>
   </div>
 
+  <div class="layout">
+
+  <!-- ── Panel izquierdo: Variables Fijas ── -->
+  <aside class="vars-panel" aria-label="Variables fijas del cotizador">
+    <div class="vars-panel-title">
+      <i class="bi bi-sliders" aria-hidden="true"></i>
+      Variables Fijas
+      <span class="vars-panel-badge" id="vars-origen">generales</span>
+    </div>
+    <div id="vars-loading">
+      <i class="bi bi-arrow-repeat spin" aria-hidden="true"></i> Cargando…
+    </div>
+    <div id="vars-list" style="display:none"></div>
+  </aside>
+
+  <!-- ── Panel derecho: Formulario + Resultado ── -->
+  <div>
+
   <!-- Mode tabs -->
   <div class="mode-tabs" role="tablist" aria-label="Modo de cotización">
     <button class="mode-tab active" role="tab" aria-selected="true"
@@ -650,6 +729,9 @@
     </p>
   </div>
 
+  </div><!-- /panel derecho -->
+  </div><!-- /layout -->
+
 </main>
 
 <script>
@@ -666,6 +748,7 @@
     await detectarSesionAdmin();
     actualizarEstadoAuth();
     cargarCatalogo();
+    cargarVariablesFijas();
     document.getElementById('inp-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
@@ -750,6 +833,7 @@
       localStorage.setItem('username', username);
       cerrarLogin();
       actualizarEstadoAuth();
+      cargarVariablesFijas();
     } catch (e) {
       errEl.textContent    = e.message;
       errEl.style.display  = 'block';
@@ -763,6 +847,62 @@
     localStorage.clear();
     accessToken = refreshToken = '';
     actualizarEstadoAuth();
+    cargarVariablesFijas();
+  }
+
+  // ── Variables Fijas (panel izquierdo) ────────────────────
+  const VARS_META = [
+    { key: 'precio_rollo_filamento',    label: 'Precio rollo',       fmt: 'cop' },
+    { key: 'peso_rollo_gramos',         label: 'Peso rollo',         fmt: 'g'   },
+    { key: 'costo_electricidad_kwh',    label: 'Electricidad/kWh',   fmt: 'cop' },
+    { key: 'consumo_impresora_kw',      label: 'Consumo impresora',  fmt: 'kw'  },
+    { key: 'valor_hora_trabajo',        label: 'Valor hora trabajo', fmt: 'cop' },
+    { key: 'margen_ganancia',           label: 'Margen ganancia',    fmt: 'pct' },
+    { key: 'margen_fallos',             label: 'Margen fallos',      fmt: 'pct' },
+    { key: 'costo_impresora',           label: 'Costo impresora',    fmt: 'cop' },
+    { key: 'vida_util_horas',           label: 'Vida útil',          fmt: 'h'   },
+    { key: 'costo_mantenimiento_anual', label: 'Mant. anual',        fmt: 'cop' },
+    { key: 'costo_empaque',             label: 'Costo empaque',      fmt: 'cop' },
+  ];
+
+  function fmtVar(value, tipo) {
+    const n = parseFloat(value);
+    if (tipo === 'cop') return cop(n);
+    if (tipo === 'pct') return `${(n * 100).toFixed(0)} %`;
+    if (tipo === 'g')   return `${n.toLocaleString('es-CO')} g`;
+    if (tipo === 'kw')  return `${n} kW`;
+    if (tipo === 'h')   return `${n.toLocaleString('es-CO')} h`;
+    return value;
+  }
+
+  async function cargarVariablesFijas() {
+    const loading = document.getElementById('vars-loading');
+    const list    = document.getElementById('vars-list');
+    const badge   = document.getElementById('vars-origen');
+
+    loading.style.display = 'block';
+    list.style.display    = 'none';
+
+    try {
+      const res  = await apiGet(`${BASE}/api/v1/variables-fijas/para-cotizador/`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+
+      const esEmpresa = accessToken && data.empresa;
+      badge.textContent = esEmpresa ? 'mi empresa' : 'generales';
+
+      list.innerHTML = VARS_META.map(m => `
+        <div class="var-row">
+          <span class="var-label" title="${m.label}">${m.label}</span>
+          <span class="var-value">${fmtVar(data[m.key], m.fmt)}</span>
+        </div>
+      `).join('');
+
+      loading.style.display = 'none';
+      list.style.display    = 'block';
+    } catch {
+      loading.innerHTML = '<span style="color:var(--text-3);font-size:.75rem">Sin variables configuradas</span>';
+    }
   }
 
   function authHeaders(extra = {}) {

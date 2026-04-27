@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.produccion.serializers import (
     CotizadorInputSerializer,
@@ -20,7 +21,8 @@ from apps.produccion.controllers.cotizador_controller import CotizadorController
 
 
 class CotizadorView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes     = [AllowAny]
     """
     POST /api/v1/cotizador/
     Calcula el precio de venta para una pieza nueva.
@@ -40,14 +42,15 @@ class CotizadorView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            resultado = CotizadorController.cotizar_pieza(serializer.validated_data)
+            resultado = CotizadorController.cotizar_pieza(serializer.validated_data, request.user)
             return Response(resultado, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_424_FAILED_DEPENDENCY)
 
 
 class CotizadorLoteView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes     = [AllowAny]
     """
     POST /api/v1/cotizador/lote/
     Cotiza una pieza y escala el resultado por cantidad.
@@ -66,14 +69,15 @@ class CotizadorLoteView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            resultado = CotizadorController.cotizar_lote(serializer.validated_data)
+            resultado = CotizadorController.cotizar_lote(serializer.validated_data, request.user)
             return Response(resultado, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_424_FAILED_DEPENDENCY)
 
 
 class CotizadorDesdeCatalogoView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes     = [AllowAny]
     """
     POST /api/v1/cotizador/desde-catalogo/
     Recalcula el precio de una pieza ya registrada en el Inventario.
@@ -91,7 +95,7 @@ class CotizadorDesdeCatalogoView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            resultado = CotizadorController.cotizar_desde_catalogo(serializer.validated_data)
+            resultado = CotizadorController.cotizar_desde_catalogo(serializer.validated_data, request.user)
             return Response(resultado, status=status.HTTP_200_OK)
         except LookupError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -100,7 +104,8 @@ class CotizadorDesdeCatalogoView(APIView):
 
 
 class CotizadorDesdeCatalogoLoteView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes     = [AllowAny]
     """
     POST /api/v1/cotizador/desde-catalogo/lote/
     Recalcula una pieza del catálogo y escala por cantidad.
@@ -117,7 +122,7 @@ class CotizadorDesdeCatalogoLoteView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            resultado = CotizadorController.cotizar_lote_desde_catalogo(serializer.validated_data)
+            resultado = CotizadorController.cotizar_lote_desde_catalogo(serializer.validated_data, request.user)
             return Response(resultado, status=status.HTTP_200_OK)
         except LookupError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
