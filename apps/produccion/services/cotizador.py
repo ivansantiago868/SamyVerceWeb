@@ -181,16 +181,14 @@ def cotizar(
     if variables is None:
         variables = VariablesFijas.objects.filter(empresa__isnull=True).first()
 
-    insumo_tiene_precio = insumo and insumo.precio is not None
-
     return ResultadoCotizacion(
         nombre_pieza=nombre_pieza,
         peso_gramos=peso_gramos,
         tiempo_impresion_horas=tiempo_impresion_horas,
         tiempo_postproceso_horas=tiempo_postproceso_horas,
         costo_empaque_override=costo_empaque_override,
-        precio_rollo_filamento=float(insumo.precio) if insumo_tiene_precio else float(variables.precio_rollo_filamento),
-        peso_rollo_gramos=float(insumo.cantidad_inicial) if insumo_tiene_precio else float(variables.peso_rollo_gramos),
+        precio_rollo_filamento=float(insumo.precio) if (insumo and insumo.precio is not None) else float(variables.precio_rollo_filamento),
+        peso_rollo_gramos=float(insumo.cantidad_inicial) if insumo else float(variables.peso_rollo_gramos),
         costo_electricidad_kwh=float(variables.costo_electricidad_kwh),
         consumo_impresora_kw=float(variables.consumo_impresora_kw),
         valor_hora_trabajo=float(variables.valor_hora_trabajo),

@@ -964,11 +964,15 @@
       overrideKeys.add('vida_util_horas');
       overrideKeys.add('costo_mantenimiento_anual');
     }
-    if (ins && ins.precio !== null) {
-      merged.precio_rollo_filamento = ins.precio;
-      merged.peso_rollo_gramos      = ins.cantidad_inicial;
-      overrideKeys.add('precio_rollo_filamento');
+    if (ins) {
+      // Peso rollo: siempre desde cantidad_inicial del insumo
+      merged.peso_rollo_gramos = ins.cantidad_inicial;
       overrideKeys.add('peso_rollo_gramos');
+      // Precio rollo: solo si el insumo tiene precio definido
+      if (ins.precio !== null) {
+        merged.precio_rollo_filamento = ins.precio;
+        overrideKeys.add('precio_rollo_filamento');
+      }
     }
 
     const badge = document.getElementById('vars-origen');
