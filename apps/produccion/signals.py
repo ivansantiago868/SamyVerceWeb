@@ -22,6 +22,7 @@ def crear_insumo_desde_gasto(sender, instance, created, **kwargs):
             empresa=instance.empresa,
             producto=f"[CUUI-{instance.cuui}] {instance.articulo}",
             material=instance.material,
+            precio=instance.costo,
             cantidad_inicial=0,
             cantidad_final=instance.peso,
         )

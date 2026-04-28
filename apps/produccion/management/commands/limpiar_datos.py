@@ -12,7 +12,7 @@ Uso:
     python manage.py limpiar_datos --todo --confirmar # incluye clientes e impresoras
 """
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import transaction, connection
 
 
 SEPARADOR = "─" * 52
@@ -189,19 +189,48 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write("  Eliminando...")
 
+        modelos_borrados = []
+
         with transaction.atomic():
             for etiqueta, qs_fn in pasos:
                 qs = qs_fn(empresa_id)
                 count = qs.count()
                 if count:
-                    # Ventas tiene M2M: limpiar la tabla intermedia antes de delete()
                     if etiqueta.startswith("Ventas"):
                         for venta in qs:
                             venta.pedidos.clear()
+                    modelo = qs.model
                     qs.delete()
+                    modelos_borrados.append(modelo)
                     self.stdout.write(f"  ✅ {etiqueta:<28} eliminados: {count}")
                 else:
                     self.stdout.write(f"  ⬜ {etiqueta:<28} sin registros")
+
+        # ── Reiniciar secuencias (auto-increment) ─────────────────────
+        # Usa MAX(id) actual para no colisionar con registros preservados
+        self.stdout.write("")
+        self.stdout.write("  Reiniciando secuencias...")
+        with connection.cursor() as cursor:
+            for modelo in modelos_borrados:
+                tabla = modelo._meta.db_table
+                try:
+                    cursor.execute(
+                        f"""
+                        SELECT setval(
+                            pg_get_serial_sequence(%s, 'id'),
+                            COALESCE((SELECT MAX(id) FROM {tabla}), 0) + 1,
+                            false
+                        )
+                        """,
+                        [tabla],
+                    )
+                    cursor.execute(
+                        f"SELECT COALESCE((SELECT MAX(id) FROM {tabla}), 0) + 1"
+                    )
+                    next_id = cursor.fetchone()[0]
+                    self.stdout.write(f"  🔄 {tabla:<38} → próximo ID: {next_id}")
+                except Exception:
+                    pass  # tabla sin secuencia (ej: M2M intermedias)
 
         self.stdout.write(SEPARADOR)
         self.stdout.write(self.style.SUCCESS("  Limpieza completada exitosamente."))

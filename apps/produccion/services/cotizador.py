@@ -119,7 +119,9 @@ class ResultadoCotizacion:
 
         # 11. Redondeo al siguiente múltiplo de 5000 (comportamiento Excel verificado)
         self.precio_venta_sugerido = math.ceil(self.precio_sin_redondeo / 5000) * 5000
+        self.precio_venta_sugerido = math.ceil(self.precio_sin_redondeo / 1000) * 1000
         self.redondeo = round(self.precio_venta_sugerido - self.precio_sin_redondeo, 2)
+        
 
     def to_dict(self):
         return {
@@ -182,6 +184,7 @@ def cotizar(
         variables = VariablesFijas.objects.filter(empresa__isnull=True).first()
 
     insumo_tiene_precio = insumo and insumo.precio is not None
+    _peso_insumo = float(insumo.cantidad_final) if insumo else 0
 
     return ResultadoCotizacion(
         nombre_pieza=nombre_pieza,
@@ -190,7 +193,7 @@ def cotizar(
         tiempo_postproceso_horas=tiempo_postproceso_horas,
         costo_empaque_override=costo_empaque_override,
         precio_rollo_filamento=float(insumo.precio) if insumo_tiene_precio else float(variables.precio_rollo_filamento),
-        peso_rollo_gramos=float(insumo.cantidad_inicial) if insumo_tiene_precio else float(variables.peso_rollo_gramos),
+        peso_rollo_gramos=_peso_insumo if _peso_insumo > 0 else float(variables.peso_rollo_gramos),
         costo_electricidad_kwh=float(variables.costo_electricidad_kwh),
         consumo_impresora_kw=float(variables.consumo_impresora_kw),
         valor_hora_trabajo=float(variables.valor_hora_trabajo),

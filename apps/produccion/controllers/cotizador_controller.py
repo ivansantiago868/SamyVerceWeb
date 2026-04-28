@@ -112,6 +112,7 @@ class CotizadorController:
                 "costo": float(imp.costo),
                 "vida_util_horas": imp.vida_util_horas,
                 "costo_mantenimiento_anual": float(imp.costo_mantenimiento_anual),
+                "consumo_promedio_kw": float(imp.consumo_promedio_kw) if imp.consumo_promedio_kw is not None else None,
             }
             for imp in imp_qs
         ]
@@ -121,7 +122,7 @@ class CotizadorController:
                 "producto": ins.producto,
                 "material": str(ins.material) if ins.material else None,
                 "precio": float(ins.precio) if ins.precio is not None else None,
-                "cantidad_inicial": float(ins.cantidad_inicial),
+                "cantidad_final": float(ins.cantidad_final),
                 "stock_disponible": ins.stock_disponible,
             }
             for ins in ins_qs
