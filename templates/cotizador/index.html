@@ -988,9 +988,11 @@
       }
     }
     if (ins) {
-      // Peso rollo: stock actual (cantidad_final)
-      merged.peso_rollo_gramos = ins.cantidad_final;
-      overrideKeys.add('peso_rollo_gramos');
+      // Peso rollo: stock actual (cantidad_final), solo si > 0
+      if (ins.cantidad_final > 0) {
+        merged.peso_rollo_gramos = ins.cantidad_final;
+        overrideKeys.add('peso_rollo_gramos');
+      }
       // Precio rollo: solo si el insumo tiene precio definido
       if (ins.precio !== null) {
         merged.precio_rollo_filamento = ins.precio;
