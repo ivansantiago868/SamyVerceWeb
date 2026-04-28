@@ -948,8 +948,17 @@
   // ── Parseo numérico tolerante a coma/punto decimal ──────
   function parseNum(val) {
     if (val === '' || val == null) return NaN;
-    // Reemplaza coma decimal por punto (ej: "1,5" → "1.5")
-    return parseFloat(String(val).replace(/\./g, '').replace(',', '.'));
+    const s = String(val).trim();
+    // Ambos separadores presentes → detectar cuál es decimal
+    if (s.includes('.') && s.includes(',')) {
+      return s.lastIndexOf(',') > s.lastIndexOf('.')
+        ? parseFloat(s.replace(/\./g, '').replace(',', '.'))  // 1.234,5 → colombiano
+        : parseFloat(s.replace(/,/g, ''));                    // 1,234.5 → inglés
+    }
+    // Solo coma → decimal colombiano: "1,5" → 1.5
+    if (s.includes(',')) return parseFloat(s.replace(',', '.'));
+    // Solo punto o sin separador → parseFloat estándar: "1.5" → 1.5
+    return parseFloat(s);
   }
   function parseEntero(val) {
     return parseInt(String(val).replace(/\D/g, ''), 10);
