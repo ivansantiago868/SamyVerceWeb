@@ -13,3 +13,4 @@ from apps.produccion.admin.produccion import (                             # noq
 )
 from apps.produccion.admin.pedidos   import PedidoAdmin, TareaAdmin       # noqa: F401
 from apps.produccion.admin.ventas    import VentaAdmin                    # noqa: F401
+from apps.produccion.admin.figura    import FiguraAdmin                    # noqa: F401

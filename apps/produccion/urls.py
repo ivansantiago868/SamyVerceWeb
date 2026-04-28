@@ -12,6 +12,7 @@ from apps.produccion.views import (
     ClienteView, ImpresoraView, InsumoView, GastoView,
     VariablesFijasView, InventarioPiezaView,
     PedidoView, VentaView, TareaView,
+    FiguraView, FiguraPiezaView,
     # Cotizador
     CotizadorRecursosView,
     CotizadorView, CotizadorLoteView,
@@ -29,6 +30,8 @@ router.register(r"piezas",          InventarioPiezaView, basename="pieza")
 router.register(r"pedidos",         PedidoView,          basename="pedido")
 router.register(r"ventas",          VentaView,           basename="venta")
 router.register(r"tareas",          TareaView,           basename="tarea")
+router.register(r"figuras",         FiguraView,          basename="figura")
+router.register(r"figura-piezas",   FiguraPiezaView,     basename="figura-pieza")
 
 # ── Cotizador ─────────────────────────────────────────────────────
 cotizador_urls = [

@@ -11,10 +11,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
-from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea
+from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea, Figura, FiguraPieza
 from apps.produccion.serializers import (
     VariablesFijasSerializer, InventarioPiezaSerializer,
     PedidoSerializer, VentaSerializer, TareaSerializer,
+    FiguraSerializer, FiguraPiezaSerializer,
 )
 from apps.produccion.services import PedidoService, VentaService, TareaService
 from apps.produccion.controllers.variables_fijas_controller import VariablesFijasController
@@ -162,3 +163,26 @@ class TareaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
             return Response(TareaSerializer(tarea).data)
         except Tarea.DoesNotExist:
             return Response({"error": "Tarea no encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
+    queryset         = Figura.objects.prefetch_related("figura_piezas__pieza")
+    serializer_class = FiguraSerializer
+    filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields    = ["nombre", "descripcion"]
+    ordering_fields  = ["nombre", "creado_en"]
+
+
+class FiguraPiezaView(viewsets.ModelViewSet):
+    queryset         = FiguraPieza.objects.select_related("figura", "pieza")
+    serializer_class = FiguraPiezaSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        figura_id = self.request.query_params.get("figura")
+        if figura_id:
+            qs = qs.filter(figura_id=figura_id)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save()
