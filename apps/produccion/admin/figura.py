@@ -21,9 +21,9 @@ class FiguraImagenInline(admin.TabularInline):
 class FiguraPiezaInline(admin.TabularInline):
     model               = FiguraPieza
     extra               = 1
-    fields              = ("pieza", "cantidad", "subtotal_costo_display", "subtotal_precio_display")
+    fields              = ("pieza", "insumo", "cantidad", "subtotal_costo_display", "subtotal_precio_display")
     readonly_fields     = ("subtotal_costo_display", "subtotal_precio_display")
-    autocomplete_fields = ["pieza"]
+    autocomplete_fields = ["pieza", "insumo"]
 
     def subtotal_costo_display(self, obj):
         return f"${obj.subtotal_costo:,.0f}" if obj.pk else "—"

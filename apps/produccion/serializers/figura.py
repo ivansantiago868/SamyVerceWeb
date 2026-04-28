@@ -12,6 +12,7 @@ class FiguraPiezaSerializer(serializers.ModelSerializer):
     pieza_nombre    = serializers.ReadOnlyField(source="pieza.nombre")
     pieza_costo     = serializers.ReadOnlyField(source="pieza.costo_total_real")
     pieza_precio    = serializers.ReadOnlyField(source="pieza.precio_venta_sugerido")
+    insumo_nombre   = serializers.CharField(source="insumo.producto", read_only=True)
     subtotal_costo  = serializers.ReadOnlyField()
     subtotal_precio = serializers.ReadOnlyField()
 
@@ -20,6 +21,7 @@ class FiguraPiezaSerializer(serializers.ModelSerializer):
         fields = [
             "id", "figura", "pieza", "pieza_nombre",
             "pieza_costo", "pieza_precio",
+            "insumo", "insumo_nombre",
             "cantidad", "subtotal_costo", "subtotal_precio",
         ]
         read_only_fields = ("figura",)

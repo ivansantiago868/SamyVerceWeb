@@ -1,6 +1,7 @@
 from django.db import models
 from .empresa import Empresa
 from .inventario_pieza import InventarioPieza
+from .insumo import Insumo
 
 
 class Figura(models.Model):
@@ -52,6 +53,8 @@ class FiguraPieza(models.Model):
                                  related_name="figura_piezas", verbose_name="Figura")
     pieza    = models.ForeignKey(InventarioPieza, on_delete=models.PROTECT,
                                  related_name="en_figuras", verbose_name="Pieza")
+    insumo   = models.ForeignKey(Insumo, on_delete=models.PROTECT,
+                                 null=True, blank=True, verbose_name="Insumo / Material")
     cantidad = models.PositiveIntegerField(default=1, verbose_name="Cantidad")
 
     @property

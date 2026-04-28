@@ -4,24 +4,61 @@ Gestión de Pedidos y Tareas de producción.
 """
 from decimal import Decimal
 
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db.models import F
 
-from apps.produccion.models import Pedido, Tarea
+from apps.produccion.models import Pedido, PedidoMaterial, Tarea
 from apps.produccion.admin.mixins import EmpresaMixin
+
+
+class PedidoMaterialInline(admin.TabularInline):
+    model               = PedidoMaterial
+    extra               = 0
+    fields              = ("pieza", "material")
+    readonly_fields     = ("pieza",)
+    autocomplete_fields = ["material"]
+    verbose_name        = "Material por pieza"
+    verbose_name_plural = "Materiales por pieza (solo figuras)"
+    can_delete          = False
+
+    def has_add_permission(self, request, obj=None):
+        return False  # Solo se crean por signal
+
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model  = Pedido
+        fields = "__all__"
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("figura"):
+            raise ValidationError("Debes seleccionar una Figura.")
+        return cleaned
 
 
 @admin.register(Pedido)
 class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
+    form                = PedidoForm
     grupos_empresa      = {"Maker"}
-    list_display        = ("id", "numero_pedido", "cliente", "pieza",
+    list_display        = ("id", "numero_pedido", "cliente", "figura",
                            "cantidad", "realizados", "restantes", "estado",
                            "fecha_entrega", "prioridad", "maquina")
     list_editable       = ("estado",)
     list_filter         = ("estado", "prioridad", "maquina")
-    search_fields       = ("numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion")
+    search_fields       = ("numero_pedido", "cliente__nombre", "figura__nombre", "descripcion")
     readonly_fields     = ("restantes", "realizados", "peso_total", "precio_total", "gr_pieza", "precio_unidad")
-    autocomplete_fields = ["cliente", "material", "pieza"]
+    autocomplete_fields = ["cliente", "figura"]
+    inlines             = [PedidoMaterialInline]
+
+    def get_inline_instances(self, request, obj=None):
+        inlines = super().get_inline_instances(request, obj)
+        # Solo mostrar el inline de materiales si el pedido ya tiene figura guardada
+        if obj is None or not obj.figura_id:
+            return [i for i in inlines if not isinstance(i, PedidoMaterialInline)]
+        return inlines
 
     def save_model(self, request, obj, form, change):
         if change:

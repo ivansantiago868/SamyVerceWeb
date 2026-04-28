@@ -3,13 +3,12 @@ from apps.produccion.models import Pedido
 
 
 class PedidoSerializer(serializers.ModelSerializer):
-    restantes       = serializers.ReadOnlyField()
-    peso_total      = serializers.ReadOnlyField()
-    precio_total    = serializers.ReadOnlyField()
-    cliente_nombre  = serializers.CharField(source="cliente.nombre",    read_only=True)
-    pieza_nombre    = serializers.CharField(source="pieza.nombre",      read_only=True)
-    material_nombre = serializers.CharField(source="material.producto", read_only=True)
-    maquina_nombre  = serializers.CharField(source="maquina.nombre",    read_only=True)
+    restantes      = serializers.ReadOnlyField()
+    peso_total     = serializers.ReadOnlyField()
+    precio_total   = serializers.ReadOnlyField()
+    cliente_nombre = serializers.CharField(source="cliente.nombre", read_only=True)
+    figura_nombre  = serializers.CharField(source="figura.nombre",  read_only=True)
+    maquina_nombre = serializers.CharField(source="maquina.nombre", read_only=True)
 
     class Meta:
         model  = Pedido

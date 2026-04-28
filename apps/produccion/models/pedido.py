@@ -4,6 +4,7 @@ from .empresa import Empresa
 from .insumo import Insumo
 from .impresora import Impresora
 from .inventario_pieza import InventarioPieza
+from .figura import Figura, FiguraPieza
 
 
 class Pedido(models.Model):
@@ -25,9 +26,8 @@ class Pedido(models.Model):
 
     numero_pedido = models.CharField(max_length=50, blank=True, verbose_name="Número de pedido", db_index=True)
     prioridad     = models.CharField(max_length=10, choices=Prioridad.choices, default=Prioridad.MEDIO)
-    cliente       = models.ForeignKey(Cliente,        on_delete=models.PROTECT,  null=True, blank=True)
-    pieza         = models.ForeignKey(InventarioPieza, on_delete=models.PROTECT,  null=True, blank=True, verbose_name="Pieza")
-    material      = models.ForeignKey(Insumo,          on_delete=models.PROTECT,  null=True, blank=True, verbose_name="Material")
+    cliente       = models.ForeignKey(Cliente, on_delete=models.PROTECT, null=True, blank=True)
+    figura        = models.ForeignKey(Figura,  on_delete=models.PROTECT, null=True, blank=True, verbose_name="Figura", related_name="pedidos")
     cantidad      = models.PositiveIntegerField(default=0)
     realizados    = models.PositiveIntegerField(default=0)
     gr_pieza      = models.DecimalField(max_digits=8,  decimal_places=2, default=0, verbose_name="Gramos por pieza")
@@ -39,9 +39,9 @@ class Pedido(models.Model):
     creado_en     = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if self.pieza_id:
-            self.gr_pieza     = self.pieza.peso_gramos
-            self.precio_unidad = self.pieza.precio_venta_sugerido
+        if self.figura_id:
+            self.gr_pieza      = 0
+            self.precio_unidad = self.figura.precio_total
         super().save(*args, **kwargs)
 
     @property
@@ -63,6 +63,26 @@ class Pedido(models.Model):
 
     def __str__(self):
         nombre_cliente  = self.cliente.nombre if self.cliente else "Sin cliente"
-        nombre_producto = self.pieza.nombre if self.pieza else "Sin pieza"
+        nombre_producto = self.figura.nombre if self.figura else "Sin figura"
         prefijo = f"[{self.numero_pedido}] " if self.numero_pedido else ""
         return f"{prefijo}#{self.id} — {nombre_cliente} | {nombre_producto}"
+
+
+class PedidoMaterial(models.Model):
+    """Material asignado a cada pieza de un pedido de figura."""
+    pedido   = models.ForeignKey(Pedido, on_delete=models.CASCADE,
+                                 related_name="materiales", verbose_name="Pedido")
+    pieza    = models.ForeignKey(InventarioPieza, on_delete=models.PROTECT,
+                                 verbose_name="Pieza")
+    material = models.ForeignKey(Insumo, on_delete=models.PROTECT,
+                                 null=True, blank=True, verbose_name="Material (insumo)")
+
+    class Meta:
+        unique_together     = [("pedido", "pieza")]
+        verbose_name        = "Material por pieza"
+        verbose_name_plural = "Materiales por pieza"
+        ordering            = ["pieza__nombre"]
+
+    def __str__(self):
+        mat = self.material.producto if self.material else "Sin asignar"
+        return f"{self.pieza.nombre} → {mat}"

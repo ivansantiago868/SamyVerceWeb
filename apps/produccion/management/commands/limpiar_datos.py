@@ -46,7 +46,8 @@ class Command(BaseCommand):
     def handle(self, **options):
         from django.contrib.auth.models import User
         from apps.produccion.models import (
-            Tarea, Venta, Pedido,
+            Tarea, Venta, PedidoMaterial, Pedido,
+            FiguraPieza, FiguraImagen, Figura,
             PiezaImagen, InventarioPieza,
             Gasto, Insumo, Cliente, Impresora,
             Material, TipoMaterial, Empresa,
@@ -83,8 +84,24 @@ class Command(BaseCommand):
             qs = Venta.objects.all()
             return qs.filter(empresa_id=eid) if eid else qs
 
+        def qs_pedido_material(eid):
+            qs = PedidoMaterial.objects.all()
+            return qs.filter(pedido__empresa_id=eid) if eid else qs
+
         def qs_pedidos(eid):
             qs = Pedido.objects.all()
+            return qs.filter(empresa_id=eid) if eid else qs
+
+        def qs_figura_pieza(eid):
+            qs = FiguraPieza.objects.all()
+            return qs.filter(figura__empresa_id=eid) if eid else qs
+
+        def qs_figura_imagen(eid):
+            qs = FiguraImagen.objects.all()
+            return qs.filter(figura__empresa_id=eid) if eid else qs
+
+        def qs_figuras(eid):
+            qs = Figura.objects.all()
             return qs.filter(empresa_id=eid) if eid else qs
 
         def qs_pieza_imagen(_):
@@ -122,7 +139,11 @@ class Command(BaseCommand):
         pasos = [
             ("Tareas",               qs_tareas),
             ("Ventas / Cotizaciones", qs_ventas),
+            ("Materiales de pedido", qs_pedido_material),
             ("Pedidos",              qs_pedidos),
+            ("Piezas de figura",     qs_figura_pieza),
+            ("Imágenes de figura",   qs_figura_imagen),
+            ("Figuras",              qs_figuras),
             ("Imágenes de pieza",    qs_pieza_imagen),
             ("Inventario de piezas", qs_inventario),
             ("Gastos",               qs_gastos),
