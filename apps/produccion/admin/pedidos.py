@@ -12,6 +12,28 @@ from apps.produccion.models import Pedido, PedidoMaterial, Tarea, FiguraPieza
 from apps.produccion.admin.mixins import EmpresaMixin
 
 
+class TareaForm(forms.ModelForm):
+    class Meta:
+        model  = Tarea
+        fields = "__all__"
+
+    def clean_realizados(self):
+        realizados = self.cleaned_data.get("realizados")
+        if realizados is None:
+            return realizados
+        cantidad = (
+            self.instance.cantidad
+            if self.instance.pk
+            else self.cleaned_data.get("cantidad", 0)
+        )
+        if cantidad and realizados > cantidad:
+            raise ValidationError(
+                f"Los realizados ({realizados}) no pueden superar "
+                f"la cantidad del pedido ({cantidad})."
+            )
+        return realizados
+
+
 class PedidoMaterialInline(admin.TabularInline):
     model               = PedidoMaterial
     extra               = 0
@@ -63,6 +85,7 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
         if change:
             anterior_estado = Pedido.objects.values_list("estado", flat=True).get(pk=obj.pk)
             super().save_model(request, obj, form, change)
+            obj.refresh_from_db(fields=["estado"])
             if obj.estado != anterior_estado:
                 Tarea.objects.filter(pedido=obj).update(estado=obj.estado)
         else:
@@ -74,6 +97,7 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
 
 @admin.register(Tarea)
 class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
+    form                = TareaForm
     grupos_empresa      = {"Maker"}
     list_display        = ("id", "prioridad", "cliente", "producto",
                            "piezas_por_figura", "cantidad", "realizados", "restantes",
@@ -113,6 +137,8 @@ class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
         if change and obj.pedido_id:
             anterior = Tarea.objects.values("estado", "realizados").get(pk=obj.pk)
             super().save_model(request, obj, form, change)
+            # El trigger PostgreSQL pudo haber cambiado el estado; leer el valor real
+            obj.refresh_from_db(fields=["estado"])
 
             if obj.estado != anterior["estado"]:
                 Pedido.objects.filter(pk=obj.pedido_id).update(estado=obj.estado)
@@ -122,7 +148,6 @@ class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
                 # ── Descontar material del insumo ──────────────────────
                 try:
                     pedido = Pedido.objects.select_related("figura").get(pk=obj.pedido_id)
-                    cantidadpiezas = self.piezas_por_figura(obj)  # Asegura que se cachea el resultado para evitar consultas repetidas   
                     if pedido.figura_id:
                         fp = FiguraPieza.objects.select_related("pieza", "insumo").get(
                             figura=pedido.figura,
