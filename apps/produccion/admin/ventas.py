@@ -49,7 +49,7 @@ class VentaAdmin(EmpresaMixin, admin.ModelAdmin):
 
     def cotizacion_view(self, request, venta_id):
         venta   = get_object_or_404(Venta, pk=venta_id)
-        pedidos = venta.pedidos.select_related("cliente", "pieza", "maquina").all()
+        pedidos = venta.pedidos.select_related("cliente", "figura", "maquina").all()
         total   = sum(p.precio_total for p in pedidos)
         return HttpResponse(render_to_string(
             "admin/produccion/cotizacion.html",
@@ -113,14 +113,14 @@ class VentaAdmin(EmpresaMixin, admin.ModelAdmin):
             )
 
         bloques, total_global = [], Decimal("0")
-        for p in obj.pedidos.select_related("cliente", "pieza").all():
+        for p in obj.pedidos.select_related("cliente", "figura").all():
             rows = []
             if p.cliente:
                 rows.append(row("Cliente", p.cliente.nombre))
                 if p.cliente.documento:
                     rows.append(row(p.cliente.get_tipo_documento_display(), p.cliente.documento))
-            if p.pieza:
-                rows.append(row("Pieza", p.pieza.nombre))
+            if p.figura:
+                rows.append(row("Figura", p.figura.nombre))
             rows.append(row("Cantidad", f"{p.cantidad} uds."))
             rows.append(row("Precio unitario", f"$ {p.precio_unidad:,.0f} COP"))
             rows.append(row("Subtotal", f"$ {p.precio_total:,.0f} COP"))

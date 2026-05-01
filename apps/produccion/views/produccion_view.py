@@ -104,11 +104,11 @@ class InventarioPiezaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
 
 
 class PedidoView(EmpresaViewSetMixin, viewsets.ModelViewSet):
-    queryset         = Pedido.objects.select_related("cliente", "pieza", "material", "maquina")
+    queryset         = Pedido.objects.select_related("cliente", "figura", "maquina")
     serializer_class = PedidoSerializer
     filter_backends  = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["estado", "prioridad", "maquina", "numero_pedido"]
-    search_fields    = ["numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion"]
+    search_fields    = ["numero_pedido", "cliente__nombre", "figura__nombre", "descripcion"]
     ordering_fields  = ["fecha_entrega", "prioridad", "precio_unidad", "creado_en"]
 
     @action(detail=False, methods=["get"], url_path="dashboard")
