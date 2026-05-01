@@ -88,7 +88,7 @@ class EmpresaAdminForm(forms.ModelForm):
 class EmpresaAdmin(admin.ModelAdmin):
     form          = EmpresaAdminForm
     inlines       = [UsuariosEmpresaInline]
-    list_display  = ("id", "nombre", "nit", "email", "telefono", "total_usuarios", "activa")
+    list_display  = ("nombre", "nit", "email", "telefono", "total_usuarios", "activa")
     search_fields = ("nombre", "nit")
     list_filter   = ("activa",)
 

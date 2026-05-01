@@ -13,7 +13,7 @@ from apps.produccion.admin.mixins import EmpresaMixin, GastoMultipleForm
 @admin.register(Cliente)
 class ClienteAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa = {"Maker"}
-    list_display  = ("id", "nombre", "tipo_documento", "documento", "email", "telefono")
+    list_display  = ("nombre", "tipo_documento", "documento", "email", "telefono")
     search_fields = ("nombre", "email", "documento")
     list_filter   = ("tipo_documento",)
 
@@ -21,7 +21,7 @@ class ClienteAdmin(EmpresaMixin, admin.ModelAdmin):
 @admin.register(Impresora)
 class ImpresoraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
-    list_display    = ("id", "nombre", "tipo", "costo", "vida_util_horas", "consumo_promedio_kw", "activa")
+    list_display    = ("nombre", "tipo", "costo", "vida_util_horas", "consumo_promedio_kw", "activa")
     list_filter     = ("tipo", "activa")
     search_fields   = ("nombre",)
     readonly_fields = ("depreciacion_por_hora", "mantenimiento_por_hora")
@@ -30,14 +30,14 @@ class ImpresoraAdmin(EmpresaMixin, admin.ModelAdmin):
 @admin.register(TipoMaterial)
 class TipoMaterialAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa = {"Admin Empresa"}
-    list_display  = ("id", "nombre")
+    list_display  = ("nombre",)
     search_fields = ("nombre",)
 
 
 @admin.register(Material)
 class MaterialAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa = {"Admin Empresa"}
-    list_display  = ("id", "tipo", "nombre")
+    list_display  = ("tipo", "nombre")
     list_filter   = ("tipo",)
     search_fields = ("nombre",)
 
@@ -45,7 +45,7 @@ class MaterialAdmin(EmpresaMixin, admin.ModelAdmin):
 @admin.register(Insumo)
 class InsumoAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
-    list_display    = ("id", "producto", "material", "precio", "cantidad_inicial", "cantidad_final", "diferencia", "actualizado_en")
+    list_display    = ("producto", "material", "precio", "cantidad_inicial", "cantidad_final", "diferencia", "actualizado_en")
     search_fields   = ("producto",)
     list_filter     = ("material__tipo",)
     readonly_fields = ("producto", "material", "cantidad_inicial", "cantidad_final", "diferencia", "stock_disponible", "actualizado_en")

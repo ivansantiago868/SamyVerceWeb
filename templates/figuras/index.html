@@ -442,6 +442,10 @@
             <button class="btn-outline" style="flex:1" onclick="verDetalle(${f.id})">
               <i class="bi bi-eye me-1"></i>Ver
             </button>
+            ${(f.imagenes||[]).filter(i=>i.imagen).length ? `
+            <button class="btn-outline" style="flex:1;color:var(--brand);border-color:var(--brand)" onclick="verDetalle(${f.id})">
+              <i class="bi bi-images me-1"></i>${(f.imagenes||[]).filter(i=>i.imagen).length} IA
+            </button>` : ''}
             <button class="btn-outline" style="flex:1" onclick="abrirModalEditar(${f.id})">
               <i class="bi bi-pencil me-1"></i>Editar
             </button>
@@ -637,15 +641,42 @@
         </div>`).join('');
 
       const imagenesValidas = (f.imagenes || []).filter(img => img.imagen);
+      const nombreBase = f.nombre.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+
       const carruselDetalle = imagenesValidas.length
-        ? `<div class="carousel-detalle" style="margin-bottom:.75rem;border-radius:var(--r-md);overflow:hidden">
-             ${renderCarrusel(imagenesValidas, `det-${f.id}`, 260, true, f.nombre)}
+        ? `<div class="carousel-detalle" style="border-radius:var(--r-md);overflow:hidden">
+             ${renderCarrusel(imagenesValidas, `det-${f.id}`, 260, false, f.nombre)}
            </div>`
         : '';
 
+      const descargaSeccion = imagenesValidas.length ? `
+        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:.85rem 1rem;margin:.75rem 0">
+          <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:.5rem">
+            <i class="bi bi-images me-1" style="color:var(--brand)"></i>Imágenes IA — Descargar
+          </p>
+          <a href="${BASE}/api/v1/figuras/${f.id}/descargar-imagenes-ia/"
+             style="display:inline-flex;align-items:center;gap:.4rem;
+                    background:var(--brand);color:#fff;border-radius:var(--r-md);
+                    padding:.45rem 1rem;font-size:.82rem;font-weight:700;
+                    text-decoration:none;margin-bottom:.5rem;width:100%;justify-content:center">
+            <i class="bi bi-file-earmark-zip-fill"></i>
+            Descargar todas (${imagenesValidas.length} imágenes) — ZIP
+          </a>
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem">
+            ${imagenesValidas.map((img,i) => `
+              <a href="${img.imagen}" download="${nombreBase}_ia_${i+1}.jpg"
+                 style="display:inline-flex;align-items:center;gap:.3rem;background:var(--surface-3);
+                        border:1px solid var(--border);border-radius:6px;padding:.35rem .7rem;
+                        color:var(--text-1);text-decoration:none;font-size:.78rem;font-weight:500">
+                <i class="bi bi-download" style="color:var(--brand)"></i> Imagen ${i+1}
+              </a>`).join('')}
+          </div>
+        </div>` : '';
+
       cont.innerHTML = `
         ${carruselDetalle}
-        <h2 style="font-size:1.15rem;font-weight:800;margin-bottom:.35rem;margin-top:${carruselDetalle?'.75rem':'0'}">${f.nombre}</h2>
+        ${descargaSeccion}
+        <h2 style="font-size:1.15rem;font-weight:800;margin-bottom:.35rem">${f.nombre}</h2>
         ${f.descripcion ? `<p style="color:var(--text-2);font-size:.85rem;margin-bottom:1rem">${f.descripcion}</p>` : ''}
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1.25rem">
           <div style="background:var(--surface-2);border-radius:10px;padding:.75rem;text-align:center">

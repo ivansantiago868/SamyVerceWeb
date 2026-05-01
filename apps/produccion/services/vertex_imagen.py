@@ -88,7 +88,16 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
         return buf.getvalue()
 
     except Exception as exc:
-        logger.error("Imagen API exception: %s", exc)
+        msg = str(exc)
+        if "RESOURCE_EXHAUSTED" in msg or "429" in msg:
+            logger.warning(
+                "Gemini API: cupo agotado (modelo de pago). "
+                "Activa facturación en console.cloud.google.com/billing"
+            )
+        elif "API_KEY_INVALID" in msg or "400" in msg:
+            logger.error("Gemini API: clave inválida — verifica GEMINI_API_KEY en .env")
+        else:
+            logger.error("Gemini API exception: %s", msg[:200])
         return None
 
 

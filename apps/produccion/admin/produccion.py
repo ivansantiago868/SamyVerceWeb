@@ -33,8 +33,9 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
     inlines         = [PiezaImagenInline]
-    list_display    = ("miniatura", "id", "nombre", "peso_gramos", "tiempo_impresion_horas",
-                       "costo_total_real", "precio_venta_sugerido", "actualizado_en")
+    list_display       = ("miniatura", "nombre", "peso_gramos", "tiempo_impresion_horas",
+                          "costo_total_real", "precio_venta_sugerido", "actualizado_en")
+    list_display_links = ("miniatura", "nombre")
     search_fields   = ("nombre",)
     ordering        = ("nombre",)
     readonly_fields = ("actualizado_en", "carrusel_imagenes")
@@ -42,6 +43,10 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("imagenes")
     fieldsets = (
+        ("Galería de imágenes", {
+            "fields": ("carrusel_imagenes",),
+            "description": "Agrega imágenes en el panel inferior. El carrusel se actualiza al guardar.",
+        }),
         (None, {
             "fields": (
                 "nombre", "peso_gramos", "tiempo_impresion_horas",
@@ -55,10 +60,6 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
                 "depreciacion_pieza", "mantenimiento_preventivo",
                 "costo_total_real", "precio_venta_sugerido", "actualizado_en",
             ),
-        }),
-        ("Galería de imágenes", {
-            "fields": ("carrusel_imagenes",),
-            "description": "Agrega imágenes en el panel inferior. El carrusel se actualiza al guardar.",
         }),
         ("Archivos y referencias", {
             "fields": ("imagen", "archivo_3mf", "url_referencia"),
@@ -83,10 +84,12 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
         procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
         if not procesadas:
             return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Imágenes IA en proceso. Recarga en unos segundos.</p>')
-        count      = len(procesadas)
+        count = len(procesadas)
         slides_html = "".join(
             format_html(
-                '<div class="pc-slide"><img src="{}" alt="Imagen {}"></div>',
+                '<div class="pc-slide">'
+                '<img src="{}" alt="Imagen {}" style="cursor:pointer" onclick="window.open(this.src)">'
+                '</div>',
                 img.imagen_procesada.url, i + 1,
             )
             for i, img in enumerate(procesadas)
@@ -98,13 +101,35 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             )
             for i in range(count)
         )
+        descargas = "".join(
+            format_html(
+                '<a href="{}" download style="display:inline-flex;align-items:center;gap:.3rem;'
+                'background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;'
+                'padding:4px 10px;font-size:12px;color:#495057;text-decoration:none;margin:2px">'
+                '⬇ Imagen {}</a>',
+                img.imagen_procesada.url, i + 1,
+            )
+            for i, img in enumerate(procesadas)
+        )
+        boton_zip = format_html(
+            '<a href="/api/v1/piezas/{}/descargar-imagenes-ia/" '
+            'style="display:inline-flex;align-items:center;gap:.4rem;'
+            'background:#417690;color:#fff;border-radius:4px;padding:6px 14px;'
+            'font-size:13px;font-weight:bold;text-decoration:none;margin-bottom:8px">'
+            '⬇ Descargar todas ({} imágenes)</a>',
+            obj.pk, count,
+        )
         return format_html(
+            '{}'
             '<div class="pieza-carousel" data-count="{}">'
             '<div class="pc-track">{}</div>'
             '<button class="pc-btn pc-prev" type="button">&#8249;</button>'
             '<button class="pc-btn pc-next" type="button">&#8250;</button>'
             '<div class="pc-dots">{}</div>'
-            '</div>',
-            count, mark_safe(slides_html), mark_safe(dots_html),
+            '</div>'
+            '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">{}</div>',
+            boton_zip, count,
+            mark_safe(slides_html), mark_safe(dots_html),
+            mark_safe(descargas),
         )
-    carrusel_imagenes.short_description = "Carrusel de imágenes"
+    carrusel_imagenes.short_description = "Carrusel de imágenes IA"

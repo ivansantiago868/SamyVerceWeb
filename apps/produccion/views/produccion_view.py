@@ -4,6 +4,10 @@ ViewSets para: VariablesFijas, InventarioPieza, Pedido, Venta, Tarea.
 Responsabilidad: solo HTTP (rutas, status codes, respuestas).
 Lógica de negocio → controllers/
 """
+import io
+import zipfile
+
+from django.http import HttpResponse
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -96,11 +100,35 @@ class VariablesFijasView(EmpresaViewSetMixin, viewsets.ModelViewSet):
 
 
 class InventarioPiezaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
-    queryset         = InventarioPieza.objects.all()
+    queryset         = InventarioPieza.objects.prefetch_related("imagenes")
     serializer_class = InventarioPiezaSerializer
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre"]
     ordering_fields  = ["nombre", "precio_venta_sugerido", "costo_total_real"]
+
+    @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")
+    def descargar_imagenes_ia(self, request, pk=None):
+        pieza    = self.get_object()
+        imagenes = [img for img in pieza.imagenes.all() if img.imagen_procesada]
+        if pieza.imagen_procesada:
+            imagenes = list(imagenes) + [pieza]  # incluir imagen principal si la tiene
+        if not imagenes:
+            return Response({"detail": "Sin imágenes IA procesadas."}, status=404)
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for i, img in enumerate(imagenes, 1):
+                try:
+                    with open(img.imagen_procesada.path, "rb") as f:
+                        zf.writestr(f"imagen_ia_{i:02d}.jpg", f.read())
+                except OSError:
+                    pass
+
+        buf.seek(0)
+        nombre_zip = "".join(c if c.isalnum() else "_" for c in pieza.nombre).lower()
+        resp = HttpResponse(buf.read(), content_type="application/zip")
+        resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}_ia.zip"'
+        return resp
 
 
 class PedidoView(EmpresaViewSetMixin, viewsets.ModelViewSet):
@@ -171,6 +199,28 @@ class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre", "descripcion"]
     ordering_fields  = ["nombre", "creado_en"]
+
+    @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")
+    def descargar_imagenes_ia(self, request, pk=None):
+        figura   = self.get_object()
+        imagenes = [img for img in figura.imagenes.all() if img.imagen_procesada]
+        if not imagenes:
+            return Response({"detail": "Sin imágenes IA procesadas."}, status=404)
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for i, img in enumerate(imagenes, 1):
+                try:
+                    with open(img.imagen_procesada.path, "rb") as f:
+                        zf.writestr(f"imagen_ia_{i:02d}.jpg", f.read())
+                except OSError:
+                    pass
+
+        buf.seek(0)
+        nombre_zip = "".join(c if c.isalnum() else "_" for c in figura.nombre).lower()
+        resp = HttpResponse(buf.read(), content_type="application/zip")
+        resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}_ia.zip"'
+        return resp
 
 
 class FiguraPiezaView(viewsets.ModelViewSet):

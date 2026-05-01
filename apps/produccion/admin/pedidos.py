@@ -64,7 +64,7 @@ class PedidoForm(forms.ModelForm):
 class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
     form                = PedidoForm
     grupos_empresa      = {"Maker"}
-    list_display        = ("id", "numero_pedido", "cliente", "figura",
+    list_display        = ("numero_pedido", "cliente", "figura",
                            "cantidad", "realizados", "restantes", "estado",
                            "fecha_entrega", "prioridad", "maquina")
     list_editable       = ("estado",)
@@ -99,7 +99,7 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
 class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
     form                = TareaForm
     grupos_empresa      = {"Maker"}
-    list_display        = ("id", "prioridad", "cliente", "producto",
+    list_display        = ("producto","cliente","prioridad", 
                            "piezas_por_figura", "cantidad", "realizados", "restantes",
                            "fecha_entrega", "maquina", "estado")
     list_editable       = ("realizados", "estado")

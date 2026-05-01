@@ -19,7 +19,7 @@ from apps.produccion.admin.mixins import EmpresaMixin, VentaForm
 class VentaAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa    = {"Maker"}
     form              = VentaForm
-    list_display      = ("id", "fecha", "numeros_pedido", "clientes_nombre", "precio_total_fmt", "btn_imprimir")
+    list_display      = ("numeros_pedido","fecha", "clientes_nombre", "precio_total_fmt", "btn_imprimir")
     list_filter       = ("fecha",)
     search_fields     = ("pedidos__numero_pedido", "pedidos__cliente__nombre")
     ordering          = ("-fecha",)
