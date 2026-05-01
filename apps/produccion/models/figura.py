@@ -1,7 +1,9 @@
 from django.db import models
+
 from .empresa import Empresa
 from .inventario_pieza import InventarioPieza
 from .insumo import Insumo
+from .upload_paths import upload_figura_imagen, upload_figura_procesada
 
 
 class Figura(models.Model):
@@ -34,10 +36,11 @@ class Figura(models.Model):
 
 
 class FiguraImagen(models.Model):
-    figura = models.ForeignKey(Figura, on_delete=models.CASCADE,
-                               related_name="imagenes", verbose_name="Figura")
-    imagen = models.ImageField(upload_to="figuras/imagenes/", verbose_name="Imagen")
-    orden  = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+    figura           = models.ForeignKey(Figura, on_delete=models.CASCADE,
+                                         related_name="imagenes", verbose_name="Figura")
+    imagen           = models.ImageField(upload_to=upload_figura_imagen, verbose_name="Imagen")
+    imagen_procesada = models.ImageField(upload_to=upload_figura_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
+    orden            = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
 
     class Meta:
         ordering        = ["orden", "id"]
@@ -46,6 +49,19 @@ class FiguraImagen(models.Model):
 
     def __str__(self):
         return f"Imagen #{self.orden} — {self.figura.nombre}"
+
+    def save(self, *args, **kwargs):
+        imagen_cambio = True
+        if self.pk:
+            try:
+                anterior = FiguraImagen.objects.values_list("imagen", flat=True).get(pk=self.pk)
+                imagen_cambio = anterior != self.imagen.name
+            except FiguraImagen.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if imagen_cambio and self.imagen:
+            from apps.produccion.services.vertex_imagen import procesar_en_background
+            procesar_en_background(FiguraImagen, self.pk, self.imagen.path)
 
 
 class FiguraPieza(models.Model):

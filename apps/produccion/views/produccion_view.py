@@ -166,7 +166,7 @@ class TareaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
 
 
 class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
-    queryset         = Figura.objects.prefetch_related("figura_piezas__pieza")
+    queryset         = Figura.objects.prefetch_related("figura_piezas__pieza", "imagenes")
     serializer_class = FiguraSerializer
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre", "descripcion"]

@@ -38,6 +38,9 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
     search_fields   = ("nombre",)
     ordering        = ("nombre",)
     readonly_fields = ("actualizado_en", "carrusel_imagenes")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("imagenes")
     fieldsets = (
         (None, {
             "fields": (
@@ -63,25 +66,30 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
     )
 
     def miniatura(self, obj):
-        img = obj.imagen or (obj.imagenes.first().imagen if obj.imagenes.exists() else None)
+        primera = next(iter(obj.imagenes.all()), None)
+        img = primera.imagen_procesada if primera else obj.imagen_procesada
         if not img:
-            return "—"
+            return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
         return format_html(
-            '<img src="{}" style="height:48px;border-radius:4px;object-fit:cover">',
+            '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
+            'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
             img.url,
         )
-    miniatura.short_description = "Imagen"
+    miniatura.short_description = "Imagen IA"
 
     def carrusel_imagenes(self, obj):
         if not obj or not obj.pk:
             return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la pieza primero para agregar imágenes.</p>')
-        imagenes = list(obj.imagenes.all())
-        if not imagenes:
-            return mark_safe('<p style="color:#6c757d;font-style:italic">Sin imágenes. Usa el panel inferior para agregar.</p>')
-        count = len(imagenes)
+        procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
+        if not procesadas:
+            return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Imágenes IA en proceso. Recarga en unos segundos.</p>')
+        count      = len(procesadas)
         slides_html = "".join(
-            format_html('<div class="pc-slide"><img src="{}" alt="Imagen {}"></div>', img.imagen.url, i + 1)
-            for i, img in enumerate(imagenes)
+            format_html(
+                '<div class="pc-slide"><img src="{}" alt="Imagen {}"></div>',
+                img.imagen_procesada.url, i + 1,
+            )
+            for i, img in enumerate(procesadas)
         )
         dots_html = "".join(
             format_html(

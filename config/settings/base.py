@@ -136,3 +136,12 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
+PHOTOROOM_API_KEY = env("PHOTOROOM_API_KEY", default="")
+
+# ── Vertex AI Imagen ───────────────────────────────────────────────────────────
+VERTEX_AI_PROJECT  = env("VERTEX_AI_PROJECT",  default="")
+VERTEX_AI_LOCATION = env("VERTEX_AI_LOCATION", default="us-central1")
+VERTEX_AI_KEY_FILE = env("VERTEX_AI_KEY_FILE", default="")
+
+# ── Google Imagen (google-genai SDK) ───────────────────────────────────────────
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")

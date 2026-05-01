@@ -6,6 +6,7 @@ import datetime
 
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
 
 from apps.produccion.models import InventarioPieza, PiezaImagen, Venta
 
@@ -118,10 +119,21 @@ class PiezaImagenInlineForm(forms.ModelForm):
 
 
 class PiezaImagenInline(admin.TabularInline):
-    model  = PiezaImagen
-    form   = PiezaImagenInlineForm
-    extra  = 1
-    fields = ("imagen", "orden")
+    model           = PiezaImagen
+    form            = PiezaImagenInlineForm
+    extra           = 1
+    fields          = ("imagen", "orden", "preview_ia")
+    readonly_fields = ("preview_ia",)
+
+    @admin.display(description="Vista IA")
+    def preview_ia(self, obj):
+        if obj.imagen_procesada:
+            return format_html(
+                '<img src="{}" style="height:72px;border-radius:6px;'
+                'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
+                obj.imagen_procesada.url,
+            )
+        return format_html('<span style="color:#aaa;font-size:11px">⏳ procesando…</span>')
 
 
 class VentaForm(forms.ModelForm):

@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
 from apps.produccion.models import Figura, FiguraImagen, FiguraPieza
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget
 
@@ -12,10 +13,21 @@ class FiguraImagenInlineForm(forms.ModelForm):
 
 
 class FiguraImagenInline(admin.TabularInline):
-    model  = FiguraImagen
-    form   = FiguraImagenInlineForm
-    extra  = 1
-    fields = ("imagen", "orden")
+    model           = FiguraImagen
+    form            = FiguraImagenInlineForm
+    extra           = 1
+    fields          = ("imagen", "orden", "preview_ia")
+    readonly_fields = ("preview_ia",)
+
+    @admin.display(description="Vista IA")
+    def preview_ia(self, obj):
+        if obj.imagen_procesada:
+            return format_html(
+                '<img src="{}" style="height:72px;border-radius:6px;'
+                'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
+                obj.imagen_procesada.url,
+            )
+        return format_html('<span style="color:#aaa;font-size:11px">⏳ procesando…</span>')
 
 
 class FiguraPiezaInline(admin.TabularInline):
@@ -37,10 +49,24 @@ class FiguraPiezaInline(admin.TabularInline):
 @admin.register(Figura)
 class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa  = {"Maker"}
-    list_display    = ("id", "nombre", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
+    list_display    = ("miniatura_ia", "id", "nombre", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
     search_fields   = ("nombre", "descripcion")
     readonly_fields = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en")
     inlines         = [FiguraImagenInline, FiguraPiezaInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("imagenes")
+
+    @admin.display(description="Imagen IA")
+    def miniatura_ia(self, obj):
+        primera = next(iter(obj.imagenes.all()), None)
+        if not primera or not primera.imagen_procesada:
+            return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
+        return format_html(
+            '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
+            'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
+            primera.imagen_procesada.url,
+        )
     fieldsets = (
         (None, {
             "fields": ("nombre", "descripcion"),

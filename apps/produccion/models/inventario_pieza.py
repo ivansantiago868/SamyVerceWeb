@@ -1,5 +1,10 @@
 from django.db import models
+
 from .empresa import Empresa
+from .upload_paths import (
+    upload_inventario_imagen, upload_inventario_procesada,
+    upload_pieza_imagen, upload_pieza_procesada,
+)
 
 
 class InventarioPieza(models.Model):
@@ -14,7 +19,6 @@ class InventarioPieza(models.Model):
     tiempo_impresion_horas   = models.DecimalField(max_digits=8,  decimal_places=2, verbose_name="Tiempo de impresión (h)")
     tiempo_postproceso_horas = models.DecimalField(max_digits=8,  decimal_places=2, default=0, verbose_name="Tiempo post-procesado (h)")
     costo_empaque            = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Costo empaque (COP)")
-    # Costos calculados — guardados como histórico
     costo_material           = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Costo material (COP)")
     costo_energia            = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Costo energía (COP)")
     costo_tiempo             = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Costo tiempo (COP)")
@@ -25,28 +29,44 @@ class InventarioPieza(models.Model):
     costo_total_real         = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Costo total real (COP)")
     precio_venta_sugerido    = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Precio venta sugerido (COP)")
     archivo_3mf              = models.FileField(upload_to="piezas/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")
-    imagen                   = models.ImageField(upload_to="piezas/imagenes/", null=True, blank=True, verbose_name="Imagen de la pieza")
+    imagen                   = models.ImageField(upload_to=upload_inventario_imagen, null=True, blank=True, verbose_name="Imagen de la pieza")
+    imagen_procesada         = models.ImageField(upload_to=upload_inventario_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
     url_referencia           = models.URLField(max_length=500, null=True, blank=True, verbose_name="URL de referencia")
     actualizado_en           = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering        = ["nombre"]
+        ordering            = ["nombre"]
         verbose_name        = "Pieza"
         verbose_name_plural = "Piezas"
 
     def __str__(self):
         return self.nombre
 
+    def save(self, *args, **kwargs):
+        imagen_cambio = True
+        if self.pk:
+            try:
+                anterior = InventarioPieza.objects.values_list("imagen", flat=True).get(pk=self.pk)
+                imagen_actual = self.imagen.name if self.imagen else None
+                imagen_cambio = anterior != imagen_actual
+            except InventarioPieza.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if imagen_cambio and self.imagen:
+            from apps.produccion.services.vertex_imagen import procesar_en_background
+            procesar_en_background(InventarioPieza, self.pk, self.imagen.path)
+
 
 class PiezaImagen(models.Model):
-    pieza  = models.ForeignKey(
+    pieza            = models.ForeignKey(
         InventarioPieza,
         on_delete=models.CASCADE,
         related_name="imagenes",
         verbose_name="Pieza",
     )
-    imagen = models.ImageField(upload_to="piezas/imagenes/", verbose_name="Imagen")
-    orden  = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+    imagen           = models.ImageField(upload_to=upload_pieza_imagen, verbose_name="Imagen")
+    imagen_procesada = models.ImageField(upload_to=upload_pieza_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
+    orden            = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
 
     class Meta:
         ordering            = ["orden", "id"]
@@ -55,3 +75,16 @@ class PiezaImagen(models.Model):
 
     def __str__(self):
         return f"Imagen #{self.orden} — {self.pieza.nombre}"
+
+    def save(self, *args, **kwargs):
+        imagen_cambio = True
+        if self.pk:
+            try:
+                anterior = PiezaImagen.objects.values_list("imagen", flat=True).get(pk=self.pk)
+                imagen_cambio = anterior != self.imagen.name
+            except PiezaImagen.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if imagen_cambio and self.imagen:
+            from apps.produccion.services.vertex_imagen import procesar_en_background
+            procesar_en_background(PiezaImagen, self.pk, self.imagen.path)

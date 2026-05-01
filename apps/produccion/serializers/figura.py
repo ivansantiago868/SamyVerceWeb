@@ -3,9 +3,23 @@ from apps.produccion.models import Figura, FiguraImagen, FiguraPieza
 
 
 class FiguraImagenSerializer(serializers.ModelSerializer):
+    imagen = serializers.SerializerMethodField()
+
     class Meta:
         model  = FiguraImagen
         fields = ["id", "imagen", "orden"]
+
+    def get_imagen(self, obj):
+        if not obj.imagen_procesada:
+            return None
+        try:
+            url = obj.imagen_procesada.url
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        except Exception:
+            return None
 
 
 class FiguraPiezaSerializer(serializers.ModelSerializer):

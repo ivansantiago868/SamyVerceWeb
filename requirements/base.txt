@@ -7,3 +7,7 @@ django-filter>=23.0
 openpyxl>=3.1
 Pillow>=10.0
 drf-spectacular>=0.27
+requests
+google-auth
+google-genai
+google-cloud-aiplatform
