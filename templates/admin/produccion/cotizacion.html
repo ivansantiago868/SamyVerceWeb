@@ -377,7 +377,7 @@
         <tr>
           <td>{{ pedido.numero_pedido|default:"—" }}</td>
           <td>
-            <div class="desc-main">{% if pedido.pieza %}{{ pedido.pieza.nombre }}{% else %}—{% endif %}</div>
+            <div class="desc-main">{% if pedido.figura %}{{ pedido.figura.nombre }}{% else %}—{% endif %}</div>
             {% if pedido.descripcion %}<div class="desc-notes">{{ pedido.descripcion }}</div>{% endif %}
           </td>
           <td class="tc">{{ pedido.cantidad }}</td>

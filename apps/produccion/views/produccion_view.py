@@ -4,6 +4,10 @@ ViewSets para: VariablesFijas, InventarioPieza, Pedido, Venta, Tarea.
 Responsabilidad: solo HTTP (rutas, status codes, respuestas).
 Lógica de negocio → controllers/
 """
+import io
+import zipfile
+
+from django.http import HttpResponse
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -11,10 +15,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
-from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea
+from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea, Figura, FiguraPieza
 from apps.produccion.serializers import (
     VariablesFijasSerializer, InventarioPiezaSerializer,
     PedidoSerializer, VentaSerializer, TareaSerializer,
+    FiguraSerializer, FiguraPiezaSerializer,
 )
 from apps.produccion.services import PedidoService, VentaService, TareaService
 from apps.produccion.controllers.variables_fijas_controller import VariablesFijasController
@@ -95,19 +100,43 @@ class VariablesFijasView(EmpresaViewSetMixin, viewsets.ModelViewSet):
 
 
 class InventarioPiezaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
-    queryset         = InventarioPieza.objects.all()
+    queryset         = InventarioPieza.objects.prefetch_related("imagenes")
     serializer_class = InventarioPiezaSerializer
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre"]
     ordering_fields  = ["nombre", "precio_venta_sugerido", "costo_total_real"]
 
+    @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")
+    def descargar_imagenes_ia(self, request, pk=None):
+        pieza    = self.get_object()
+        imagenes = [img for img in pieza.imagenes.all() if img.imagen_procesada]
+        if pieza.imagen_procesada:
+            imagenes = list(imagenes) + [pieza]  # incluir imagen principal si la tiene
+        if not imagenes:
+            return Response({"detail": "Sin imágenes IA procesadas."}, status=404)
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for i, img in enumerate(imagenes, 1):
+                try:
+                    with open(img.imagen_procesada.path, "rb") as f:
+                        zf.writestr(f"imagen_ia_{i:02d}.jpg", f.read())
+                except OSError:
+                    pass
+
+        buf.seek(0)
+        nombre_zip = "".join(c if c.isalnum() else "_" for c in pieza.nombre).lower()
+        resp = HttpResponse(buf.read(), content_type="application/zip")
+        resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}_ia.zip"'
+        return resp
+
 
 class PedidoView(EmpresaViewSetMixin, viewsets.ModelViewSet):
-    queryset         = Pedido.objects.select_related("cliente", "pieza", "material", "maquina")
+    queryset         = Pedido.objects.select_related("cliente", "figura", "maquina")
     serializer_class = PedidoSerializer
     filter_backends  = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["estado", "prioridad", "maquina", "numero_pedido"]
-    search_fields    = ["numero_pedido", "cliente__nombre", "pieza__nombre", "descripcion"]
+    search_fields    = ["numero_pedido", "cliente__nombre", "figura__nombre", "descripcion"]
     ordering_fields  = ["fecha_entrega", "prioridad", "precio_unidad", "creado_en"]
 
     @action(detail=False, methods=["get"], url_path="dashboard")
@@ -162,3 +191,48 @@ class TareaView(EmpresaViewSetMixin, viewsets.ModelViewSet):
             return Response(TareaSerializer(tarea).data)
         except Tarea.DoesNotExist:
             return Response({"error": "Tarea no encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
+    queryset         = Figura.objects.prefetch_related("figura_piezas__pieza", "imagenes")
+    serializer_class = FiguraSerializer
+    filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields    = ["nombre", "descripcion"]
+    ordering_fields  = ["nombre", "creado_en"]
+
+    @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")
+    def descargar_imagenes_ia(self, request, pk=None):
+        figura   = self.get_object()
+        imagenes = [img for img in figura.imagenes.all() if img.imagen_procesada]
+        if not imagenes:
+            return Response({"detail": "Sin imágenes IA procesadas."}, status=404)
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for i, img in enumerate(imagenes, 1):
+                try:
+                    with open(img.imagen_procesada.path, "rb") as f:
+                        zf.writestr(f"imagen_ia_{i:02d}.jpg", f.read())
+                except OSError:
+                    pass
+
+        buf.seek(0)
+        nombre_zip = "".join(c if c.isalnum() else "_" for c in figura.nombre).lower()
+        resp = HttpResponse(buf.read(), content_type="application/zip")
+        resp["Content-Disposition"] = f'attachment; filename="{nombre_zip}_ia.zip"'
+        return resp
+
+
+class FiguraPiezaView(viewsets.ModelViewSet):
+    queryset         = FiguraPieza.objects.select_related("figura", "pieza")
+    serializer_class = FiguraPiezaSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        figura_id = self.request.query_params.get("figura")
+        if figura_id:
+            qs = qs.filter(figura_id=figura_id)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save()

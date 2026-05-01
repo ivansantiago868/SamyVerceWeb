@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from .models.empresa import PerfilUsuario
 from .models.gasto import Gasto
 from .models.insumo import Insumo
-from .models.pedido import Pedido
+from .models.pedido import Pedido, PedidoMaterial
 from .models.venta_tarea import Tarea
 
 
@@ -30,17 +30,32 @@ def crear_insumo_desde_gasto(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Pedido)
 def crear_tarea_desde_pedido(sender, instance, created, **kwargs):
-    if created:
+    if not created:
+        return
+
+    if not instance.figura_id:
+        return
+
+    # Crear un PedidoMaterial por cada pieza, pre-cargando el insumo de FiguraPieza si existe
+    for fp in instance.figura.figura_piezas.select_related("pieza", "insumo").all():
+        PedidoMaterial.objects.get_or_create(
+            pedido=instance,
+            pieza=fp.pieza,
+            defaults={"material": fp.insumo},
+        )
+
+    # Una Tarea por cada pieza de la figura × cantidad de figuras pedidas
+    for fp in instance.figura.figura_piezas.select_related("pieza").all():
         Tarea.objects.create(
             empresa       = instance.empresa,
             pedido        = instance,
             prioridad     = instance.prioridad,
             cliente       = instance.cliente,
-            producto      = instance.pieza.nombre if instance.pieza else "",
-            cantidad      = instance.cantidad,
-            precio_total  = instance.precio_total,
+            producto      = fp.pieza.nombre,
+            cantidad      = fp.cantidad * instance.cantidad,
+            precio_total  = round(fp.subtotal_precio * instance.cantidad, 2),
             fecha_entrega = instance.fecha_entrega,
             maquina       = instance.maquina,
             estado        = Tarea.Estado.PENDIENTE,
-            descripcion   = instance.descripcion,
+            descripcion   = f"[{instance.figura.nombre}] {instance.descripcion}".strip(),
         )

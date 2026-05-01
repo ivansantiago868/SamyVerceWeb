@@ -45,6 +45,7 @@ urlpatterns = [
 
     # ── Interfaces gráficas ───────────────────────────────────────
     path("cotizador/", TemplateView.as_view(template_name="cotizador/index.html"), name="cotizador-ui"),
+    path("figuras/",   TemplateView.as_view(template_name="figuras/index.html"),  name="figuras-ui"),
 
     # ── Documentación API (Swagger / ReDoc) ───────────────────────
     path("api/schema/",     SpectacularAPIView.as_view(permission_classes=[]),                             name="schema"),
