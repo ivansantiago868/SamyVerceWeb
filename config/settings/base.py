@@ -141,3 +141,11 @@ VERTEX_AI_KEY_FILE = env("VERTEX_AI_KEY_FILE", default="")
 
 # ── Google Imagen (google-genai SDK) ───────────────────────────────────────────
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+
+# ── Google Drive Storage ───────────────────────────────────────────────────────
+GOOGLE_DRIVE_CREDENTIALS_FILE = env("GOOGLE_DRIVE_CREDENTIALS_FILE", default=str(BASE_DIR / "google_credentials.json"))
+GOOGLE_DRIVE_TOKEN_FILE       = env("GOOGLE_DRIVE_TOKEN_FILE",       default=str(BASE_DIR / "google_token.json"))
+GOOGLE_DRIVE_FOLDER_ID        = env("GOOGLE_DRIVE_FOLDER_ID",        default="")
+
+if GOOGLE_DRIVE_FOLDER_ID:
+    DEFAULT_FILE_STORAGE = "config.google_drive_storage.GoogleDriveStorage"

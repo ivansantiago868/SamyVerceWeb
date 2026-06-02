@@ -39,3 +39,6 @@ db.sqlite3
 htmlcov/
 .env
 .env
+google_credentials.json1
+google_credentials.json
+google_token.json
