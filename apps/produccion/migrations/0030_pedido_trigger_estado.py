@@ -1,6 +1,7 @@
 from django.db import migrations
 
-SQL_CREATE = """
+
+SQL_CREATE_PG = """
 CREATE OR REPLACE FUNCTION pedido_sync_estado()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -22,10 +23,45 @@ BEFORE UPDATE ON produccion_pedido
 FOR EACH ROW EXECUTE FUNCTION pedido_sync_estado();
 """
 
-SQL_DROP = """
+SQL_DROP_PG = """
 DROP TRIGGER IF EXISTS pedido_auto_estado ON produccion_pedido;
 DROP FUNCTION IF EXISTS pedido_sync_estado();
 """
+
+SQL_CREATE_SQLITE = """
+CREATE TRIGGER IF NOT EXISTS pedido_auto_estado
+BEFORE UPDATE ON produccion_pedido
+FOR EACH ROW
+WHEN NEW.realizados != OLD.realizados
+  AND NEW.estado NOT IN ('Entregado', 'Cancelado')
+BEGIN
+    UPDATE produccion_pedido
+    SET estado = CASE
+        WHEN NEW.cantidad > 0 AND NEW.realizados >= NEW.cantidad THEN 'Listo'
+        WHEN NEW.realizados > 0 THEN 'En cola'
+        ELSE NEW.estado
+    END
+    WHERE id = NEW.id;
+END;
+"""
+
+SQL_DROP_SQLITE = "DROP TRIGGER IF EXISTS pedido_auto_estado;"
+
+
+def forwards(apps, schema_editor):
+    vendor = schema_editor.connection.vendor
+    if vendor == "postgresql":
+        schema_editor.execute(SQL_CREATE_PG)
+    elif vendor == "sqlite":
+        schema_editor.execute(SQL_CREATE_SQLITE)
+
+
+def backwards(apps, schema_editor):
+    vendor = schema_editor.connection.vendor
+    if vendor == "postgresql":
+        schema_editor.execute(SQL_DROP_PG)
+    elif vendor == "sqlite":
+        schema_editor.execute(SQL_DROP_SQLITE)
 
 
 class Migration(migrations.Migration):
@@ -35,5 +71,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(sql=SQL_CREATE, reverse_sql=SQL_DROP),
+        migrations.RunPython(forwards, backwards),
     ]
