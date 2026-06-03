@@ -1,6 +1,6 @@
 import io
 import requests
-from PIL import Image as PILImage
+from PIL import Image as PILImage  # noqa: F401 usado en _collage
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.admin.views.decorators import staff_member_required
@@ -24,26 +24,26 @@ GRIS      = HexColor("#555555")
 PRECIO    = HexColor("#1a7a3c")
 
 
-def _descargar_imagen(url, max_size=(400, 400)):
-    """Descarga una imagen desde Drive y devuelve un objeto PIL redimensionado."""
+def _descargar_imagen(url):
+    """Descarga una imagen desde Drive y devuelve (BytesIO, aspect_ratio)."""
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
-        img = PILImage.open(io.BytesIO(r.content)).convert("RGB")
-        img.thumbnail(max_size, PILImage.LANCZOS)
-        buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=85)
+        data = r.content
+        with PILImage.open(io.BytesIO(data)) as img:
+            w, h = img.size
+            ratio = h / w if w > 0 else 1.0
+        buf = io.BytesIO(data)
         buf.seek(0)
-        return buf
+        return buf, ratio
     except Exception:
-        return None
+        return None, 1.0
 
 
 def _collage(imagenes_qs, ancho_disponible, usar_ia=True):
     """
     Genera una tabla-collage con máximo 5 imágenes.
-    usar_ia=True  → imagen procesada por IA (o real como fallback)
-    usar_ia=False → imagen real original
+    Ajusta el alto de cada fila según el aspecto real de las imágenes.
     """
     imgs_url = []
     for fi in imagenes_qs[:5]:
@@ -57,41 +57,56 @@ def _collage(imagenes_qs, ancho_disponible, usar_ia=True):
     if not imgs_url:
         return None
 
-    n = len(imgs_url)
+    # Descargar todas las imágenes y obtener sus ratios reales
+    descargadas = [_descargar_imagen(url) for url in imgs_url]
+    descargadas = [(buf, ratio) for buf, ratio in descargadas if buf is not None]
+    if not descargadas:
+        return None
 
-    # Tamaño base (3 columnas) × 1.50 → imágenes 50% más grandes
-    cell_w = ((ancho_disponible / 3) - 0.3 * cm) * 2.50
-    cell_h = cell_w * 0.75
+    n = len(descargadas)
+    cell_w = ancho_disponible * 0.40
     col_total = cell_w + 0.3 * cm
-
-    # Cuántas columnas caben con el nuevo tamaño
     columnas = min(n, max(1, int(ancho_disponible / col_total)))
 
+    # Agrupar en filas y calcular alto por fila (máximo ratio de la fila)
     filas_datos = []
+    filas_alturas = []
     fila_actual = []
-    for i, url in enumerate(imgs_url):
-        buf = _descargar_imagen(url)
-        if buf:
-            img_obj = Image(buf, width=cell_w, height=cell_h)
-        else:
-            img_obj = Paragraph("—", getSampleStyleSheet()["Normal"])
-        fila_actual.append(img_obj)
+    ratios_fila = []
+
+    for buf, ratio in descargadas:
+        fila_actual.append((buf, ratio))
+        ratios_fila.append(ratio)
         if len(fila_actual) == columnas:
-            filas_datos.append(fila_actual)
+            max_ratio = max(ratios_fila)
+            cell_h = cell_w * max_ratio
+            fila_imgs = []
+            for b, _ in fila_actual:
+                fila_imgs.append(Image(b, width=cell_w, height=cell_h))
+            filas_datos.append(fila_imgs)
+            filas_alturas.append(cell_h + 0.3 * cm)
             fila_actual = []
+            ratios_fila = []
+
     if fila_actual:
-        while len(fila_actual) < columnas:
-            fila_actual.append("")
-        filas_datos.append(fila_actual)
+        max_ratio = max(ratios_fila) if ratios_fila else 1.0
+        cell_h = cell_w * max_ratio
+        fila_imgs = []
+        for b, _ in fila_actual:
+            fila_imgs.append(Image(b, width=cell_w, height=cell_h))
+        while len(fila_imgs) < columnas:
+            fila_imgs.append("")
+        filas_datos.append(fila_imgs)
+        filas_alturas.append(cell_h + 0.3 * cm)
 
     col_widths = [col_total] * columnas
-    tabla = Table(filas_datos, colWidths=col_widths, rowHeights=[cell_h + 0.3 * cm] * len(filas_datos))
+    tabla = Table(filas_datos, colWidths=col_widths, rowHeights=filas_alturas)
     tabla.setStyle(TableStyle([
-        ("ALIGN",       (0, 0), (-1, -1), "CENTER"),
-        ("VALIGN",      (0, 0), (-1, -1), "MIDDLE"),
-        ("GRID",        (0, 0), (-1, -1), 0.5, HexColor("#dddddd")),
-        ("BACKGROUND",  (0, 0), (-1, -1), HexColor("#f8f8f8")),
-        ("ROWPADDING",  (0, 0), (-1, -1), 4),
+        ("ALIGN",      (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN",     (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID",       (0, 0), (-1, -1), 0.5, HexColor("#dddddd")),
+        ("BACKGROUND", (0, 0), (-1, -1), HexColor("#f8f8f8")),
+        ("ROWPADDING", (0, 0), (-1, -1), 4),
     ]))
     return tabla
 
@@ -120,7 +135,7 @@ def _collage_mixto(imagenes_qs, ancho_disponible):
     return bloques
 
 
-def _generar_pdf(figuras, nombre_empresa, usar_ia=True, mixto=False):
+def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=False):
     """Construye el PDF del catálogo y devuelve un BytesIO listo para enviar."""
     buf = io.BytesIO()
     PAGE_W, _ = A4
@@ -146,7 +161,22 @@ def _generar_pdf(figuras, nombre_empresa, usar_ia=True, mixto=False):
         fontSize=9, textColor=GRIS, spaceAfter=4)
 
     story = []
-    story.append(Spacer(1, 3 * cm))
+    story.append(Spacer(1, 2 * cm))
+
+    # Logo de la empresa
+    if empresa and empresa.logo:
+        try:
+            logo_buf, logo_ratio = _descargar_imagen(empresa.logo.url)
+            if logo_buf:
+                logo_w = 5 * cm
+                logo_h = logo_w * logo_ratio
+                logo_img = Image(logo_buf, width=logo_w, height=logo_h)
+                logo_img.hAlign = "CENTER"
+                story.append(logo_img)
+                story.append(Spacer(1, 0.5 * cm))
+        except Exception:
+            pass
+
     story.append(Paragraph("Catálogo de Figuras", st_titulo))
     story.append(Paragraph(nombre_empresa, st_empresa))
     story.append(HRFlowable(width=ancho, color=AZUL, thickness=2))
@@ -183,18 +213,23 @@ def _generar_pdf(figuras, nombre_empresa, usar_ia=True, mixto=False):
 
 
 def _qs_y_empresa(request):
+    from apps.produccion.models.empresa import Empresa
     perfil = getattr(request.user, "perfil", None)
     qs = Figura.objects.prefetch_related("imagenes", "figura_piezas__pieza").order_by("nombre")
     if perfil and perfil.empresa_id:
-        return qs.filter(empresa=perfil.empresa), str(perfil.empresa)
-    return qs, "Todas las empresas"
+        return qs.filter(empresa=perfil.empresa), str(perfil.empresa), perfil.empresa
+    # Superadmin sin perfil: usar la primera empresa disponible para el logo
+    empresa = Empresa.objects.filter(logo__isnull=False).exclude(logo="").first() \
+              or Empresa.objects.first()
+    nombre = str(empresa) if empresa else "Todas las empresas"
+    return qs, nombre, empresa
 
 
 @staff_member_required
 def exportar_catalogo_pdf(request):
     """PDF con imágenes procesadas por IA."""
-    figuras, nombre_empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, usar_ia=True)
+    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=True)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras_ia.pdf"'
     return response
@@ -203,8 +238,8 @@ def exportar_catalogo_pdf(request):
 @staff_member_required
 def exportar_catalogo_pdf_real(request):
     """PDF con imágenes originales (sin procesamiento IA)."""
-    figuras, nombre_empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, usar_ia=False)
+    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=False)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras.pdf"'
     return response
@@ -213,8 +248,8 @@ def exportar_catalogo_pdf_real(request):
 @staff_member_required
 def exportar_catalogo_pdf_mixto(request):
     """PDF con imágenes originales e IA juntas para cada figura."""
-    figuras, nombre_empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, mixto=True)
+    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, mixto=True)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras_mixto.pdf"'
     return response

@@ -24,20 +24,18 @@ _MODELO_TEXTO  = "gemini-2.5-flash"
 logger = logging.getLogger(__name__)
 
 _PROMPT_ESTUDIO = (
-    "Minimalist product photography in a studio setting. The subject is placed on a smooth, "
-    "matte white tabletop with a clean white backdrop, but with a subtle visible horizon line "
-    "where the background meets the surface. The transition between wall and table is soft but "
-    "perceptible, adding depth.\n"
-    "Soft, diffused lighting from one side (left or slightly above-left), creating gentle shadows "
-    "and a light gradient across the background. Slight shadow falloff near the base of the product "
-    "to enhance grounding. High-key aesthetic with controlled contrast, no harsh reflections, and "
-    "smooth tonal transitions.\n"
-    "Camera angle is slightly low and front-facing (around 10–20 degrees above the surface), "
-    "emphasizing volume and depth. Composition is centered or slightly off-center with generous "
-    "negative space. The product is in sharp focus with crisp detail, while the background remains "
-    "clean and minimal.\n"
-    "Neutral color palette, modern editorial style. No props or distractions—focus on shape, "
-    "texture, and silhouette. Ultra clean studio product shot."
+    "Minimalist studio product photography. The product is the absolute main subject and must "
+    "fill 80–90% of the frame — close-up, tight crop, no wide shots. Do NOT place the product "
+    "far away or small. The product must appear large, near and prominent.\n"
+    "Background: smooth matte white surface with a clean white backdrop. Subtle soft horizon line "
+    "where wall meets table, adding just a hint of depth. Keep background simple and uncluttered.\n"
+    "Lighting: soft diffused light from slightly above-left, gentle shadow at the base to ground "
+    "the product. High-key, no harsh reflections, smooth tonal transitions.\n"
+    "Camera: front-facing, slightly above eye level (10–15 degrees), product centered. "
+    "Minimal padding around the product — just enough breathing room (5–10% margin on each side). "
+    "The product must be in sharp focus with crisp detail.\n"
+    "Neutral color palette, modern editorial style. No props, no distractions. "
+    "Ultra clean close-up studio product shot."
 )
 
 _MAX_PX  = 1200
