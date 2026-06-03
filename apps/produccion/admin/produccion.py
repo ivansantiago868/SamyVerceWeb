@@ -58,7 +58,10 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             for obj in nuevas:
                 obj.orden = siguiente
                 siguiente += 1
-        for obj in instances:
+        for form, obj in zip(formset.forms, instances):
+            if not getattr(obj, '_skip_ia', None) is not None:
+                procesar = form.cleaned_data.get("procesar_con_ia", True)
+                obj._skip_ia = not procesar
             obj.save()
         formset.save_m2m()
         for obj in formset.deleted_objects:
@@ -109,7 +112,7 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
         slides_html = "".join(
             format_html(
                 '<div class="pc-slide">'
-                '<img src="{}" alt="Imagen {}" style="cursor:pointer" onclick="window.open(this.src)">'
+                '<img src="{}" alt="Imagen {}" style="cursor:zoom-in" onclick="window._svLightbox&&window._svLightbox.open(this.src)">'
                 '</div>',
                 img.imagen_procesada.url, i + 1,
             )

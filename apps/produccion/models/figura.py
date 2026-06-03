@@ -69,7 +69,7 @@ class FiguraImagen(models.Model):
             except FiguraImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
-        if imagen_cambio and self.imagen:
+        if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
             procesar_en_background(FiguraImagen, self.pk, self.imagen.url)
 

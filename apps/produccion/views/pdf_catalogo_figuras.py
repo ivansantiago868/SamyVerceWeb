@@ -59,8 +59,8 @@ def _collage(imagenes_qs, ancho_disponible, usar_ia=True):
 
     n = len(imgs_url)
 
-    # Tamaño base (3 columnas) × 1.30 → imágenes 30% más grandes
-    cell_w = ((ancho_disponible / 3) - 0.3 * cm) * 1.30
+    # Tamaño base (3 columnas) × 1.50 → imágenes 50% más grandes
+    cell_w = ((ancho_disponible / 3) - 0.3 * cm) * 2.50
     cell_h = cell_w * 0.75
     col_total = cell_w + 0.3 * cm
 

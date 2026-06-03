@@ -7,9 +7,16 @@ from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, Drag
 
 
 class FiguraImagenInlineForm(forms.ModelForm):
+    procesar_con_ia = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Procesar con IA",
+        widget=forms.CheckboxInput(attrs={"title": "Marcar para generar imagen IA automáticamente"}),
+    )
+
     class Meta:
         model   = FiguraImagen
-        fields  = ("imagen",)
+        fields  = ("imagen", "orden")
         widgets = {"imagen": DragDropImageWidget()}
 
 
@@ -17,12 +24,8 @@ class FiguraImagenInline(admin.TabularInline):
     model           = FiguraImagen
     form            = FiguraImagenInlineForm
     extra           = 1
-    fields          = ("imagen", "orden_display", "preview_ia")
-    readonly_fields = ("orden_display", "preview_ia",)
-
-    @admin.display(description="Orden")
-    def orden_display(self, obj):
-        return obj.orden if obj.pk else "—"
+    fields          = ("imagen", "orden", "procesar_con_ia", "preview_ia")
+    readonly_fields = ("preview_ia",)
 
     @admin.display(description="Vista IA")
     def preview_ia(self, obj):
@@ -123,15 +126,23 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         from apps.produccion.models.figura import FiguraImagen
         from django.db.models import Max
         instances = formset.save(commit=False)
-        nuevas = [o for o in instances if not o.pk and isinstance(o, FiguraImagen)]
-        if nuevas:
+
+        # Auto-asignar orden solo a imágenes nuevas que no tienen orden explícito (>0)
+        nuevas_sin_orden = [
+            o for o in instances
+            if not o.pk and isinstance(o, FiguraImagen) and o.orden == 0
+        ]
+        if nuevas_sin_orden:
             figura = form.instance
             max_o = FiguraImagen.objects.filter(figura=figura).aggregate(m=Max("orden"))["m"]
             siguiente = (max_o + 1) if max_o is not None else 0
-            for obj in nuevas:
+            for obj in nuevas_sin_orden:
                 obj.orden = siguiente
                 siguiente += 1
-        for obj in instances:
+
+        for f, obj in zip(formset.forms, instances):
+            procesar = f.cleaned_data.get("procesar_con_ia", True)
+            obj._skip_ia = not procesar
             obj.save()
         formset.save_m2m()
         for obj in formset.deleted_objects:
@@ -182,7 +193,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             format_html(
                 '<div class="pc-slide">'
                 '<img src="{}" alt="IA {}" style="cursor:pointer" '
-                'onclick="window.open(this.src)">'
+                'onclick="window._svLightbox&&window._svLightbox.open(this.src)" style="cursor:zoom-in">'
                 '</div>',
                 img.imagen_procesada.url, i + 1,
             )

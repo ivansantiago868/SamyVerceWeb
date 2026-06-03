@@ -94,7 +94,7 @@ class PiezaImagen(models.Model):
             except PiezaImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
-        if imagen_cambio and self.imagen:
+        if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
             procesar_en_background(PiezaImagen, self.pk, self.imagen.url)
 
