@@ -192,8 +192,8 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         slides = "".join(
             format_html(
                 '<div class="pc-slide">'
-                '<img src="{}" alt="IA {}" style="cursor:pointer" '
-                'onclick="window._svLightbox&&window._svLightbox.open(this.src)" style="cursor:zoom-in">'
+                '<img src="{}" alt="IA {}" style="cursor:zoom-in;max-width:100%;height:auto" '
+                'onclick="window._svLightbox&&window._svLightbox.open(this.src)">'
                 '</div>',
                 img.imagen_procesada.url, i + 1,
             )

@@ -64,7 +64,7 @@ def _collage(imagenes_qs, ancho_disponible, usar_ia=True):
         return None
 
     n = len(descargadas)
-    cell_w = ancho_disponible * 0.40
+    cell_w = ancho_disponible * 0.90
     col_total = cell_w + 0.3 * cm
     columnas = min(n, max(1, int(ancho_disponible / col_total)))
 
@@ -163,12 +163,12 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
     story = []
     story.append(Spacer(1, 2 * cm))
 
-    # Logo de la empresa
+    # Logo de la empresa dimencion de el logo 
     if empresa and empresa.logo:
         try:
             logo_buf, logo_ratio = _descargar_imagen(empresa.logo.url)
             if logo_buf:
-                logo_w = 5 * cm
+                logo_w = 5 * cm * 3.20
                 logo_h = logo_w * logo_ratio
                 logo_img = Image(logo_buf, width=logo_w, height=logo_h)
                 logo_img.hAlign = "CENTER"
