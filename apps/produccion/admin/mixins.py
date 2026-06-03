@@ -114,7 +114,7 @@ class InventarioPiezaForm(forms.ModelForm):
 class PiezaImagenInlineForm(forms.ModelForm):
     class Meta:
         model   = PiezaImagen
-        fields  = ("imagen", "orden")
+        fields  = ("imagen",)
         widgets = {"imagen": DragDropImageWidget()}
 
 
@@ -122,8 +122,14 @@ class PiezaImagenInline(admin.TabularInline):
     model           = PiezaImagen
     form            = PiezaImagenInlineForm
     extra           = 1
-    fields          = ("imagen", "orden", "preview_ia")
-    readonly_fields = ("preview_ia",)
+    can_delete      = True
+    fields          = ("imagen", "orden_display", "preview_ia")
+    readonly_fields = ("orden_display", "preview_ia",)
+    verbose_name_plural = "Imágenes de la pieza (marca ✓ en 'Eliminar' para borrar)"
+
+    @admin.display(description="Orden")
+    def orden_display(self, obj):
+        return obj.orden if obj.pk else "—"
 
     @admin.display(description="Vista IA")
     def preview_ia(self, obj):

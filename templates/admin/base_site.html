@@ -6,6 +6,11 @@
   <link rel="stylesheet" href="{% static 'admin/css/samyverce_theme.css' %}">
 {% endblock %}
 
+{% block extrascripts %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/upload_loader.js' %}"></script>
+{% endblock %}
+
 {% block userlinks %}
   <a href="/cotizador/"
      target="_blank"

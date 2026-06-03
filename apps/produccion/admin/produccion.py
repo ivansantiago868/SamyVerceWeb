@@ -2,7 +2,10 @@
 admin/produccion.py
 Variables Fijas e Inventario de Piezas.
 """
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.db.models import ProtectedError
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
 from apps.produccion.models import VariablesFijas, InventarioPieza
@@ -42,6 +45,24 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("imagenes")
+
+    def save_formset(self, request, form, formset, change):
+        from apps.produccion.models.inventario_pieza import PiezaImagen
+        from django.db.models import Max
+        instances = formset.save(commit=False)
+        nuevas = [o for o in instances if not o.pk and isinstance(o, PiezaImagen)]
+        if nuevas:
+            pieza = form.instance
+            max_o = PiezaImagen.objects.filter(pieza=pieza).aggregate(m=Max("orden"))["m"]
+            siguiente = (max_o + 1) if max_o is not None else 0
+            for obj in nuevas:
+                obj.orden = siguiente
+                siguiente += 1
+        for obj in instances:
+            obj.save()
+        formset.save_m2m()
+        for obj in formset.deleted_objects:
+            obj.delete()
     fieldsets = (
         ("Galería de imágenes", {
             "fields": ("carrusel_imagenes",),
@@ -62,7 +83,7 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             ),
         }),
         ("Archivos y referencias", {
-            "fields": ("imagen", "archivo_3mf", "url_referencia"),
+            "fields": ("imagen", "url_referencia"),
         }),
     )
 
@@ -133,3 +154,26 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             mark_safe(descargas),
         )
     carrusel_imagenes.short_description = "Carrusel de imágenes IA"
+
+    def delete_view(self, request, object_id, extra_context=None):
+        try:
+            return super().delete_view(request, object_id, extra_context)
+        except ProtectedError as e:
+            # Mostrar mensaje claro indicando qué figura usa esta pieza
+            figuras = set()
+            for obj in e.protected_objects:
+                nombre = getattr(getattr(obj, "figura", None), "nombre", None)
+                if nombre:
+                    figuras.add(nombre)
+            if figuras:
+                lista = ", ".join(f'"{f}"' for f in sorted(figuras))
+                msg = (
+                    f'No se puede eliminar esta pieza porque está siendo usada en '
+                    f'la(s) figura(s): {lista}. '
+                    f'Primero quítala de esa figura y luego intenta de nuevo.'
+                )
+            else:
+                msg = "No se puede eliminar: hay otros registros que dependen de esta pieza."
+            self.message_user(request, msg, level=messages.ERROR)
+            url = reverse("admin:produccion_inventariopieza_changelist")
+            return HttpResponseRedirect(url)

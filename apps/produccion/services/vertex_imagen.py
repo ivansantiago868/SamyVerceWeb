@@ -8,7 +8,8 @@ Configuración requerida en .env:
 import io
 import logging
 import os
-import threading
+import ssl
+import time
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -43,6 +44,37 @@ _MAX_PX  = 1200
 _QUALITY = 88
 
 
+_REINTENTOS = 4
+_ESPERA_BASE = 2  # segundos (2 → 4 → 8 → 16)
+_ERRORES_REINTENTABLES = (
+    ssl.SSLError,
+    ConnectionError,
+    TimeoutError,
+)
+
+
+def _descargar_url(url: str) -> bytes | None:
+    """Descarga una URL con reintentos ante errores SSL o de red transitorios."""
+    import requests as _req
+    for intento in range(1, _REINTENTOS + 1):
+        try:
+            r = _req.get(url, timeout=20)
+            r.raise_for_status()
+            return r.content
+        except _ERRORES_REINTENTABLES as exc:
+            espera = _ESPERA_BASE ** intento
+            logger.warning(
+                "Descarga fallida (intento %d/%d) — %s — reintentando en %ds",
+                intento, _REINTENTOS, exc, espera,
+            )
+            time.sleep(espera)
+        except Exception as exc:
+            logger.error("Error descargando imagen %s: %s", url, exc)
+            return None
+    logger.error("No se pudo descargar %s tras %d intentos.", url, _REINTENTOS)
+    return None
+
+
 def procesar_imagen_estudio(ruta: str) -> bytes | None:
     """
     Edita la imagen del producto con Imagen 3 via Google AI Studio API key.
@@ -56,8 +88,13 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
     try:
         client = genai.Client(api_key=api_key)
 
-        with open(ruta, "rb") as f:
-            img_bytes = f.read()
+        if ruta.startswith("http://") or ruta.startswith("https://"):
+            img_bytes = _descargar_url(ruta)
+            if img_bytes is None:
+                return None
+        else:
+            with open(ruta, "rb") as f:
+                img_bytes = f.read()
 
         respuesta = client.models.generate_content(
             model=_MODELO_IMAGEN,
@@ -101,23 +138,51 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
         return None
 
 
-def _worker(model_class, pk: int, ruta: str) -> None:
-    try:
-        resultado = procesar_imagen_estudio(ruta)
-        if not resultado:
+def _procesar(model_class, pk: int, ruta: str) -> None:
+    """Lógica de procesamiento pura — sin manejo de conexión ni hilos."""
+    for intento in range(1, _REINTENTOS + 1):
+        try:
+            resultado = procesar_imagen_estudio(ruta)
+            if not resultado:
+                return
+            base   = os.path.splitext(os.path.basename(ruta))[0]
+            nombre = f"{base}_studio.jpg"
+            obj    = model_class.objects.get(pk=pk)
+            obj.imagen_procesada.save(nombre, ContentFile(resultado), save=False)
+            model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name)
+            logger.info("Imagen procesada: %s id=%s → %s", model_class.__name__, pk, nombre)
             return
-        base   = os.path.splitext(os.path.basename(ruta))[0]
-        nombre = f"{base}_studio.jpg"
-        obj    = model_class.objects.get(pk=pk)
-        obj.imagen_procesada.save(nombre, ContentFile(resultado), save=False)
-        model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name)
-        logger.info("Imagen procesada: %s id=%s → %s", model_class.__name__, pk, nombre)
-    except Exception as exc:
-        logger.error("Error procesando %s id=%s: %s", model_class.__name__, pk, exc)
-    finally:
-        connection.close()
+        except ssl.SSLError as exc:
+            espera = _ESPERA_BASE ** intento
+            if intento < _REINTENTOS:
+                logger.debug(
+                    "SSL transitorio %s id=%s (intento %d/%d) — reintentando en %ds",
+                    model_class.__name__, pk, intento, _REINTENTOS, espera,
+                )
+                time.sleep(espera)
+            else:
+                logger.warning(
+                    "SSL persistente %s id=%s tras %d intentos: %s",
+                    model_class.__name__, pk, _REINTENTOS, exc,
+                )
+        except Exception as exc:
+            espera = _ESPERA_BASE ** intento
+            if intento < _REINTENTOS:
+                logger.warning(
+                    "Error procesando %s id=%s (intento %d/%d): %s — reintentando en %ds",
+                    model_class.__name__, pk, intento, _REINTENTOS, exc, espera,
+                )
+                time.sleep(espera)
+            else:
+                logger.error(
+                    "Fallo definitivo %s id=%s tras %d intentos: %s",
+                    model_class.__name__, pk, _REINTENTOS, exc,
+                )
 
 
 def procesar_en_background(model_class, pk: int, ruta: str) -> None:
-    """Lanza el procesamiento en background. El admin responde de inmediato."""
-    threading.Thread(target=_worker, args=(model_class, pk, ruta), daemon=True).start()
+    """Procesa la imagen de forma síncrona — bloquea hasta terminar."""
+    try:
+        _procesar(model_class, pk, ruta)
+    except Exception as exc:
+        logger.error("Error inesperado procesando %s id=%s: %s", model_class.__name__, pk, exc)

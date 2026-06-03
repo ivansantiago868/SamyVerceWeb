@@ -52,7 +52,6 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Encontrados {len(archivos)} archivos de imagen.\n")
 
-        # Caché de carpetas para no recrear en cada iteración
         folder_cache = {}
 
         def get_folder(rel_dir):
@@ -62,6 +61,7 @@ class Command(BaseCommand):
                 )
             return folder_cache[rel_dir]
 
+        # mapa: ruta_relativa → nuevo_drive_id
         mapa = {}
         for i, filepath in enumerate(archivos, 1):
             rel = str(filepath.relative_to(media_root))
@@ -77,13 +77,31 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"  ✗ Error: {e}"))
 
         self.stdout.write("\nActualizando base de datos...")
-        self._actualizar_bd(mapa)
-        self.stdout.write(self.style.SUCCESS(f"\nListo. {len(mapa)} archivos en Drive con estructura de carpetas."))
+        self._actualizar_bd(service, mapa)
+        self.stdout.write(self.style.SUCCESS(
+            f"\nListo. {len(mapa)} archivos en Drive con estructura de carpetas."
+        ))
 
-    def _actualizar_bd(self, mapa):
+    def _actualizar_bd(self, service, mapa):
         from apps.produccion.models.empresa import Empresa
         from apps.produccion.models.inventario_pieza import InventarioPieza, PiezaImagen
         from apps.produccion.models.figura import FiguraImagen
+
+        # Índice por nombre de archivo → nuevo drive_id (para localizar IDs antiguos)
+        by_basename = {os.path.basename(k): v for k, v in mapa.items()}
+
+        def resolve(val):
+            """Devuelve el nuevo drive_id para `val` (ruta relativa o ID antiguo de Drive)."""
+            if val in mapa:
+                return mapa[val]
+            # val es un Drive ID antiguo: obtener su nombre en Drive y buscar el nuevo
+            if "/" not in val and "." not in val and len(val) > 20:
+                try:
+                    name = service.files().get(fileId=val, fields="name").execute().get("name", "")
+                    return by_basename.get(name)
+                except HttpError:
+                    return None
+            return None
 
         updated = 0
 
@@ -91,8 +109,9 @@ class Command(BaseCommand):
             nonlocal updated
             for obj in model.objects.exclude(**{field: ""}).exclude(**{field: None}):
                 val = str(getattr(obj, field))
-                if val in mapa:
-                    model.objects.filter(pk=obj.pk).update(**{field: mapa[val]})
+                new_id = resolve(val)
+                if new_id and new_id != val:
+                    model.objects.filter(pk=obj.pk).update(**{field: new_id})
                     updated += 1
 
         with transaction.atomic():

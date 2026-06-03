@@ -107,7 +107,7 @@ class GoogleDriveStorage(Storage):
         return file["id"]
 
     def url(self, name):
-        return f"https://drive.google.com/uc?export=view&id={name}"
+        return f"https://lh3.googleusercontent.com/d/{name}"
 
     def exists(self, name):
         # Antes de guardar: name es un path de archivo (tiene / o .)
