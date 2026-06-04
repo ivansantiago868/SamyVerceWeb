@@ -17,11 +17,14 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from apps.produccion.models.figura import Figura
 
-# ── Paleta ────────────────────────────────────────────────────────────────────
-AZUL      = HexColor("#1a4b8c")
-AZUL_CLARO = HexColor("#e8eef7")
-GRIS      = HexColor("#555555")
-PRECIO    = HexColor("#1a7a3c")
+# ── Paleta SamyVerse (Neon Voxel – Manual de Marca) ──────────────────────────
+DEEP_SPACE   = HexColor("#1A1A2E")   # Fondo página
+CARD_BG      = HexColor("#252540")   # Fondo tarjeta figura
+CYBER_CYAN   = HexColor("#00E5FF")   # Títulos / headings
+VOXEL_MAG    = HexColor("#D500F9")   # Acentos / separadores
+GAMER_GREEN  = HexColor("#00FF9D")   # Precio / CTA
+WHITE_TXT    = HexColor("#FFFFFF")   # Texto principal
+GRAY_BODY    = HexColor("#B0B0C0")   # Texto secundario
 
 
 def _descargar_imagen(url):
@@ -135,35 +138,66 @@ def _collage_mixto(imagenes_qs, ancho_disponible):
     return bloques
 
 
+def _fondo_oscuro(canvas, doc):
+    """Callback: pinta fondo Deep Space Blue en cada página y footer de marca."""
+    PAGE_W, PAGE_H = A4
+    canvas.saveState()
+    # Fondo
+    canvas.setFillColor(DEEP_SPACE)
+    canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
+    # Línea inferior Magenta
+    canvas.setStrokeColor(VOXEL_MAG)
+    canvas.setLineWidth(2)
+    canvas.line(0, 20, PAGE_W, 20)
+    # Footer texto
+    canvas.setFont("Helvetica", 7)
+    canvas.setFillColor(GRAY_BODY)
+    canvas.drawCentredString(PAGE_W / 2, 8, f"Pág. {doc.page}  ·  www.samyverse3d.com  ·  UN UNIVERSO DE SORPRESAS")
+    canvas.restoreState()
+
+
 def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=False):
-    """Construye el PDF del catálogo y devuelve un BytesIO listo para enviar."""
+    """Construye el PDF del catálogo con identidad visual SamyVerse."""
     buf = io.BytesIO()
     PAGE_W, _ = A4
-    MARGIN = 2 * cm
+    MARGIN = 1.8 * cm
     doc = SimpleDocTemplate(
         buf, pagesize=A4,
         leftMargin=MARGIN, rightMargin=MARGIN,
-        topMargin=MARGIN, bottomMargin=MARGIN,
+        topMargin=MARGIN, bottomMargin=1.5 * cm,
     )
     ancho = PAGE_W - 2 * MARGIN
 
     styles = getSampleStyleSheet()
-    st_titulo = ParagraphStyle("titulo", parent=styles["Heading1"],
-        fontSize=22, textColor=AZUL, alignment=TA_CENTER, spaceAfter=4)
-    st_empresa = ParagraphStyle("empresa", parent=styles["Normal"],
-        fontSize=11, textColor=GRIS, alignment=TA_CENTER, spaceAfter=20)
+
+    # ── Estilos de marca ──────────────────────────────────────────────────────
+    st_cover_title = ParagraphStyle("cover_title", parent=styles["Heading1"],
+        fontSize=28, textColor=WHITE_TXT, alignment=TA_CENTER,
+        fontName="Helvetica-Bold", spaceAfter=6, leading=34)
+    st_cover_sub = ParagraphStyle("cover_sub", parent=styles["Normal"],
+        fontSize=14, textColor=CYBER_CYAN, alignment=TA_CENTER, spaceAfter=4)
+    st_cover_slogan = ParagraphStyle("cover_slogan", parent=styles["Normal"],
+        fontSize=11, textColor=VOXEL_MAG, alignment=TA_CENTER,
+        fontName="Helvetica-Oblique", spaceAfter=6)
+    st_cover_url = ParagraphStyle("cover_url", parent=styles["Normal"],
+        fontSize=10, textColor=GAMER_GREEN, alignment=TA_CENTER,
+        fontName="Helvetica-Bold")
     st_nombre = ParagraphStyle("nombre_figura", parent=styles["Heading2"],
-        fontSize=14, textColor=AZUL, spaceBefore=14, spaceAfter=4)
+        fontSize=15, textColor=CYBER_CYAN, spaceBefore=4, spaceAfter=6,
+        fontName="Helvetica-Bold", leading=18)
     st_precio = ParagraphStyle("precio", parent=styles["Normal"],
-        fontSize=13, textColor=PRECIO, spaceBefore=6, spaceAfter=4,
+        fontSize=14, textColor=GAMER_GREEN, spaceBefore=8, spaceAfter=6,
         fontName="Helvetica-Bold")
     st_desc = ParagraphStyle("desc", parent=styles["Normal"],
-        fontSize=9, textColor=GRIS, spaceAfter=4)
+        fontSize=9, textColor=GRAY_BODY, spaceAfter=6, leading=14)
+    st_badge = ParagraphStyle("badge", parent=styles["Normal"],
+        fontSize=8, textColor=GRAY_BODY, alignment=TA_CENTER, spaceAfter=4)
 
     story = []
-    story.append(Spacer(1, 2 * cm))
 
-    # Logo de la empresa dimencion de el logo 
+    # ── PORTADA ───────────────────────────────────────────────────────────────
+    story.append(Spacer(1, 2.5 * cm))
+
     if empresa and empresa.logo:
         try:
             logo_buf, logo_ratio = _descargar_imagen(empresa.logo.url)
@@ -173,41 +207,50 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
                 logo_img = Image(logo_buf, width=logo_w, height=logo_h)
                 logo_img.hAlign = "CENTER"
                 story.append(logo_img)
-                story.append(Spacer(1, 0.5 * cm))
+                story.append(Spacer(1, 0.8 * cm))
         except Exception:
             pass
 
-    story.append(Paragraph("Catálogo de Figuras", st_titulo))
-    story.append(Paragraph(nombre_empresa, st_empresa))
-    story.append(HRFlowable(width=ancho, color=AZUL, thickness=2))
-    story.append(Spacer(1, 0.5 * cm))
+    story.append(HRFlowable(width=ancho, color=VOXEL_MAG, thickness=2, spaceAfter=12))
+    story.append(Paragraph("CATÁLOGO DE FIGURAS", st_cover_title))
+    story.append(Paragraph(nombre_empresa, st_cover_sub))
+    story.append(Paragraph("UN UNIVERSO DE SORPRESAS", st_cover_slogan))
+    story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceBefore=8, spaceAfter=12))
 
     total = figuras.count()
     story.append(Paragraph(
         f"{total} figura{'s' if total != 1 else ''} disponible{'s' if total != 1 else ''}",
-        st_empresa,
+        st_badge,
     ))
-    story.append(Spacer(1, 2 * cm))
+    story.append(Paragraph("www.samyverse3d.com", st_cover_url))
+    story.append(Spacer(1, 3 * cm))
 
+    # ── FIGURAS ───────────────────────────────────────────────────────────────
     for figura in figuras:
-        bloque = []
-        bloque.append(Paragraph(figura.nombre, st_nombre))
+        # Cabecera de figura (nombre + acento) — mantenemos juntos
+        story.append(KeepTogether([
+            HRFlowable(width=ancho, color=VOXEL_MAG, thickness=2, spaceAfter=6),
+            Paragraph(figura.nombre.upper(), st_nombre),
+        ]))
+
         if figura.descripcion:
-            bloque.append(Paragraph(figura.descripcion, st_desc))
+            story.append(Paragraph(figura.descripcion, st_desc))
+
         if mixto:
-            bloque.extend(_collage_mixto(figura.imagenes.all(), ancho))
+            for item in _collage_mixto(figura.imagenes.all(), ancho):
+                story.append(item)
         else:
             collage = _collage(figura.imagenes.all(), ancho, usar_ia=usar_ia)
             if collage:
-                bloque.append(collage)
-        bloque.append(Paragraph(
-            f"Precio de venta: <b>${figura.precio_total:,.0f}</b>", st_precio,
-        ))
-        bloque.append(HRFlowable(width=ancho, color=HexColor("#cccccc"), thickness=0.5))
-        bloque.append(Spacer(1, 0.3 * cm))
-        story.append(KeepTogether(bloque))
+                story.append(collage)
 
-    doc.build(story)
+        story.append(Paragraph(
+            f"PRECIO DE VENTA: <b>${figura.precio_total:,.0f} COP</b>", st_precio,
+        ))
+        story.append(HRFlowable(width=ancho, color=CARD_BG, thickness=6, spaceAfter=4))
+        story.append(Spacer(1, 0.3 * cm))
+
+    doc.build(story, onFirstPage=_fondo_oscuro, onLaterPages=_fondo_oscuro)
     buf.seek(0)
     return buf
 
