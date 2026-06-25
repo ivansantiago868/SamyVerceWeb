@@ -17,6 +17,8 @@ from apps.produccion.views import (
     CotizadorRecursosView,
     CotizadorView, CotizadorLoteView,
     CotizadorDesdeCatalogoView, CotizadorDesdeCatalogoLoteView,
+    # Diseño 3D
+    Diseno3DCrearView, Diseno3DListView, Diseno3DDetalleView,
 )
 
 # ── CRUD automático vía Router ────────────────────────────────────
@@ -42,4 +44,11 @@ cotizador_urls = [
     path("cotizador/desde-catalogo/lote/", CotizadorDesdeCatalogoLoteView.as_view(), name="cotizador-catalogo-lote"),
 ]
 
-urlpatterns = router.urls + cotizador_urls
+# ── Diseño 3D ─────────────────────────────────────────────────────
+diseno3d_urls = [
+    path("diseno3d/",          Diseno3DCrearView.as_view(),   name="diseno3d-crear"),
+    path("diseno3d/lista/",    Diseno3DListView.as_view(),    name="diseno3d-lista"),
+    path("diseno3d/<int:pk>/", Diseno3DDetalleView.as_view(), name="diseno3d-detalle"),
+]
+
+urlpatterns = router.urls + cotizador_urls + diseno3d_urls

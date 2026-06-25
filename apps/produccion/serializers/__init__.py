@@ -14,6 +14,11 @@ from .cotizador      import (
     CotizadorDesdeCatalogoSerializer,
     CotizadorDesdeCatalogoLoteSerializer,
 )
+from .diseno3d       import (
+    Diseno3DInputSerializer,
+    Diseno3DEstadoSerializer,
+    Diseno3DListSerializer,
+)
 
 __all__ = [
     "ClienteSerializer",
@@ -30,4 +35,7 @@ __all__ = [
     "CotizadorLoteInputSerializer",
     "CotizadorDesdeCatalogoSerializer",
     "CotizadorDesdeCatalogoLoteSerializer",
+    "Diseno3DInputSerializer",
+    "Diseno3DEstadoSerializer",
+    "Diseno3DListSerializer",
 ]

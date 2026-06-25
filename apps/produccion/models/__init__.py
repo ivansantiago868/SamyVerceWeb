@@ -13,6 +13,7 @@ from .inventario_pieza import InventarioPieza, PiezaImagen
 from .pedido           import Pedido, PedidoMaterial
 from .venta_tarea      import Venta, Tarea
 from .figura           import Figura, FiguraImagen, FiguraPieza
+from .diseno3d         import Diseno3D
 
 __all__ = [
     "Empresa", "PerfilUsuario",
@@ -22,4 +23,5 @@ __all__ = [
     "VariablesFijas", "InventarioPieza", "PiezaImagen",
     "Pedido", "PedidoMaterial", "Venta", "Tarea",
     "Figura", "FiguraImagen", "FiguraPieza",
+    "Diseno3D",
 ]

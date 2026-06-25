@@ -44,8 +44,9 @@ urlpatterns = [
     path("api/v1/", include("apps.produccion.urls")),
 
     # ── Interfaces gráficas ───────────────────────────────────────
-    path("cotizador/", TemplateView.as_view(template_name="cotizador/index.html"), name="cotizador-ui"),
-    path("figuras/",   TemplateView.as_view(template_name="figuras/index.html"),  name="figuras-ui"),
+    path("cotizador/",   TemplateView.as_view(template_name="cotizador/index.html"),   name="cotizador-ui"),
+    path("figuras/",     TemplateView.as_view(template_name="figuras/index.html"),     name="figuras-ui"),
+    path("cotizador3d/", TemplateView.as_view(template_name="cotizador3d/index.html"), name="cotizador3d-ui"),
 
     # ── Documentación API (Swagger / ReDoc) ───────────────────────
     path("api/schema/",     SpectacularAPIView.as_view(permission_classes=[]),                             name="schema"),

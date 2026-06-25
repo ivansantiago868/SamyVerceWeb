@@ -21,6 +21,11 @@ from .cotizador_view import (
     CotizadorDesdeCatalogoView,
     CotizadorDesdeCatalogoLoteView,
 )
+from .diseno3d_view import (
+    Diseno3DCrearView,
+    Diseno3DListView,
+    Diseno3DDetalleView,
+)
 
 __all__ = [
     "ClienteView", "ImpresoraView", "InsumoView", "GastoView",
@@ -28,4 +33,5 @@ __all__ = [
     "FiguraView", "FiguraPiezaView",
     "CotizadorRecursosView", "CotizadorView", "CotizadorLoteView",
     "CotizadorDesdeCatalogoView", "CotizadorDesdeCatalogoLoteView",
+    "Diseno3DCrearView", "Diseno3DListView", "Diseno3DDetalleView",
 ]
