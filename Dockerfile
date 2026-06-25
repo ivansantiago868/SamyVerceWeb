@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar dependencias Python
-COPY requirements/production.txt requirements/production.txt
+COPY requirements/ requirements/
 RUN pip install --no-cache-dir -r requirements/production.txt
 
 # Copiar todo el código fuente
