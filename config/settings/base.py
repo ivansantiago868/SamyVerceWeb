@@ -56,7 +56,9 @@ DATABASES = {
     if _database_url
     else {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME":   BASE_DIR / "db.sqlite3",
+        # En Fly, SQLITE_PATH apunta al volumen persistente montado (ej. /data/db.sqlite3);
+        # sin volumen, el filesystem es efímero y se perdería en cada deploy.
+        "NAME":   env("SQLITE_PATH", default=str(BASE_DIR / "db.sqlite3")),
     }
 }
 

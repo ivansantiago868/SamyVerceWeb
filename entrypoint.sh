@@ -11,4 +11,12 @@ if [ -n "$GOOGLE_DRIVE_TOKEN_JSON" ]; then
   printf '%s' "$GOOGLE_DRIVE_TOKEN_JSON" > "${GOOGLE_DRIVE_TOKEN_FILE:-/app/google_token.json}"
 fi
 
+# Con SQLite en un volumen local, las migraciones corren aquí (en la misma
+# máquina que tiene el volumen montado) en vez de en un release_command,
+# que se ejecuta en una máquina efímera sin acceso al volumen.
+if [ -n "$SQLITE_PATH" ]; then
+  mkdir -p "$(dirname "$SQLITE_PATH")"
+fi
+python manage.py migrate --noinput
+
 exec "$@"
