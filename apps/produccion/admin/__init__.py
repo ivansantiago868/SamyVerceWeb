@@ -16,6 +16,7 @@ from apps.produccion.admin.produccion import (                             # noq
 from apps.produccion.admin.pedidos   import PedidoAdmin, TareaAdmin       # noqa: F401
 from apps.produccion.admin.ventas    import VentaAdmin                    # noqa: F401
 from apps.produccion.admin.figura    import FiguraAdmin                    # noqa: F401
+from apps.produccion.admin.diseno3d  import Diseno3DAdmin                  # noqa: F401
 
 # ── Orden personalizado del menú lateral ──────────────────────
 _ORDEN_MODELOS = [
@@ -25,6 +26,7 @@ _ORDEN_MODELOS = [
     "insumo",
     "inventariopieza",
     "figura",
+    "diseno3d",
     "pedido",
     "tarea",
     "venta",

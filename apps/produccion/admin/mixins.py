@@ -112,9 +112,16 @@ class InventarioPiezaForm(forms.ModelForm):
 
 
 class PiezaImagenInlineForm(forms.ModelForm):
+    procesar_con_ia = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Procesar con IA",
+        widget=forms.CheckboxInput(attrs={"title": "Marcar para generar imagen IA automáticamente"}),
+    )
+
     class Meta:
         model   = PiezaImagen
-        fields  = ("imagen", "orden")
+        fields  = ("imagen",)
         widgets = {"imagen": DragDropImageWidget()}
 
 
@@ -122,8 +129,14 @@ class PiezaImagenInline(admin.TabularInline):
     model           = PiezaImagen
     form            = PiezaImagenInlineForm
     extra           = 1
-    fields          = ("imagen", "orden", "preview_ia")
-    readonly_fields = ("preview_ia",)
+    can_delete      = True
+    fields          = ("imagen", "procesar_con_ia", "orden_display", "preview_ia")
+    readonly_fields = ("orden_display", "preview_ia",)
+    verbose_name_plural = "Imágenes de la pieza (marca ✓ en 'Eliminar' para borrar)"
+
+    @admin.display(description="Orden")
+    def orden_display(self, obj):
+        return obj.orden if obj.pk else "—"
 
     @admin.display(description="Vista IA")
     def preview_ia(self, obj):
@@ -133,7 +146,7 @@ class PiezaImagenInline(admin.TabularInline):
                 'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
                 obj.imagen_procesada.url,
             )
-        return format_html('<span style="color:#aaa;font-size:11px">⏳ procesando…</span>')
+        return format_html('<span style="color:#aaa;font-size:11px">—</span>')
 
 
 class VentaForm(forms.ModelForm):

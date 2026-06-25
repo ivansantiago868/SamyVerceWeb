@@ -19,6 +19,13 @@ RUN pip install --no-cache-dir -r requirements/production.txt
 # Copiar todo el código fuente
 COPY . .
 
+# collectstatic no necesita BD ni credenciales reales, solo que SECRET_KEY exista
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+RUN SECRET_KEY=build-time-placeholder python manage.py collectstatic --noinput
+
+RUN chmod +x entrypoint.sh
+
 EXPOSE 8000
 
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

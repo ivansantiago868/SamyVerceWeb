@@ -1,0 +1,38 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin:figuras_catalogo_pdf_mixto' %}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="button"
+       style="background:#6a1b9a;color:#fff;padding:8px 16px;border-radius:4px;
+              font-weight:bold;text-decoration:none;display:inline-flex;
+              align-items:center;gap:6px;">
+      📄 Catálogo Mixto
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:figuras_catalogo_pdf_real' %}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="button"
+       style="background:#2e7d32;color:#fff;padding:8px 16px;border-radius:4px;
+              font-weight:bold;text-decoration:none;display:inline-flex;
+              align-items:center;gap:6px;">
+      📄 Catálogo PDF
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:figuras_catalogo_pdf' %}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="button"
+       style="background:#1a4b8c;color:#fff;padding:8px 16px;border-radius:4px;
+              font-weight:bold;text-decoration:none;display:inline-flex;
+              align-items:center;gap:6px;">
+      📄 Catálogo PDF IA
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

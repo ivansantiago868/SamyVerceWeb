@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import Max
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from .empresa import Empresa
 from .inventario_pieza import InventarioPieza
@@ -11,6 +14,7 @@ class Figura(models.Model):
                                     related_name="figuras", verbose_name="Empresa")
     nombre      = models.CharField(max_length=255, verbose_name="Nombre de la figura")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
+    archivo_3mf = models.FileField(upload_to="figuras/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")
     creado_en   = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
@@ -51,6 +55,12 @@ class FiguraImagen(models.Model):
         return f"Imagen #{self.orden} — {self.figura.nombre}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and self.figura_id is not None:
+            max_orden = FiguraImagen.objects.filter(figura_id=self.figura_id).aggregate(
+                m=Max("orden")
+            )["m"]
+            self.orden = (max_orden + 1) if max_orden is not None else 0
+
         imagen_cambio = True
         if self.pk:
             try:
@@ -59,9 +69,23 @@ class FiguraImagen(models.Model):
             except FiguraImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
-        if imagen_cambio and self.imagen:
+        if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
-            procesar_en_background(FiguraImagen, self.pk, self.imagen.path)
+            procesar_en_background(FiguraImagen, self.pk, self.imagen.url)
+
+
+def _borrar_campo_drive(field):
+    if field and field.name and "/" not in field.name and "." not in field.name:
+        try:
+            field.storage.delete(field.name)
+        except Exception:
+            pass
+
+
+@receiver(post_delete, sender=FiguraImagen)
+def borrar_archivos_figura_imagen(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.imagen)
+    _borrar_campo_drive(instance.imagen_procesada)
 
 
 class FiguraPieza(models.Model):

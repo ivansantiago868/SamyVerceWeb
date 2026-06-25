@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import Max
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from .empresa import Empresa
 from .upload_paths import (
@@ -54,7 +57,7 @@ class InventarioPieza(models.Model):
         super().save(*args, **kwargs)
         if imagen_cambio and self.imagen:
             from apps.produccion.services.vertex_imagen import procesar_en_background
-            procesar_en_background(InventarioPieza, self.pk, self.imagen.path)
+            procesar_en_background(InventarioPieza, self.pk, self.imagen.url)
 
 
 class PiezaImagen(models.Model):
@@ -77,6 +80,12 @@ class PiezaImagen(models.Model):
         return f"Imagen #{self.orden} — {self.pieza.nombre}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and self.pieza_id is not None:
+            max_orden = PiezaImagen.objects.filter(pieza_id=self.pieza_id).aggregate(
+                m=Max("orden")
+            )["m"]
+            self.orden = (max_orden + 1) if max_orden is not None else 0
+
         imagen_cambio = True
         if self.pk:
             try:
@@ -85,6 +94,27 @@ class PiezaImagen(models.Model):
             except PiezaImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
-        if imagen_cambio and self.imagen:
+        if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
-            procesar_en_background(PiezaImagen, self.pk, self.imagen.path)
+            procesar_en_background(PiezaImagen, self.pk, self.imagen.url)
+
+
+def _borrar_campo_drive(field):
+    """Elimina un archivo de Drive si el campo tiene un ID válido."""
+    if field and field.name and "/" not in field.name and "." not in field.name:
+        try:
+            field.storage.delete(field.name)
+        except Exception:
+            pass
+
+
+@receiver(post_delete, sender=PiezaImagen)
+def borrar_archivos_pieza_imagen(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.imagen)
+    _borrar_campo_drive(instance.imagen_procesada)
+
+
+@receiver(post_delete, sender=InventarioPieza)
+def borrar_archivos_inventario_pieza(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.imagen)
+    _borrar_campo_drive(instance.imagen_procesada)

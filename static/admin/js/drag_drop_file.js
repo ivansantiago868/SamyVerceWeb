@@ -1,8 +1,42 @@
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".drag-drop-input").forEach(initDragDrop);
-  document.querySelectorAll(".drag-drop-img-input").forEach(initDragDropImage);
-  document.querySelectorAll(".pieza-carousel").forEach(initCarrusel);
+function initRow(root) {
+  root.querySelectorAll(".drag-drop-input").forEach(initDragDrop);
+  root.querySelectorAll(".drag-drop-img-input").forEach(initDragDropImage);
+  root.querySelectorAll(".pieza-carousel").forEach(initCarrusel);
+}
+
+// Carga inicial
+document.addEventListener("DOMContentLoaded", () => initRow(document));
+
+// Nueva fila añadida dinámicamente por el admin (Django 3.2+)
+document.addEventListener("formset:added", (e) => {
+  const row = e.detail?.row ?? e.target;
+  if (row) initRow(row);
 });
+
+// Fallback: MutationObserver para cualquier widget añadido por otras vías
+(function () {
+  const seen = new WeakSet();
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        if (seen.has(node)) continue;
+        seen.add(node);
+        node.querySelectorAll(".drag-drop-input:not([data-dd-init])").forEach((el) => {
+          el.dataset.ddInit = "1";
+          initDragDrop(el);
+        });
+        node.querySelectorAll(".drag-drop-img-input:not([data-dd-init])").forEach((el) => {
+          el.dataset.ddInit = "1";
+          initDragDropImage(el);
+        });
+      }
+    }
+  });
+  document.addEventListener("DOMContentLoaded", () =>
+    observer.observe(document.body, { childList: true, subtree: true })
+  );
+})();
 
 /* ── Carrusel de imágenes ─────────────────────────────────── */
 function initCarrusel(carousel) {
@@ -31,6 +65,8 @@ function initCarrusel(carousel) {
 
 /* ── Widget genérico (archivos) ───────────────────────────── */
 function initDragDrop(input) {
+  if (input.dataset.ddInit) return;
+  input.dataset.ddInit = "1";
   const wrapper = input.closest(".drag-drop-wrapper");
   if (!wrapper) return;
 
@@ -82,6 +118,8 @@ function initDragDrop(input) {
 
 /* ── Widget de imagen (con previsualización) ──────────────── */
 function initDragDropImage(input) {
+  if (input.dataset.ddInit) return;
+  input.dataset.ddInit = "1";
   const wrapper     = input.closest(".drag-drop-wrapper");
   if (!wrapper) return;
 

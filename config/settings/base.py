@@ -41,14 +41,22 @@ MIDDLEWARE = [
 ROOT_URLCONF    = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
+# Fly Postgres inyecta DATABASE_URL automáticamente al hacer `fly postgres attach`.
+# Si no existe, se construye a partir de las vars DB_* (usadas en docker-compose local).
+_database_url = env("DATABASE_URL", default="")
+if not _database_url and "postgresql" in env("DB_ENGINE", default=""):
+    _database_url = (
+        f"postgres://{env('DB_USER', default='')}:{env('DB_PASSWORD', default='')}"
+        f"@{env('DB_HOST', default='localhost')}:{env('DB_PORT', default='5432')}"
+        f"/{env('DB_NAME', default='postgres')}"
+    )
+
 DATABASES = {
-    "default": {
-        "ENGINE":   "django.db.backends.postgresql",
-        "NAME":     env("DB_NAME"),
-        "USER":     env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST":     env("DB_HOST",  default="localhost"),
-        "PORT":     env("DB_PORT",  default="5432"),
+    "default": env.db_url_config(_database_url)
+    if _database_url
+    else {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME":   BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -145,3 +153,15 @@ VERTEX_AI_KEY_FILE = env("VERTEX_AI_KEY_FILE", default="")
 
 # ── Google Imagen (google-genai SDK) ───────────────────────────────────────────
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+
+# ── Tripo AI (generación de modelos 3D) ───────────────────────────────────────
+TRIPO_API_KEY     = env("TRIPO_API_KEY",     default="")
+ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
+
+# ── Google Drive Storage ───────────────────────────────────────────────────────
+GOOGLE_DRIVE_CREDENTIALS_FILE = env("GOOGLE_DRIVE_CREDENTIALS_FILE", default=str(BASE_DIR / "google_credentials.json"))
+GOOGLE_DRIVE_TOKEN_FILE       = env("GOOGLE_DRIVE_TOKEN_FILE",       default=str(BASE_DIR / "google_token.json"))
+GOOGLE_DRIVE_FOLDER_ID        = env("GOOGLE_DRIVE_FOLDER_ID",        default="")
+
+if GOOGLE_DRIVE_FOLDER_ID:
+    DEFAULT_FILE_STORAGE = "config.google_drive_storage.GoogleDriveStorage"

@@ -1,0 +1,26 @@
+app = "samyverceweb"
+primary_region = "gru"
+
+[build]
+
+[deploy]
+  release_command = "python manage.py migrate --noinput"
+
+[env]
+  DJANGO_SETTINGS_MODULE = "config.settings.production"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[statics]]
+  guest_path = "/app/staticfiles"
+  url_prefix = "/static/"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

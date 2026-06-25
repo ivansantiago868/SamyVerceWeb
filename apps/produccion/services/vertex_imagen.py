@@ -8,7 +8,8 @@ Configuración requerida en .env:
 import io
 import logging
 import os
-import threading
+import ssl
+import time
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -23,24 +24,53 @@ _MODELO_TEXTO  = "gemini-2.5-flash"
 logger = logging.getLogger(__name__)
 
 _PROMPT_ESTUDIO = (
-    "Minimalist product photography in a studio setting. The subject is placed on a smooth, "
-    "matte white tabletop with a clean white backdrop, but with a subtle visible horizon line "
-    "where the background meets the surface. The transition between wall and table is soft but "
-    "perceptible, adding depth.\n"
-    "Soft, diffused lighting from one side (left or slightly above-left), creating gentle shadows "
-    "and a light gradient across the background. Slight shadow falloff near the base of the product "
-    "to enhance grounding. High-key aesthetic with controlled contrast, no harsh reflections, and "
-    "smooth tonal transitions.\n"
-    "Camera angle is slightly low and front-facing (around 10–20 degrees above the surface), "
-    "emphasizing volume and depth. Composition is centered or slightly off-center with generous "
-    "negative space. The product is in sharp focus with crisp detail, while the background remains "
-    "clean and minimal.\n"
-    "Neutral color palette, modern editorial style. No props or distractions—focus on shape, "
-    "texture, and silhouette. Ultra clean studio product shot."
+    "Minimalist studio product photography. The product is the absolute main subject and must "
+    "fill 80–90% of the frame — close-up, tight crop, no wide shots. Do NOT place the product "
+    "far away or small. The product must appear large, near and prominent.\n"
+    "Background: smooth matte white surface with a clean white backdrop. Subtle soft horizon line "
+    "where wall meets table, adding just a hint of depth. Keep background simple and uncluttered.\n"
+    "Lighting: soft diffused light from slightly above-left, gentle shadow at the base to ground "
+    "the product. High-key, no harsh reflections, smooth tonal transitions.\n"
+    "Camera: front-facing, slightly above eye level (10–15 degrees), product centered. "
+    "Minimal padding around the product — just enough breathing room (5–10% margin on each side). "
+    "The product must be in sharp focus with crisp detail.\n"
+    "Neutral color palette, modern editorial style. No props, no distractions. "
+    "Ultra clean close-up studio product shot."
 )
 
 _MAX_PX  = 1200
 _QUALITY = 88
+
+
+_REINTENTOS = 4
+_ESPERA_BASE = 2  # segundos (2 → 4 → 8 → 16)
+_ERRORES_REINTENTABLES = (
+    ssl.SSLError,
+    ConnectionError,
+    TimeoutError,
+)
+
+
+def _descargar_url(url: str) -> bytes | None:
+    """Descarga una URL con reintentos ante errores SSL o de red transitorios."""
+    import requests as _req
+    for intento in range(1, _REINTENTOS + 1):
+        try:
+            r = _req.get(url, timeout=20)
+            r.raise_for_status()
+            return r.content
+        except _ERRORES_REINTENTABLES as exc:
+            espera = _ESPERA_BASE ** intento
+            logger.warning(
+                "Descarga fallida (intento %d/%d) — %s — reintentando en %ds",
+                intento, _REINTENTOS, exc, espera,
+            )
+            time.sleep(espera)
+        except Exception as exc:
+            logger.error("Error descargando imagen %s: %s", url, exc)
+            return None
+    logger.error("No se pudo descargar %s tras %d intentos.", url, _REINTENTOS)
+    return None
 
 
 def procesar_imagen_estudio(ruta: str) -> bytes | None:
@@ -56,8 +86,13 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
     try:
         client = genai.Client(api_key=api_key)
 
-        with open(ruta, "rb") as f:
-            img_bytes = f.read()
+        if ruta.startswith("http://") or ruta.startswith("https://"):
+            img_bytes = _descargar_url(ruta)
+            if img_bytes is None:
+                return None
+        else:
+            with open(ruta, "rb") as f:
+                img_bytes = f.read()
 
         respuesta = client.models.generate_content(
             model=_MODELO_IMAGEN,
@@ -101,23 +136,51 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
         return None
 
 
-def _worker(model_class, pk: int, ruta: str) -> None:
-    try:
-        resultado = procesar_imagen_estudio(ruta)
-        if not resultado:
+def _procesar(model_class, pk: int, ruta: str) -> None:
+    """Lógica de procesamiento pura — sin manejo de conexión ni hilos."""
+    for intento in range(1, _REINTENTOS + 1):
+        try:
+            resultado = procesar_imagen_estudio(ruta)
+            if not resultado:
+                return
+            base   = os.path.splitext(os.path.basename(ruta))[0]
+            nombre = f"{base}_studio.jpg"
+            obj    = model_class.objects.get(pk=pk)
+            obj.imagen_procesada.save(nombre, ContentFile(resultado), save=False)
+            model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name)
+            logger.info("Imagen procesada: %s id=%s → %s", model_class.__name__, pk, nombre)
             return
-        base   = os.path.splitext(os.path.basename(ruta))[0]
-        nombre = f"{base}_studio.jpg"
-        obj    = model_class.objects.get(pk=pk)
-        obj.imagen_procesada.save(nombre, ContentFile(resultado), save=False)
-        model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name)
-        logger.info("Imagen procesada: %s id=%s → %s", model_class.__name__, pk, nombre)
-    except Exception as exc:
-        logger.error("Error procesando %s id=%s: %s", model_class.__name__, pk, exc)
-    finally:
-        connection.close()
+        except ssl.SSLError as exc:
+            espera = _ESPERA_BASE ** intento
+            if intento < _REINTENTOS:
+                logger.debug(
+                    "SSL transitorio %s id=%s (intento %d/%d) — reintentando en %ds",
+                    model_class.__name__, pk, intento, _REINTENTOS, espera,
+                )
+                time.sleep(espera)
+            else:
+                logger.warning(
+                    "SSL persistente %s id=%s tras %d intentos: %s",
+                    model_class.__name__, pk, _REINTENTOS, exc,
+                )
+        except Exception as exc:
+            espera = _ESPERA_BASE ** intento
+            if intento < _REINTENTOS:
+                logger.warning(
+                    "Error procesando %s id=%s (intento %d/%d): %s — reintentando en %ds",
+                    model_class.__name__, pk, intento, _REINTENTOS, exc, espera,
+                )
+                time.sleep(espera)
+            else:
+                logger.error(
+                    "Fallo definitivo %s id=%s tras %d intentos: %s",
+                    model_class.__name__, pk, _REINTENTOS, exc,
+                )
 
 
 def procesar_en_background(model_class, pk: int, ruta: str) -> None:
-    """Lanza el procesamiento en background. El admin responde de inmediato."""
-    threading.Thread(target=_worker, args=(model_class, pk, ruta), daemon=True).start()
+    """Procesa la imagen de forma síncrona — bloquea hasta terminar."""
+    try:
+        _procesar(model_class, pk, ruta)
+    except Exception as exc:
+        logger.error("Error inesperado procesando %s id=%s: %s", model_class.__name__, pk, exc)

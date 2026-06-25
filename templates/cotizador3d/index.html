@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador 3D — SamyVerse</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <style>
+    /* ── Reset & base ──────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --deep-space:  #1A1A2E;
+      --card-bg:     #16213E;
+      --cyber-cyan:  #00E5FF;
+      --voxel-mag:   #D500F9;
+      --gamer-green: #00FF9D;
+      --white-txt:   #E8E8F0;
+      --gray-body:   #9090A8;
+      --danger:      #FF4560;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--deep-space);
+      color: var(--white-txt);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--cyber-cyan), var(--voxel-mag));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      color: var(--gray-body);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+    .header-accent {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .header-accent span {
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    /* ── Layout ────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ──────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0,229,255,.12);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--cyber-cyan);
+      margin-bottom: 16px;
+    }
+
+    /* ── Drag & Drop zone ──────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed rgba(0,229,255,.35);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .drop-zone.over {
+      border-color: var(--cyber-cyan);
+      background: rgba(0,229,255,.06);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+    }
+    .drop-zone-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .drop-zone-text { color: var(--gray-body); font-size: 0.9rem; line-height: 1.5; }
+    .drop-zone-text strong { color: var(--cyber-cyan); }
+    .drop-zone-preview {
+      display: none;
+      margin-top: 16px;
+    }
+    .drop-zone-preview img {
+      max-height: 200px;
+      max-width: 100%;
+      border-radius: 8px;
+      object-fit: contain;
+      border: 1px solid rgba(0,229,255,.2);
+    }
+    .drop-zone-preview .file-name {
+      font-size: 0.78rem;
+      color: var(--gray-body);
+      margin-top: 6px;
+    }
+
+    /* ── Form fields ───────────────────────────────────── */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gray-body);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      color: var(--white-txt);
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--cyber-cyan);
+    }
+    select option { background: var(--card-bg); }
+    textarea { resize: vertical; min-height: 64px; }
+
+    .toggle-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .toggle-item:has(input:checked) {
+      border-color: var(--cyber-cyan);
+      background: rgba(0,229,255,.06);
+    }
+    .toggle-item input { width: 16px; height: 16px; accent-color: var(--cyber-cyan); cursor: pointer; }
+    .toggle-item span { font-size: 0.8rem; color: var(--gray-body); }
+
+    /* ── Botón generar ─────────────────────────────────── */
+    .btn-generar {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .5px;
+      background: linear-gradient(135deg, var(--cyber-cyan), var(--voxel-mag));
+      color: #000;
+      margin-top: 8px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-generar:hover:not(:disabled) { opacity: .9; }
+    .btn-generar:active:not(:disabled) { transform: scale(.98); }
+    .btn-generar:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Panel de resultado ────────────────────────────── */
+    #result-panel { display: none; }
+
+    /* ── Progress ──────────────────────────────────────── */
+    .progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--gray-body);
+    }
+    .progress-track {
+      height: 6px;
+      background: rgba(255,255,255,.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyber-cyan), var(--voxel-mag));
+      border-radius: 3px;
+      transition: width .4s ease;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .status-badge.procesando { background: rgba(253,126,20,.15); color: #fd7e14; }
+    .status-badge.completado { background: rgba(0,255,157,.12); color: var(--gamer-green); }
+    .status-badge.fallido    { background: rgba(255,69,96,.12);  color: var(--danger); }
+    .status-badge.pendiente  { background: rgba(255,255,255,.07); color: var(--gray-body); }
+
+    /* ── 3D Viewer ─────────────────────────────────────── */
+    .viewer-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    model-viewer {
+      width: 100%;
+      height: 340px;
+      border-radius: 12px;
+      background: radial-gradient(ellipse at center, #1e2a4a 0%, var(--deep-space) 100%);
+      border: 1px solid rgba(0,229,255,.15);
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      background: var(--gamer-green);
+      color: #000;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .btn-download:hover { opacity: .85; }
+
+    /* ── Error message ─────────────────────────────────── */
+    .error-msg {
+      display: none;
+      background: rgba(255,69,96,.1);
+      border: 1px solid rgba(255,69,96,.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--danger);
+      font-size: 0.85rem;
+    }
+
+    /* ── Historia de diseños ───────────────────────────── */
+    #history-section { max-width: 1100px; margin: 32px auto 0; }
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .history-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+    }
+    .history-card:hover { border-color: rgba(0,229,255,.3); transform: translateY(-2px); }
+    .history-card img {
+      width: 100%; height: 130px; object-fit: cover;
+    }
+    .history-card-body { padding: 10px 12px; }
+    .history-card-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    .history-card-meta { font-size: 0.72rem; color: var(--gray-body); }
+
+    /* ── Spinner animation ─────────────────────────────── */
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+    .spinner { animation: pulse 1.4s ease infinite; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⬡ Generador 3D</h1>
+  <p>Sube una imagen y Tripo AI la convierte en un modelo 3D listo para imprimir</p>
+  <div class="header-accent">
+    <span style="width:40px;background:var(--cyber-cyan)"></span>
+    <span style="width:20px;background:var(--voxel-mag)"></span>
+    <span style="width:10px;background:var(--gamer-green)"></span>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ────────────────── Panel izquierdo: configuración ── -->
+  <div>
+    <div class="card">
+      <div class="card-title">Imagen de referencia</div>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="input-imagen" accept="image/jpeg,image/png,image/webp">
+        <div class="drop-zone-icon">🖼</div>
+        <div class="drop-zone-text">
+          <strong>Arrastra tu imagen aquí</strong><br>
+          o haz clic para seleccionarla<br>
+          <small>JPG · PNG · WebP</small>
+        </div>
+        <div class="drop-zone-preview" id="preview-wrap">
+          <img id="preview-img" src="" alt="preview">
+          <div class="file-name" id="preview-name"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Parámetros Tripo AI</div>
+
+      <div class="form-group">
+        <label>Nombre (opcional)</label>
+        <input type="text" id="f-nombre" placeholder="Ej: Figura Mario Bros">
+      </div>
+
+      <div class="form-group">
+        <label>Formato de salida</label>
+        <select id="f-formato">
+          <option value="glb">GLB (recomendado — visor web)</option>
+          <option value="fbx">FBX</option>
+          <option value="obj">OBJ</option>
+          <option value="stl">STL (impresión 3D)</option>
+          <option value="usdz">USDZ (AR Apple)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Versión del modelo</label>
+        <select id="f-model-version">
+          <option value="P1-20260311">P1-20260311 (más reciente)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Límite de polígonos (face limit)</label>
+        <input type="number" id="f-face-limit" value="20000" min="100" max="200000" step="1000">
+      </div>
+
+      <div class="form-group">
+        <label>Alineación de textura</label>
+        <select id="f-texture-alignment">
+          <option value="original_image">Imagen original</option>
+          <option value="geometry">Geometría</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Orientación</label>
+        <select id="f-orientation">
+          <option value="align_image">Alinear con imagen</option>
+          <option value="default">Por defecto</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Opciones</label>
+        <div class="toggle-row">
+          <label class="toggle-item">
+            <input type="checkbox" id="f-texture" checked>
+            <span>Textura</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="f-pbr" checked>
+            <span>PBR</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="f-autofix" checked>
+            <span>Autofix</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Prompt 3D <small style="color:var(--cyber-cyan)">(IA lo genera automáticamente si lo dejas vacío)</small></label>
+        <textarea id="f-prompt" placeholder="Ej: retro gaming character, Mario Bros style, detailed, smooth surface"></textarea>
+      </div>
+
+      <button class="btn-generar" id="btn-generar" disabled>
+        ✦ Generar modelo 3D
+      </button>
+    </div>
+  </div>
+
+  <!-- ────────────────── Panel derecho: resultado ──────── -->
+  <div>
+    <div class="card">
+      <div class="card-title">Resultado</div>
+
+      <!-- Error -->
+      <div class="error-msg" id="error-msg"></div>
+
+      <!-- Estado / progreso -->
+      <div class="progress-wrap" id="progress-wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="status-badge procesando spinner" id="status-badge">⚙️ Procesando</span>
+          <span style="font-size:0.78rem;color:var(--gray-body)" id="status-detail">
+            Analizando imagen con Claude…
+          </span>
+        </div>
+        <div class="progress-label">
+          <span>Progreso Tripo AI</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Visor 3D -->
+      <div class="viewer-wrap" id="viewer-wrap">
+        <model-viewer
+          id="model-viewer"
+          alt="Modelo 3D generado"
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          exposure="1"
+          environment-image="neutral"
+        ></model-viewer>
+        <a class="btn-download" id="btn-download" href="#" download>
+          ⬇ Descargar modelo
+        </a>
+      </div>
+
+      <!-- Estado inicial vacío -->
+      <div id="empty-state" style="text-align:center;padding:60px 20px;color:var(--gray-body)">
+        <div style="font-size:3rem;margin-bottom:12px">⬡</div>
+        <div>El modelo 3D aparecerá aquí</div>
+        <div style="font-size:0.8rem;margin-top:6px">Tiempo estimado: 2–5 minutos</div>
+      </div>
+    </div>
+
+    <!-- Info técnica -->
+    <div class="card" style="margin-top:16px;font-size:0.8rem;color:var(--gray-body);line-height:1.7">
+      <div class="card-title">¿Cómo funciona?</div>
+      <div>
+        1. <strong style="color:var(--white-txt)">Claude AI</strong> analiza tu imagen y genera un prompt 3D optimizado.<br>
+        2. <strong style="color:var(--white-txt)">Tripo AI</strong> convierte la imagen en un modelo 3D con texturas PBR.<br>
+        3. El modelo se guarda en tu biblioteca y puedes descargarlo para imprimir.
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(0,229,255,.06);border-radius:6px;border-left:3px solid var(--cyber-cyan)">
+        <strong style="color:var(--cyber-cyan)">Consejo:</strong> Las imágenes con fondo limpio y el objeto centrado dan mejores resultados.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────────────── Historia de diseños ─────────────── -->
+<div id="history-section" style="display:none">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="card-title" style="margin-bottom:12px">Diseños anteriores</div>
+    <div class="history-grid" id="history-grid"></div>
+  </div>
+</div>
+
+<script>
+// ── Estado global ────────────────────────────────────────
+let pollingInterval = null;
+let disenoId        = null;
+let selectedFile    = null;
+
+const API_BASE = '/api/v1/diseno3d';
+
+// ── Elementos DOM ────────────────────────────────────────
+const dropZone       = document.getElementById('drop-zone');
+const inputImagen    = document.getElementById('input-imagen');
+const previewWrap    = document.getElementById('preview-wrap');
+const previewImg     = document.getElementById('preview-img');
+const previewName    = document.getElementById('preview-name');
+const btnGenerar     = document.getElementById('btn-generar');
+const progressWrap   = document.getElementById('progress-wrap');
+const progressFill   = document.getElementById('progress-fill');
+const progressPct    = document.getElementById('progress-pct');
+const statusBadge    = document.getElementById('status-badge');
+const statusDetail   = document.getElementById('status-detail');
+const viewerWrap     = document.getElementById('viewer-wrap');
+const modelViewer    = document.getElementById('model-viewer');
+const btnDownload    = document.getElementById('btn-download');
+const emptyState     = document.getElementById('empty-state');
+const errorMsg       = document.getElementById('error-msg');
+
+// ── Drag & Drop ──────────────────────────────────────────
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+inputImagen.addEventListener('change', () => {
+  if (inputImagen.files[0]) handleFile(inputImagen.files[0]);
+});
+
+function handleFile(file) {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowed.includes(file.type)) {
+    showError('Formato no válido. Usa JPG, PNG o WebP.');
+    return;
+  }
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src     = e.target.result;
+    previewName.textContent = file.name + ' · ' + (file.size / 1024).toFixed(0) + ' KB';
+    previewWrap.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+  btnGenerar.disabled = false;
+  hideError();
+}
+
+// ── Generar ──────────────────────────────────────────────
+btnGenerar.addEventListener('click', async () => {
+  if (!selectedFile) return;
+
+  resetResult();
+  btnGenerar.disabled = true;
+
+  const formData = new FormData();
+  formData.append('imagen',               selectedFile);
+  formData.append('nombre',               document.getElementById('f-nombre').value);
+  formData.append('formato',              document.getElementById('f-formato').value);
+  formData.append('model_version',        document.getElementById('f-model-version').value);
+  formData.append('face_limit',           document.getElementById('f-face-limit').value);
+  formData.append('texture_alignment',    document.getElementById('f-texture-alignment').value);
+  formData.append('orientation',          document.getElementById('f-orientation').value);
+  formData.append('texture',              document.getElementById('f-texture').checked);
+  formData.append('pbr',                  document.getElementById('f-pbr').checked);
+  formData.append('enable_image_autofix', document.getElementById('f-autofix').checked);
+  formData.append('prompt',               document.getElementById('f-prompt').value);
+
+  showProgress();
+
+  try {
+    const resp = await fetch(`${API_BASE}/`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      showError(data.error || 'Error al iniciar la generación.');
+      hideProgress();
+      btnGenerar.disabled = false;
+      return;
+    }
+
+    disenoId = data.id;
+    startPolling();
+  } catch (err) {
+    showError('Error de red: ' + err.message);
+    hideProgress();
+    btnGenerar.disabled = false;
+  }
+});
+
+// ── Polling ──────────────────────────────────────────────
+function startPolling() {
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(pollEstado, 4000);
+  pollEstado(); // consulta inmediata
+}
+
+async function pollEstado() {
+  if (!disenoId) return;
+  try {
+    const resp = await fetch(`${API_BASE}/${disenoId}/`);
+    const data = await resp.json();
+
+    updateProgress(data.progreso || 0, data.estado);
+
+    if (data.estado === 'completado') {
+      clearInterval(pollingInterval);
+      showCompleted(data.url_modelo, data.analisis_ia);
+    } else if (data.estado === 'fallido') {
+      clearInterval(pollingInterval);
+      showError(data.error_mensaje || 'La generación falló.');
+      hideProgress();
+      btnGenerar.disabled = false;
+    }
+  } catch (err) {
+    console.warn('Error en polling:', err);
+  }
+}
+
+// ── UI helpers ───────────────────────────────────────────
+function showProgress() {
+  emptyState.style.display   = 'none';
+  progressWrap.style.display = 'flex';
+  viewerWrap.style.display   = 'none';
+  updateProgress(0, 'procesando');
+}
+
+function hideProgress() {
+  progressWrap.style.display = 'none';
+}
+
+function updateProgress(pct, estado) {
+  progressFill.style.width = pct + '%';
+  progressPct.textContent  = pct + '%';
+
+  const labels = {
+    pendiente:  '⏳ Pendiente',
+    procesando: `⚙️ Generando — ${pct}%`,
+    completado: '✅ Completado',
+    fallido:    '❌ Fallido',
+  };
+  statusDetail.textContent = labels[estado] || estado;
+
+  statusBadge.className = 'status-badge ' + estado;
+  statusBadge.textContent = {
+    pendiente: '⏳ Pendiente',
+    procesando: '⚙️ Procesando',
+    completado: '✅ Completado',
+    fallido: '❌ Fallido',
+  }[estado] || estado;
+
+  if (estado === 'procesando' && pct < 30) {
+    statusDetail.textContent = 'Claude analizando la imagen…';
+  } else if (estado === 'procesando' && pct < 60) {
+    statusDetail.textContent = 'Tripo AI generando geometría 3D…';
+  } else if (estado === 'procesando') {
+    statusDetail.textContent = 'Aplicando texturas y PBR…';
+  }
+}
+
+function showCompleted(urlModelo, analisisIa) {
+  hideProgress();
+  viewerWrap.style.display = 'flex';
+
+  if (urlModelo) {
+    modelViewer.src    = urlModelo;
+    btnDownload.href   = urlModelo;
+    btnDownload.download = `modelo_3d_${disenoId}.glb`;
+  }
+
+  if (analisisIa && analisisIa.DESCRIPCION) {
+    statusDetail.textContent = analisisIa.DESCRIPCION;
+  }
+  btnGenerar.disabled = false;
+}
+
+function resetResult() {
+  if (pollingInterval) clearInterval(pollingInterval);
+  disenoId = null;
+  hideProgress();
+  viewerWrap.style.display = 'none';
+  emptyState.style.display = 'block';
+  modelViewer.src = '';
+  hideError();
+}
+
+function showError(msg) {
+  errorMsg.textContent   = '⚠ ' + msg;
+  errorMsg.style.display = 'block';
+}
+function hideError() {
+  errorMsg.style.display = 'none';
+}
+
+// ── Cargar historial si el usuario está autenticado ──────
+async function cargarHistorial() {
+  try {
+    const resp = await fetch(`${API_BASE}/lista/`);
+    if (!resp.ok) return;
+    const items = await resp.json();
+    if (!items.length) return;
+
+    const section = document.getElementById('history-section');
+    const grid    = document.getElementById('history-grid');
+    section.style.display = 'block';
+
+    items.slice(0, 12).forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      card.innerHTML = `
+        ${d.url_imagen ? `<img src="${d.url_imagen}" alt="${d.nombre || 'diseño'}">` : ''}
+        <div class="history-card-body">
+          <div class="history-card-name">${d.nombre || 'Diseño #' + d.id}</div>
+          <div class="history-card-meta">${d.formato?.toUpperCase() || ''} · ${d.estado}</div>
+        </div>
+      `;
+      if (d.url_modelo) {
+        card.addEventListener('click', () => {
+          viewerWrap.style.display = 'flex';
+          emptyState.style.display = 'none';
+          modelViewer.src          = d.url_modelo;
+          btnDownload.href         = d.url_modelo;
+        });
+      }
+      grid.appendChild(card);
+    });
+  } catch (e) { /* usuario no autenticado, se ignora */ }
+}
+
+cargarHistorial();
+</script>
+</body>
+</html>
