@@ -7,8 +7,14 @@ set -e
 if [ -n "$GOOGLE_DRIVE_CREDENTIALS_JSON" ]; then
   printf '%s' "$GOOGLE_DRIVE_CREDENTIALS_JSON" > "${GOOGLE_DRIVE_CREDENTIALS_FILE:-/app/google_credentials.json}"
 fi
-if [ -n "$GOOGLE_DRIVE_TOKEN_JSON" ]; then
-  printf '%s' "$GOOGLE_DRIVE_TOKEN_JSON" > "${GOOGLE_DRIVE_TOKEN_FILE:-/app/google_token.json}"
+# El token vive en el volumen persistente (GOOGLE_DRIVE_TOKEN_FILE=/data/...), así que
+# solo se siembra desde el secret la primera vez: reconexiones hechas desde
+# /admin/google-drive/connect/ escriben ahí directamente y no deben ser pisadas
+# por el secret viejo en cada arranque.
+TOKEN_FILE="${GOOGLE_DRIVE_TOKEN_FILE:-/app/google_token.json}"
+if [ -n "$GOOGLE_DRIVE_TOKEN_JSON" ] && [ ! -f "$TOKEN_FILE" ]; then
+  mkdir -p "$(dirname "$TOKEN_FILE")"
+  printf '%s' "$GOOGLE_DRIVE_TOKEN_JSON" > "$TOKEN_FILE"
 fi
 
 # Con SQLite en un volumen local, las migraciones corren aquí (en la misma

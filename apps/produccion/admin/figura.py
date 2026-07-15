@@ -2,8 +2,15 @@ from django import forms
 from django.contrib import admin
 from django.urls import path
 from django.utils.html import format_html, mark_safe
-from apps.produccion.models import Figura, FiguraImagen, FiguraPieza
+from apps.produccion.models import CategoriaFigura, Figura, FiguraImagen, FiguraPieza
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
+
+
+@admin.register(CategoriaFigura)
+class CategoriaFiguraAdmin(EmpresaMixin, admin.ModelAdmin):
+    grupos_empresa = {"Maker"}
+    list_display   = ("nombre",)
+    search_fields  = ("nombre",)
 
 
 class FiguraImagenInlineForm(forms.ModelForm):
@@ -78,8 +85,9 @@ class FiguraAdminForm(forms.ModelForm):
 class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa     = {"Maker"}
     form               = FiguraAdminForm
-    list_display       = ("miniatura_ia", "nombre", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
+    list_display       = ("miniatura_ia", "nombre", "categoria", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
     list_display_links = ("miniatura_ia", "nombre")
+    list_filter        = ("categoria",)
     search_fields      = ("nombre", "descripcion")
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
     inlines            = [FiguraImagenInline, FiguraPiezaInline]
@@ -89,7 +97,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             "description": "Imágenes procesadas por IA. Se actualiza al guardar nuevas imágenes.",
         }),
         (None, {
-            "fields": ("nombre", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
+            "fields": ("nombre", "categoria", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
         }),
         ("Totales", {
             "fields": ("costo_total_display", "precio_total_display"),

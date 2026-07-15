@@ -2,7 +2,7 @@
 
 {% block object-tools-items %}
   <li>
-    <a href="{% url 'admin:figuras_catalogo_pdf_mixto' %}"
+    <a href="{% url 'admin:figuras_catalogo_pdf_mixto' %}?{{ request.GET.urlencode }}"
        target="_blank"
        rel="noopener noreferrer"
        class="button"
@@ -13,7 +13,7 @@
     </a>
   </li>
   <li>
-    <a href="{% url 'admin:figuras_catalogo_pdf_real' %}"
+    <a href="{% url 'admin:figuras_catalogo_pdf_real' %}?{{ request.GET.urlencode }}"
        target="_blank"
        rel="noopener noreferrer"
        class="button"
@@ -24,7 +24,7 @@
     </a>
   </li>
   <li>
-    <a href="{% url 'admin:figuras_catalogo_pdf' %}"
+    <a href="{% url 'admin:figuras_catalogo_pdf' %}?{{ request.GET.urlencode }}"
        target="_blank"
        rel="noopener noreferrer"
        class="button"

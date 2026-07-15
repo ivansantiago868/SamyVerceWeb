@@ -9,9 +9,25 @@ from .insumo import Insumo
 from .upload_paths import upload_figura_imagen, upload_figura_procesada
 
 
+class CategoriaFigura(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True,
+                                related_name="categorias_figura", verbose_name="Empresa")
+    nombre  = models.CharField(max_length=100, verbose_name="Categoría")
+
+    class Meta:
+        ordering        = ["nombre"]
+        verbose_name    = "Categoría de figura"
+        verbose_name_plural = "Categorías de figura"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Figura(models.Model):
     empresa     = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True,
                                     related_name="figuras", verbose_name="Empresa")
+    categoria   = models.ForeignKey(CategoriaFigura, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name="figuras", verbose_name="Categoría")
     nombre      = models.CharField(max_length=255, verbose_name="Nombre de la figura")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
     archivo_3mf = models.FileField(upload_to="figuras/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")

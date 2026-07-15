@@ -6,6 +6,7 @@ primary_region = "gru"
 [env]
   DJANGO_SETTINGS_MODULE = "config.settings.production"
   SQLITE_PATH = "/data/db.sqlite3"
+  GOOGLE_DRIVE_TOKEN_FILE = "/data/google_token.json"
 
 [http_service]
   internal_port = 8000

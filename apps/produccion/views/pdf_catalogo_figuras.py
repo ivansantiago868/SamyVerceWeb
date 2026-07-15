@@ -156,7 +156,7 @@ def _fondo_oscuro(canvas, doc):
     canvas.restoreState()
 
 
-def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=False):
+def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=False, categoria=None):
     """Construye el PDF del catálogo con identidad visual SamyVerse."""
     buf = io.BytesIO()
     PAGE_W, _ = A4
@@ -192,6 +192,9 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
         fontSize=9, textColor=GRAY_BODY, spaceAfter=6, leading=14)
     st_badge = ParagraphStyle("badge", parent=styles["Normal"],
         fontSize=8, textColor=GRAY_BODY, alignment=TA_CENTER, spaceAfter=4)
+    st_categoria = ParagraphStyle("categoria", parent=styles["Heading1"],
+        fontSize=18, textColor=VOXEL_MAG, alignment=TA_LEFT,
+        fontName="Helvetica-Bold", spaceBefore=14, spaceAfter=8)
 
     story = []
 
@@ -222,11 +225,21 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
         f"{total} figura{'s' if total != 1 else ''} disponible{'s' if total != 1 else ''}",
         st_badge,
     ))
+    if categoria:
+        story.append(Paragraph(f"Categoría: {categoria.nombre}", st_badge))
     story.append(Paragraph("www.samyverse3d.com", st_cover_url))
     story.append(Spacer(1, 3 * cm))
 
     # ── FIGURAS ───────────────────────────────────────────────────────────────
+    categoria_actual = object()  # centinela: distinto de cualquier categoría real
     for figura in figuras:
+        # Si no se filtró a una sola categoría, agrupar el catálogo en secciones
+        if not categoria and figura.categoria_id != categoria_actual:
+            categoria_actual = figura.categoria_id
+            nombre_categoria = figura.categoria.nombre if figura.categoria else "Sin categoría"
+            story.append(Paragraph(nombre_categoria.upper(), st_categoria))
+            story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceAfter=8))
+
         # Cabecera de figura (nombre + acento) — mantenemos juntos
         story.append(KeepTogether([
             HRFlowable(width=ancho, color=VOXEL_MAG, thickness=2, spaceAfter=6),
@@ -257,22 +270,36 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
 
 def _qs_y_empresa(request):
     from apps.produccion.models.empresa import Empresa
+    from apps.produccion.models.figura import CategoriaFigura
+
     perfil = getattr(request.user, "perfil", None)
-    qs = Figura.objects.prefetch_related("imagenes", "figura_piezas__pieza").order_by("nombre")
+    qs = (
+        Figura.objects
+        .select_related("categoria")
+        .prefetch_related("imagenes", "figura_piezas__pieza")
+        .order_by("categoria__nombre", "nombre")
+    )
+
+    categoria = None
+    categoria_id = request.GET.get("categoria__id__exact")
+    if categoria_id:
+        qs = qs.filter(categoria_id=categoria_id)
+        categoria = CategoriaFigura.objects.filter(pk=categoria_id).first()
+
     if perfil and perfil.empresa_id:
-        return qs.filter(empresa=perfil.empresa), str(perfil.empresa), perfil.empresa
+        return qs.filter(empresa=perfil.empresa), str(perfil.empresa), perfil.empresa, categoria
     # Superadmin sin perfil: usar la primera empresa disponible para el logo
     empresa = Empresa.objects.filter(logo__isnull=False).exclude(logo="").first() \
               or Empresa.objects.first()
     nombre = str(empresa) if empresa else "Todas las empresas"
-    return qs, nombre, empresa
+    return qs, nombre, empresa, categoria
 
 
 @staff_member_required
 def exportar_catalogo_pdf(request):
     """PDF con imágenes procesadas por IA."""
-    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=True)
+    figuras, nombre_empresa, empresa, categoria = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=True, categoria=categoria)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras_ia.pdf"'
     return response
@@ -281,8 +308,8 @@ def exportar_catalogo_pdf(request):
 @staff_member_required
 def exportar_catalogo_pdf_real(request):
     """PDF con imágenes originales (sin procesamiento IA)."""
-    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=False)
+    figuras, nombre_empresa, empresa, categoria = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, usar_ia=False, categoria=categoria)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras.pdf"'
     return response
@@ -291,8 +318,8 @@ def exportar_catalogo_pdf_real(request):
 @staff_member_required
 def exportar_catalogo_pdf_mixto(request):
     """PDF con imágenes originales e IA juntas para cada figura."""
-    figuras, nombre_empresa, empresa = _qs_y_empresa(request)
-    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, mixto=True)
+    figuras, nombre_empresa, empresa, categoria = _qs_y_empresa(request)
+    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, mixto=True, categoria=categoria)
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras_mixto.pdf"'
     return response

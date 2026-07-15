@@ -19,9 +19,12 @@ from apps.produccion.controllers.auth_controller import (
     PerfilView,
     TokenFromSessionView,
 )
+from config.google_drive_views import google_drive_connect, google_drive_callback
 
 urlpatterns = [
     # Admin
+    path("admin/google-drive/connect/",  google_drive_connect,  name="google-drive-connect"),
+    path("admin/google-drive/callback/", google_drive_callback, name="google-drive-callback"),
     path("admin/", admin.site.urls),
 
     # ── JWT Auth ──────────────────────────────────────────────────
