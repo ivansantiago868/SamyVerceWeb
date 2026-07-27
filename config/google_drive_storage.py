@@ -12,6 +12,20 @@ from googleapiclient.errors import HttpError
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
+def borrar_archivo_drive(field):
+    """
+    Elimina de Drive el archivo referenciado por un FieldFile (imagen,
+    imagen_procesada, logo, etc.), si su `name` parece un ID de Drive válido
+    (los IDs de Drive no tienen "/" ni "."; rutas locales pre-migración sí,
+    y no queremos intentar borrarlas como si fueran IDs).
+    """
+    if field and field.name and "/" not in field.name and "." not in field.name:
+        try:
+            field.storage.delete(field.name)
+        except Exception:
+            pass
+
+
 def _get_drive_service():
     creds = None
     token_path = settings.GOOGLE_DRIVE_TOKEN_FILE

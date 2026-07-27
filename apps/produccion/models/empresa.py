@@ -1,5 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+from config.google_drive_storage import borrar_archivo_drive
 
 
 class Empresa(models.Model):
@@ -19,6 +23,24 @@ class Empresa(models.Model):
 
     def __str__(self):
         return self.nombre
+
+    def save(self, *args, **kwargs):
+        logo_anterior = None
+        if self.pk:
+            try:
+                anterior_obj = Empresa.objects.only("logo").get(pk=self.pk)
+                if anterior_obj.logo.name != self.logo.name:
+                    logo_anterior = anterior_obj.logo
+            except Empresa.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if logo_anterior:
+            borrar_archivo_drive(logo_anterior)
+
+
+@receiver(post_delete, sender=Empresa)
+def borrar_logo_empresa(sender, instance, **kwargs):
+    borrar_archivo_drive(instance.logo)
 
 
 class PerfilUsuario(models.Model):

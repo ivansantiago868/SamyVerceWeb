@@ -59,6 +59,14 @@ DATABASES = {
         # En Fly, SQLITE_PATH apunta al volumen persistente montado (ej. /data/db.sqlite3);
         # sin volumen, el filesystem es efímero y se perdería en cada deploy.
         "NAME":   env("SQLITE_PATH", default=str(BASE_DIR / "db.sqlite3")),
+        # Timeout más alto evita "database is locked" bajo contención normal
+        # (el procesamiento IA en background ahora escribe desde hilos aparte)
+        # en vez de fallar a los 5s por default. El modo WAL (que además
+        # permite lecturas concurrentes mientras se escribe) se activa una
+        # sola vez sobre el archivo vía la señal `connection_created` más abajo.
+        "OPTIONS": {
+            "timeout": 20,
+        },
     }
 }
 

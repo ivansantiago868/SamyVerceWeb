@@ -146,6 +146,11 @@ class PiezaImagenInline(admin.TabularInline):
                 'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
                 obj.imagen_procesada.url,
             )
+        if getattr(obj, "ia_error", ""):
+            return format_html(
+                '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                obj.ia_error, obj.ia_error,
+            )
         return format_html('<span style="color:#aaa;font-size:11px">—</span>')
 
 

@@ -58,7 +58,7 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             for obj in nuevas:
                 obj.orden = siguiente
                 siguiente += 1
-        for form, obj in zip(formset.forms, instances):
+        for form, obj in zip(formset.saved_forms, instances):
             if not getattr(obj, '_skip_ia', None) is not None:
                 procesar = form.cleaned_data.get("procesar_con_ia", True)
                 obj._skip_ia = not procesar
@@ -94,6 +94,12 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
         primera = next(iter(obj.imagenes.all()), None)
         img = primera.imagen_procesada if primera else obj.imagen_procesada
         if not img:
+            error = (primera.ia_error if primera else obj.ia_error) or ""
+            if error:
+                return format_html(
+                    '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                    error, error,
+                )
             return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
         return format_html(
             '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
@@ -107,6 +113,16 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la pieza primero para agregar imágenes.</p>')
         procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
         if not procesadas:
+            con_error = [img for img in obj.imagenes.all() if img.ia_error]
+            if con_error:
+                errores_html = "".join(
+                    format_html('<li>{}</li>', img.ia_error) for img in con_error
+                )
+                return format_html(
+                    '<p style="color:#c0392b;font-style:italic">✗ Error procesando imágenes IA:</p>'
+                    '<ul style="color:#c0392b;font-size:12px">{}</ul>',
+                    mark_safe(errores_html),
+                )
             return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Imágenes IA en proceso. Recarga en unos segundos.</p>')
         count = len(procesadas)
         slides_html = "".join(

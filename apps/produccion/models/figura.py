@@ -7,6 +7,7 @@ from .empresa import Empresa
 from .inventario_pieza import InventarioPieza
 from .insumo import Insumo
 from .upload_paths import upload_figura_imagen, upload_figura_procesada
+from config.google_drive_storage import borrar_archivo_drive as _borrar_campo_drive
 
 
 class CategoriaFigura(models.Model):
@@ -23,11 +24,27 @@ class CategoriaFigura(models.Model):
         return self.nombre
 
 
+class EtiquetaFigura(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True,
+                                related_name="etiquetas_figura", verbose_name="Empresa")
+    nombre  = models.CharField(max_length=100, verbose_name="Etiqueta")
+
+    class Meta:
+        ordering        = ["nombre"]
+        verbose_name    = "Etiqueta de figura"
+        verbose_name_plural = "Etiquetas de figura"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Figura(models.Model):
     empresa     = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True,
                                     related_name="figuras", verbose_name="Empresa")
-    categoria   = models.ForeignKey(CategoriaFigura, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name="figuras", verbose_name="Categoría")
+    categorias  = models.ManyToManyField(CategoriaFigura, blank=True,
+                                         related_name="figuras", verbose_name="Categorías")
+    etiquetas   = models.ManyToManyField(EtiquetaFigura, blank=True,
+                                         related_name="figuras", verbose_name="Etiquetas")
     nombre      = models.CharField(max_length=255, verbose_name="Nombre de la figura")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
     archivo_3mf = models.FileField(upload_to="figuras/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")
@@ -60,6 +77,7 @@ class FiguraImagen(models.Model):
                                          related_name="imagenes", verbose_name="Figura")
     imagen           = models.ImageField(upload_to=upload_figura_imagen, verbose_name="Imagen")
     imagen_procesada = models.ImageField(upload_to=upload_figura_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
+    ia_error         = models.TextField(blank=True, default="", verbose_name="Error de procesamiento IA")
     orden            = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
 
     class Meta:
@@ -77,25 +95,21 @@ class FiguraImagen(models.Model):
             )["m"]
             self.orden = (max_orden + 1) if max_orden is not None else 0
 
+        imagen_anterior = None
         imagen_cambio = True
         if self.pk:
             try:
-                anterior = FiguraImagen.objects.values_list("imagen", flat=True).get(pk=self.pk)
-                imagen_cambio = anterior != self.imagen.name
+                anterior_obj = FiguraImagen.objects.only("imagen").get(pk=self.pk)
+                imagen_anterior = anterior_obj.imagen
+                imagen_cambio = imagen_anterior.name != self.imagen.name
             except FiguraImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
+        if imagen_cambio and imagen_anterior:
+            _borrar_campo_drive(imagen_anterior)
         if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
             procesar_en_background(FiguraImagen, self.pk, self.imagen.url)
-
-
-def _borrar_campo_drive(field):
-    if field and field.name and "/" not in field.name and "." not in field.name:
-        try:
-            field.storage.delete(field.name)
-        except Exception:
-            pass
 
 
 @receiver(post_delete, sender=FiguraImagen)

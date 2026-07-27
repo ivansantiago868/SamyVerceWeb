@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(venv/bin/python manage.py migrar_media_drive)",
-      "Bash(venv/bin/python manage.py shell -c ' *)"
+      "Bash(venv/bin/python manage.py shell -c ' *)",
+      "Bash(flyctl deploy *)"
     ]
   }
 }

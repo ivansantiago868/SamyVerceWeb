@@ -2,12 +2,19 @@ from django import forms
 from django.contrib import admin
 from django.urls import path
 from django.utils.html import format_html, mark_safe
-from apps.produccion.models import CategoriaFigura, Figura, FiguraImagen, FiguraPieza
+from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
 
 
 @admin.register(CategoriaFigura)
 class CategoriaFiguraAdmin(EmpresaMixin, admin.ModelAdmin):
+    grupos_empresa = {"Maker"}
+    list_display   = ("nombre",)
+    search_fields  = ("nombre",)
+
+
+@admin.register(EtiquetaFigura)
+class EtiquetaFiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa = {"Maker"}
     list_display   = ("nombre",)
     search_fields  = ("nombre",)
@@ -41,6 +48,11 @@ class FiguraImagenInline(admin.TabularInline):
                 '<img src="{}" style="height:72px;border-radius:6px;'
                 'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
                 obj.imagen_procesada.url,
+            )
+        if getattr(obj, "ia_error", ""):
+            return format_html(
+                '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                obj.ia_error, obj.ia_error,
             )
         return format_html('<span style="color:#aaa;font-size:11px">⏳ procesando…</span>')
 
@@ -85,9 +97,10 @@ class FiguraAdminForm(forms.ModelForm):
 class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa     = {"Maker"}
     form               = FiguraAdminForm
-    list_display       = ("miniatura_ia", "nombre", "categoria", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
+    list_display       = ("miniatura_ia", "nombre", "categorias_display", "etiquetas_display", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
     list_display_links = ("miniatura_ia", "nombre")
-    list_filter        = ("categoria",)
+    list_filter        = ("categorias", "etiquetas")
+    filter_horizontal  = ("categorias", "etiquetas")
     search_fields      = ("nombre", "descripcion")
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
     inlines            = [FiguraImagenInline, FiguraPiezaInline]
@@ -97,7 +110,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             "description": "Imágenes procesadas por IA. Se actualiza al guardar nuevas imágenes.",
         }),
         (None, {
-            "fields": ("nombre", "categoria", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
+            "fields": ("nombre", "categorias", "etiquetas", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
         }),
         ("Totales", {
             "fields": ("costo_total_display", "precio_total_display"),
@@ -148,7 +161,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                 obj.orden = siguiente
                 siguiente += 1
 
-        for f, obj in zip(formset.forms, instances):
+        for f, obj in zip(formset.saved_forms, instances):
             procesar = f.cleaned_data.get("procesar_con_ia", True)
             obj._skip_ia = not procesar
             obj.save()
@@ -162,7 +175,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("imagenes")
+        return super().get_queryset(request).prefetch_related("imagenes", "categorias", "etiquetas")
 
     @admin.display(description="Generar descripción")
     def boton_generar_ia(self, obj):
@@ -182,6 +195,11 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     def miniatura_ia(self, obj):
         primera = next(iter(obj.imagenes.all()), None)
         if not primera or not primera.imagen_procesada:
+            if primera and primera.ia_error:
+                return format_html(
+                    '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                    primera.ia_error, primera.ia_error,
+                )
             return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
         return format_html(
             '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
@@ -189,11 +207,29 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             primera.imagen_procesada.url,
         )
 
+    @admin.display(description="Categorías")
+    def categorias_display(self, obj):
+        return ", ".join(c.nombre for c in obj.categorias.all()) or "—"
+
+    @admin.display(description="Etiquetas")
+    def etiquetas_display(self, obj):
+        return ", ".join(e.nombre for e in obj.etiquetas.all()) or "—"
+
     def carrusel_ia(self, obj):
         if not obj or not obj.pk:
             return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la figura primero.</p>')
         procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
         if not procesadas:
+            con_error = [img for img in obj.imagenes.all() if img.ia_error]
+            if con_error:
+                errores_html = "".join(
+                    format_html('<li>{}</li>', img.ia_error) for img in con_error
+                )
+                return format_html(
+                    '<p style="color:#c0392b;font-style:italic">✗ Error procesando imágenes IA:</p>'
+                    '<ul style="color:#c0392b;font-size:12px">{}</ul>',
+                    mark_safe(errores_html),
+                )
             return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Sin imágenes IA aún. Agrega imágenes en el panel inferior.</p>')
 
         count = len(procesadas)

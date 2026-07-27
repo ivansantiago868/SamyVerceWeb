@@ -138,6 +138,33 @@ def _collage_mixto(imagenes_qs, ancho_disponible):
     return bloques
 
 
+def _agrupar_por_categoria(figuras):
+    """
+    Agrupa las figuras por categoría, preservando el orden alfabético de
+    categoría. Una figura con varias categorías aparece en cada sección
+    correspondiente; las sin categoría van al final en "Sin categoría".
+    """
+    grupos = {}
+    orden = []
+    sin_categoria = []
+    for figura in figuras:
+        categorias = list(figura.categorias.all())
+        if not categorias:
+            sin_categoria.append(figura)
+            continue
+        for cat in categorias:
+            if cat.id not in grupos:
+                grupos[cat.id] = (cat, [])
+                orden.append(cat.id)
+            grupos[cat.id][1].append(figura)
+
+    orden.sort(key=lambda cid: grupos[cid][0].nombre.lower())
+    resultado = [grupos[cid] for cid in orden]
+    if sin_categoria:
+        resultado.append((None, sin_categoria))
+    return resultado
+
+
 def _fondo_oscuro(canvas, doc):
     """Callback: pinta fondo Deep Space Blue en cada página y footer de marca."""
     PAGE_W, PAGE_H = A4
@@ -231,16 +258,7 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
     story.append(Spacer(1, 3 * cm))
 
     # ── FIGURAS ───────────────────────────────────────────────────────────────
-    categoria_actual = object()  # centinela: distinto de cualquier categoría real
-    for figura in figuras:
-        # Si no se filtró a una sola categoría, agrupar el catálogo en secciones
-        if not categoria and figura.categoria_id != categoria_actual:
-            categoria_actual = figura.categoria_id
-            nombre_categoria = figura.categoria.nombre if figura.categoria else "Sin categoría"
-            story.append(Paragraph(nombre_categoria.upper(), st_categoria))
-            story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceAfter=8))
-
-        # Cabecera de figura (nombre + acento) — mantenemos juntos
+    def _render_figura(figura):
         story.append(KeepTogether([
             HRFlowable(width=ancho, color=VOXEL_MAG, thickness=2, spaceAfter=6),
             Paragraph(figura.nombre.upper(), st_nombre),
@@ -263,6 +281,20 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, usar_ia=True, mixto=Fals
         story.append(HRFlowable(width=ancho, color=CARD_BG, thickness=6, spaceAfter=4))
         story.append(Spacer(1, 0.3 * cm))
 
+    if categoria:
+        # Ya filtrado a una sola categoría: sin secciones, listado plano.
+        for figura in figuras:
+            _render_figura(figura)
+    else:
+        # Sin filtro: agrupar en secciones por categoría (una figura con
+        # varias categorías aparece repetida en cada sección que le aplica).
+        for cat, figuras_cat in _agrupar_por_categoria(figuras):
+            nombre_categoria = cat.nombre if cat else "Sin categoría"
+            story.append(Paragraph(nombre_categoria.upper(), st_categoria))
+            story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceAfter=8))
+            for figura in figuras_cat:
+                _render_figura(figura)
+
     doc.build(story, onFirstPage=_fondo_oscuro, onLaterPages=_fondo_oscuro)
     buf.seek(0)
     return buf
@@ -275,15 +307,14 @@ def _qs_y_empresa(request):
     perfil = getattr(request.user, "perfil", None)
     qs = (
         Figura.objects
-        .select_related("categoria")
-        .prefetch_related("imagenes", "figura_piezas__pieza")
-        .order_by("categoria__nombre", "nombre")
+        .prefetch_related("imagenes", "categorias", "figura_piezas__pieza")
+        .order_by("nombre")
     )
 
     categoria = None
-    categoria_id = request.GET.get("categoria__id__exact")
+    categoria_id = request.GET.get("categorias__id__exact")
     if categoria_id:
-        qs = qs.filter(categoria_id=categoria_id)
+        qs = qs.filter(categorias__id=categoria_id).distinct()
         categoria = CategoriaFigura.objects.filter(pk=categoria_id).first()
 
     if perfil and perfil.empresa_id:

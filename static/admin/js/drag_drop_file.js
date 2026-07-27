@@ -1,8 +1,21 @@
 function initRow(root) {
-  root.querySelectorAll(".drag-drop-input").forEach(initDragDrop);
-  root.querySelectorAll(".drag-drop-img-input").forEach(initDragDropImage);
+  // La fila oculta "empty-form" (plantilla que Django clona al hacer
+  // "Agregar otra") no debe inicializarse: si se marca con data-dd-init
+  // aquí, la marca se copia al clonar y la fila nueva queda sin listeners.
+  root.querySelectorAll(".drag-drop-input").forEach((el) => {
+    if (!el.closest(".empty-form")) initDragDrop(el);
+  });
+  root.querySelectorAll(".drag-drop-img-input").forEach((el) => {
+    if (!el.closest(".empty-form")) initDragDropImage(el);
+  });
   root.querySelectorAll(".pieza-carousel").forEach(initCarrusel);
 }
+
+// Red de seguridad: si un drop cae fuera de una zona reconocida (p. ej. otra
+// celda de la fila en un inline tabular), el navegador por defecto navega a
+// mostrar el archivo, dejando una página en blanco. Lo bloqueamos a nivel de página.
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
 
 // Carga inicial
 document.addEventListener("DOMContentLoaded", () => initRow(document));

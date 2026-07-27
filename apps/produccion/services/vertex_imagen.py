@@ -73,15 +73,16 @@ def _descargar_url(url: str) -> bytes | None:
     return None
 
 
-def procesar_imagen_estudio(ruta: str) -> bytes | None:
+def procesar_imagen_estudio(ruta: str) -> tuple[bytes | None, str | None]:
     """
     Edita la imagen del producto con Imagen 3 via Google AI Studio API key.
-    Retorna bytes JPEG listos para guardar, o None si falla.
+    Retorna (bytes JPEG listos para guardar, None) o (None, mensaje_de_error).
     """
     api_key = getattr(settings, "GEMINI_API_KEY", "")
     if not api_key:
-        logger.warning("GEMINI_API_KEY no configurada — procesamiento omitido.")
-        return None
+        mensaje = "GEMINI_API_KEY no configurada — procesamiento omitido."
+        logger.warning(mensaje)
+        return None, mensaje
 
     try:
         client = genai.Client(api_key=api_key)
@@ -89,7 +90,7 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
         if ruta.startswith("http://") or ruta.startswith("https://"):
             img_bytes = _descargar_url(ruta)
             if img_bytes is None:
-                return None
+                return None, f"No se pudo descargar la imagen original desde {ruta}"
         else:
             with open(ruta, "rb") as f:
                 img_bytes = f.read()
@@ -112,42 +113,61 @@ def procesar_imagen_estudio(ruta: str) -> bytes | None:
                 break
 
         if not imagen_bytes:
-            logger.error("Gemini no retornó imagen.")
-            return None
+            mensaje = "Gemini no retornó ninguna imagen en la respuesta."
+            logger.error(mensaje)
+            return None, mensaje
 
         img = Image.open(io.BytesIO(imagen_bytes)).convert("RGB")
         img.thumbnail((_MAX_PX, _MAX_PX), Image.LANCZOS)
 
         buf = io.BytesIO()
         img.save(buf, format="JPEG", quality=_QUALITY, optimize=True)
-        return buf.getvalue()
+        return buf.getvalue(), None
 
     except Exception as exc:
         msg = str(exc)
         if "RESOURCE_EXHAUSTED" in msg or "429" in msg:
-            logger.warning(
+            mensaje = (
                 "Gemini API: cupo agotado (modelo de pago). "
                 "Activa facturación en console.cloud.google.com/billing"
             )
+            logger.warning(mensaje)
         elif "API_KEY_INVALID" in msg or "400" in msg:
-            logger.error("Gemini API: clave inválida — verifica GEMINI_API_KEY en .env")
+            mensaje = "Gemini API: clave inválida — verifica GEMINI_API_KEY en .env"
+            logger.error(mensaje)
         else:
-            logger.error("Gemini API exception: %s", msg[:200])
-        return None
+            mensaje = f"Gemini API exception: {msg[:300]}"
+            logger.error(mensaje)
+        return None, mensaje
+
+
+def _guardar_error(model_class, pk: int, mensaje: str) -> None:
+    """Persiste el motivo del fallo en ia_error para que sea visible en el admin."""
+    try:
+        model_class.objects.filter(pk=pk).update(ia_error=(mensaje or "")[:500])
+    except Exception:
+        logger.exception("No se pudo guardar ia_error para %s id=%s", model_class.__name__, pk)
 
 
 def _procesar(model_class, pk: int, ruta: str) -> None:
     """Lógica de procesamiento pura — sin manejo de conexión ni hilos."""
     for intento in range(1, _REINTENTOS + 1):
         try:
-            resultado = procesar_imagen_estudio(ruta)
+            resultado, error_msg = procesar_imagen_estudio(ruta)
             if not resultado:
+                _guardar_error(model_class, pk, error_msg or "Gemini no devolvió una imagen procesada.")
                 return
             base   = os.path.splitext(os.path.basename(ruta))[0]
             nombre = f"{base}_studio.jpg"
             obj    = model_class.objects.get(pk=pk)
+            storage_anterior = obj.imagen_procesada.storage
+            nombre_anterior  = obj.imagen_procesada.name
             obj.imagen_procesada.save(nombre, ContentFile(resultado), save=False)
-            model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name)
+            model_class.objects.filter(pk=pk).update(imagen_procesada=obj.imagen_procesada.name, ia_error="")
+            if nombre_anterior and nombre_anterior != obj.imagen_procesada.name:
+                from types import SimpleNamespace
+                from config.google_drive_storage import borrar_archivo_drive
+                borrar_archivo_drive(SimpleNamespace(name=nombre_anterior, storage=storage_anterior))
             logger.info("Imagen procesada: %s id=%s → %s", model_class.__name__, pk, nombre)
             return
         except ssl.SSLError as exc:
@@ -163,6 +183,7 @@ def _procesar(model_class, pk: int, ruta: str) -> None:
                     "SSL persistente %s id=%s tras %d intentos: %s",
                     model_class.__name__, pk, _REINTENTOS, exc,
                 )
+                _guardar_error(model_class, pk, f"Error de red persistente tras {_REINTENTOS} intentos: {exc}")
         except Exception as exc:
             espera = _ESPERA_BASE ** intento
             if intento < _REINTENTOS:
@@ -176,11 +197,23 @@ def _procesar(model_class, pk: int, ruta: str) -> None:
                     "Fallo definitivo %s id=%s tras %d intentos: %s",
                     model_class.__name__, pk, _REINTENTOS, exc,
                 )
+                _guardar_error(model_class, pk, f"Fallo tras {_REINTENTOS} intentos: {exc}")
 
 
 def procesar_en_background(model_class, pk: int, ruta: str) -> None:
-    """Procesa la imagen de forma síncrona — bloquea hasta terminar."""
+    """Lanza el procesamiento en un hilo separado para no bloquear el request."""
+    import threading
+    hilo = threading.Thread(target=_worker, args=(model_class, pk, ruta), daemon=True)
+    hilo.start()
+
+
+def _worker(model_class, pk: int, ruta: str) -> None:
+    """Ejecuta _procesar() en el hilo y cierra la conexión de BD al salir."""
+    from django.db import close_old_connections
     try:
         _procesar(model_class, pk, ruta)
     except Exception as exc:
         logger.error("Error inesperado procesando %s id=%s: %s", model_class.__name__, pk, exc)
+        _guardar_error(model_class, pk, f"Error inesperado: {exc}")
+    finally:
+        close_old_connections()

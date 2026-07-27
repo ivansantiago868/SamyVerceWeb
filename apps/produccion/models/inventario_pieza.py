@@ -8,6 +8,7 @@ from .upload_paths import (
     upload_inventario_imagen, upload_inventario_procesada,
     upload_pieza_imagen, upload_pieza_procesada,
 )
+from config.google_drive_storage import borrar_archivo_drive as _borrar_campo_drive
 
 
 class InventarioPieza(models.Model):
@@ -34,6 +35,7 @@ class InventarioPieza(models.Model):
     archivo_3mf              = models.FileField(upload_to="piezas/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")
     imagen                   = models.ImageField(upload_to=upload_inventario_imagen, null=True, blank=True, verbose_name="Imagen de la pieza")
     imagen_procesada         = models.ImageField(upload_to=upload_inventario_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
+    ia_error                 = models.TextField(blank=True, default="", verbose_name="Error de procesamiento IA")
     url_referencia           = models.URLField(max_length=500, null=True, blank=True, verbose_name="URL de referencia")
     actualizado_en           = models.DateTimeField(auto_now=True)
 
@@ -46,15 +48,19 @@ class InventarioPieza(models.Model):
         return self.nombre
 
     def save(self, *args, **kwargs):
+        imagen_anterior = None
         imagen_cambio = True
         if self.pk:
             try:
-                anterior = InventarioPieza.objects.values_list("imagen", flat=True).get(pk=self.pk)
+                anterior_obj = InventarioPieza.objects.only("imagen").get(pk=self.pk)
+                imagen_anterior = anterior_obj.imagen
                 imagen_actual = self.imagen.name if self.imagen else None
-                imagen_cambio = anterior != imagen_actual
+                imagen_cambio = imagen_anterior.name != imagen_actual
             except InventarioPieza.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
+        if imagen_cambio and imagen_anterior:
+            _borrar_campo_drive(imagen_anterior)
         if imagen_cambio and self.imagen:
             from apps.produccion.services.vertex_imagen import procesar_en_background
             procesar_en_background(InventarioPieza, self.pk, self.imagen.url)
@@ -69,6 +75,7 @@ class PiezaImagen(models.Model):
     )
     imagen           = models.ImageField(upload_to=upload_pieza_imagen, verbose_name="Imagen")
     imagen_procesada = models.ImageField(upload_to=upload_pieza_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
+    ia_error         = models.TextField(blank=True, default="", verbose_name="Error de procesamiento IA")
     orden            = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
 
     class Meta:
@@ -86,26 +93,21 @@ class PiezaImagen(models.Model):
             )["m"]
             self.orden = (max_orden + 1) if max_orden is not None else 0
 
+        imagen_anterior = None
         imagen_cambio = True
         if self.pk:
             try:
-                anterior = PiezaImagen.objects.values_list("imagen", flat=True).get(pk=self.pk)
-                imagen_cambio = anterior != self.imagen.name
+                anterior_obj = PiezaImagen.objects.only("imagen").get(pk=self.pk)
+                imagen_anterior = anterior_obj.imagen
+                imagen_cambio = imagen_anterior.name != self.imagen.name
             except PiezaImagen.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
+        if imagen_cambio and imagen_anterior:
+            _borrar_campo_drive(imagen_anterior)
         if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
             from apps.produccion.services.vertex_imagen import procesar_en_background
             procesar_en_background(PiezaImagen, self.pk, self.imagen.url)
-
-
-def _borrar_campo_drive(field):
-    """Elimina un archivo de Drive si el campo tiene un ID válido."""
-    if field and field.name and "/" not in field.name and "." not in field.name:
-        try:
-            field.storage.delete(field.name)
-        except Exception:
-            pass
 
 
 @receiver(post_delete, sender=PiezaImagen)
