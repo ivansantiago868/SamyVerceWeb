@@ -10,10 +10,11 @@ class FiguraImagenSerializer(serializers.ModelSerializer):
         fields = ["id", "imagen", "orden"]
 
     def get_imagen(self, obj):
-        if not obj.imagen_procesada:
+        campo = obj.imagen_procesada or obj.imagen
+        if not campo:
             return None
         try:
-            url = obj.imagen_procesada.url
+            url = campo.url
             request = self.context.get("request")
             if request:
                 return request.build_absolute_uri(url)

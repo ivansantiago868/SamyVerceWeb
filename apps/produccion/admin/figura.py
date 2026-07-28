@@ -194,18 +194,26 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     @admin.display(description="Imagen IA")
     def miniatura_ia(self, obj):
         primera = next(iter(obj.imagenes.all()), None)
-        if not primera or not primera.imagen_procesada:
-            if primera and primera.ia_error:
-                return format_html(
-                    '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
-                    primera.ia_error, primera.ia_error,
-                )
+        if not primera:
             return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
-        return format_html(
-            '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
-            'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
-            primera.imagen_procesada.url,
-        )
+        if primera.imagen_procesada:
+            return format_html(
+                '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
+                'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
+                primera.imagen_procesada.url,
+            )
+        if primera.imagen:
+            return format_html(
+                '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
+                'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
+                primera.imagen.url,
+            )
+        if primera.ia_error:
+            return format_html(
+                '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                primera.ia_error, primera.ia_error,
+            )
+        return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
 
     @admin.display(description="Categorías")
     def categorias_display(self, obj):
