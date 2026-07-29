@@ -7,7 +7,7 @@ from .inventario     import InventarioPiezaSerializer
 from .pedido         import PedidoSerializer
 from .venta          import VentaSerializer
 from .tarea          import TareaSerializer
-from .figura         import FiguraSerializer, FiguraImagenSerializer, FiguraPiezaSerializer
+from .figura         import FiguraSerializer, FiguraPiezaSerializer, FiguraPublicaSerializer
 from .cotizador      import (
     CotizadorInputSerializer,
     CotizadorLoteInputSerializer,
@@ -30,7 +30,7 @@ __all__ = [
     "PedidoSerializer",
     "VentaSerializer",
     "TareaSerializer",
-    "FiguraSerializer", "FiguraPiezaSerializer",
+    "FiguraSerializer", "FiguraPiezaSerializer", "FiguraPublicaSerializer",
     "CotizadorInputSerializer",
     "CotizadorLoteInputSerializer",
     "CotizadorDesdeCatalogoSerializer",

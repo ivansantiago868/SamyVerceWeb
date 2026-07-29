@@ -20,11 +20,21 @@ from apps.produccion.controllers.auth_controller import (
     TokenFromSessionView,
 )
 from config.google_drive_views import google_drive_connect, google_drive_callback
+from config.backup_db_views import (
+    iniciar_backup_db, estado_backup_db,
+    listar_backups, iniciar_restaurar_backup, estado_restaurar_backup,
+)
+from apps.produccion.views.pdf_catalogo_figuras import exportar_catalogo_pdf_publico
 
 urlpatterns = [
     # Admin
     path("admin/google-drive/connect/",  google_drive_connect,  name="google-drive-connect"),
     path("admin/google-drive/callback/", google_drive_callback, name="google-drive-callback"),
+    path("admin/backup-db/iniciar/",           iniciar_backup_db,       name="backup-db-iniciar"),
+    path("admin/backup-db/estado/",            estado_backup_db,        name="backup-db-estado"),
+    path("admin/backup-db/listar/",            listar_backups,          name="backup-db-listar"),
+    path("admin/backup-db/restaurar/",         iniciar_restaurar_backup, name="backup-db-restaurar"),
+    path("admin/backup-db/restaurar-estado/",  estado_restaurar_backup,  name="backup-db-restaurar-estado"),
     path("admin/", admin.site.urls),
 
     # ── JWT Auth ──────────────────────────────────────────────────
@@ -47,6 +57,8 @@ urlpatterns = [
     path("api/v1/", include("apps.produccion.urls")),
 
     # ── Interfaces gráficas ───────────────────────────────────────
+    path("",                TemplateView.as_view(template_name="catalogo/index.html"), name="home"),
+    path("catalogo.pdf",     exportar_catalogo_pdf_publico,                            name="catalogo-pdf-publico"),
     path("cotizador/",   TemplateView.as_view(template_name="cotizador/index.html"),   name="cotizador-ui"),
     path("figuras/",     TemplateView.as_view(template_name="figuras/index.html"),     name="figuras-ui"),
     path("cotizador3d/", TemplateView.as_view(template_name="cotizador3d/index.html"), name="cotizador3d-ui"),

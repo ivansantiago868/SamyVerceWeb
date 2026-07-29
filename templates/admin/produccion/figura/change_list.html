@@ -2,28 +2,6 @@
 
 {% block object-tools-items %}
   <li>
-    <a href="{% url 'admin:figuras_catalogo_pdf_mixto' %}?{{ request.GET.urlencode }}"
-       target="_blank"
-       rel="noopener noreferrer"
-       class="button"
-       style="background:#6a1b9a;color:#fff;padding:8px 16px;border-radius:4px;
-              font-weight:bold;text-decoration:none;display:inline-flex;
-              align-items:center;gap:6px;">
-      📄 Catálogo Mixto
-    </a>
-  </li>
-  <li>
-    <a href="{% url 'admin:figuras_catalogo_pdf_real' %}?{{ request.GET.urlencode }}"
-       target="_blank"
-       rel="noopener noreferrer"
-       class="button"
-       style="background:#2e7d32;color:#fff;padding:8px 16px;border-radius:4px;
-              font-weight:bold;text-decoration:none;display:inline-flex;
-              align-items:center;gap:6px;">
-      📄 Catálogo PDF
-    </a>
-  </li>
-  <li>
     <a href="{% url 'admin:figuras_catalogo_pdf' %}?{{ request.GET.urlencode }}"
        target="_blank"
        rel="noopener noreferrer"
@@ -31,8 +9,126 @@
        style="background:#1a4b8c;color:#fff;padding:8px 16px;border-radius:4px;
               font-weight:bold;text-decoration:none;display:inline-flex;
               align-items:center;gap:6px;">
-      📄 Catálogo PDF IA
+      📄 Catálogo PDF
     </a>
   </li>
+  <li>
+    <a href="{% url 'admin:figuras_zip_precios' %}?{{ request.GET.urlencode }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="button"
+       style="background:#e65100;color:#fff;padding:8px 16px;border-radius:4px;
+              font-weight:bold;text-decoration:none;display:inline-flex;
+              align-items:center;gap:6px;">
+      🗜️ ZIP con Precio
+    </a>
+  </li>
+  <li>
+    {% csrf_token %}
+    <button type="button" id="btn-reintentar-ia" class="button"
+            style="background:#c0392b;color:#fff;padding:8px 16px;border-radius:4px;
+                   font-weight:bold;border:none;cursor:pointer;display:inline-flex;
+                   align-items:center;gap:6px;">
+      🔄 Reintentar IA fallidas
+    </button>
+    <div id="ia-reintento-progreso" style="display:none;margin-top:6px;font-size:12px;color:#555;">
+      <div style="background:#eee;border-radius:4px;width:220px;height:8px;overflow:hidden;margin-bottom:4px;">
+        <div id="ia-reintento-barra" style="background:#c0392b;width:0%;height:100%;transition:width .3s"></div>
+      </div>
+      <span id="ia-reintento-texto"></span>
+    </div>
+  </li>
   {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+  (function () {
+    const btn       = document.getElementById('btn-reintentar-ia');
+    const panel     = document.getElementById('ia-reintento-progreso');
+    const barra     = document.getElementById('ia-reintento-barra');
+    const texto     = document.getElementById('ia-reintento-texto');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    const qs        = window.location.search || '';
+    let polling     = null;
+
+    function actualizarConteoBoton() {
+      fetch('{% url "admin:figuras_conteo_ia_fallidas" %}' + qs)
+        .then(r => r.json())
+        .then(data => {
+          btn.textContent = '🔄 Reintentar IA fallidas' + (data.total ? ` (${data.total})` : '');
+          btn.disabled = !data.total;
+          btn.style.opacity = data.total ? '1' : '.6';
+        })
+        .catch(() => {});
+    }
+
+    function pintarProgreso(data) {
+      panel.style.display = 'block';
+      const pct = data.total ? Math.round(((data.completadas + data.fallidas) / data.total) * 100) : 100;
+      barra.style.width = pct + '%';
+      texto.textContent =
+        `Completadas: ${data.completadas} · Fallidas: ${data.fallidas} · Pendientes: ${data.pendientes} / ${data.total}`;
+    }
+
+    function seguirProgreso(ids) {
+      if (polling) clearInterval(polling);
+      let intentos = 0;
+      const MAX_INTENTOS = 100; // ~5 minutos a 3s cada uno
+
+      function consultar() {
+        intentos += 1;
+        fetch('{% url "admin:figuras_estado_ia_reintento" %}?ids=' + ids.join(','))
+          .then(r => r.json())
+          .then(data => {
+            pintarProgreso(data);
+            if (data.pendientes <= 0 || intentos >= MAX_INTENTOS) {
+              clearInterval(polling);
+              texto.textContent += ' · Listo ✔';
+              actualizarConteoBoton();
+            }
+          })
+          .catch(() => {});
+      }
+
+      consultar();
+      polling = setInterval(consultar, 3000);
+    }
+
+    if (btn) {
+      actualizarConteoBoton();
+      btn.addEventListener('click', function () {
+        if (btn.disabled) return;
+        if (!confirm('¿Relanzar el procesamiento IA de todas las imágenes con error?')) return;
+
+        btn.disabled = true;
+        panel.style.display = 'block';
+        texto.textContent = 'Relanzando…';
+        barra.style.width = '0%';
+
+        fetch('{% url "admin:figuras_reintentar_ia_fallidas" %}' + qs, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrfToken ? csrfToken.value : '' },
+        })
+          .then(r => r.json())
+          .then(data => {
+            btn.disabled = false;
+            if (!data.total) {
+              texto.textContent = 'No hay imágenes con error de IA pendiente.';
+              actualizarConteoBoton();
+              return;
+            }
+            seguirProgreso(data.ids);
+          })
+          .catch(() => {
+            btn.disabled = false;
+            texto.textContent = 'Error al relanzar. Intenta de nuevo.';
+          });
+      });
+    }
+  })();
+  });
+  </script>
 {% endblock %}

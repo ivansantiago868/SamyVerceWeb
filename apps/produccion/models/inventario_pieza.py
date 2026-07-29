@@ -61,9 +61,6 @@ class InventarioPieza(models.Model):
         super().save(*args, **kwargs)
         if imagen_cambio and imagen_anterior:
             _borrar_campo_drive(imagen_anterior)
-        if imagen_cambio and self.imagen:
-            from apps.produccion.services.vertex_imagen import procesar_en_background
-            procesar_en_background(InventarioPieza, self.pk, self.imagen.url)
 
 
 class PiezaImagen(models.Model):
@@ -105,9 +102,6 @@ class PiezaImagen(models.Model):
         super().save(*args, **kwargs)
         if imagen_cambio and imagen_anterior:
             _borrar_campo_drive(imagen_anterior)
-        if imagen_cambio and self.imagen and not getattr(self, "_skip_ia", False):
-            from apps.produccion.services.vertex_imagen import procesar_en_background
-            procesar_en_background(PiezaImagen, self.pk, self.imagen.url)
 
 
 @receiver(post_delete, sender=PiezaImagen)

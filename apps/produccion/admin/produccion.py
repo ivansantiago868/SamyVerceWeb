@@ -58,10 +58,7 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             for obj in nuevas:
                 obj.orden = siguiente
                 siguiente += 1
-        for form, obj in zip(formset.saved_forms, instances):
-            if not getattr(obj, '_skip_ia', None) is not None:
-                procesar = form.cleaned_data.get("procesar_con_ia", True)
-                obj._skip_ia = not procesar
+        for obj in instances:
             obj.save()
         formset.save_m2m()
         for obj in formset.deleted_objects:
@@ -92,47 +89,31 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
 
     def miniatura(self, obj):
         primera = next(iter(obj.imagenes.all()), None)
-        img = primera.imagen_procesada if primera else obj.imagen_procesada
+        img = primera.imagen if primera else obj.imagen
         if not img:
-            error = (primera.ia_error if primera else obj.ia_error) or ""
-            if error:
-                return format_html(
-                    '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
-                    error, error,
-                )
-            return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
+            return format_html('<span style="color:#ccc;font-size:18px">—</span>')
         return format_html(
             '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
             'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
             img.url,
         )
-    miniatura.short_description = "Imagen IA"
+    miniatura.short_description = "Imagen"
 
     def carrusel_imagenes(self, obj):
         if not obj or not obj.pk:
             return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la pieza primero para agregar imágenes.</p>')
-        procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
-        if not procesadas:
-            con_error = [img for img in obj.imagenes.all() if img.ia_error]
-            if con_error:
-                errores_html = "".join(
-                    format_html('<li>{}</li>', img.ia_error) for img in con_error
-                )
-                return format_html(
-                    '<p style="color:#c0392b;font-style:italic">✗ Error procesando imágenes IA:</p>'
-                    '<ul style="color:#c0392b;font-size:12px">{}</ul>',
-                    mark_safe(errores_html),
-                )
-            return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Imágenes IA en proceso. Recarga en unos segundos.</p>')
-        count = len(procesadas)
+        imagenes = [img for img in obj.imagenes.all() if img.imagen]
+        if not imagenes:
+            return mark_safe('<p style="color:#6c757d;font-style:italic">Sin imágenes aún. Agrega imágenes en el panel inferior.</p>')
+        count = len(imagenes)
         slides_html = "".join(
             format_html(
                 '<div class="pc-slide">'
                 '<img src="{}" alt="Imagen {}" style="cursor:zoom-in" onclick="window._svLightbox&&window._svLightbox.open(this.src)">'
                 '</div>',
-                img.imagen_procesada.url, i + 1,
+                img.imagen.url, i + 1,
             )
-            for i, img in enumerate(procesadas)
+            for i, img in enumerate(imagenes)
         )
         dots_html = "".join(
             format_html(
@@ -147,20 +128,11 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
                 'background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;'
                 'padding:4px 10px;font-size:12px;color:#495057;text-decoration:none;margin:2px">'
                 '⬇ Imagen {}</a>',
-                img.imagen_procesada.url, i + 1,
+                img.imagen.url, i + 1,
             )
-            for i, img in enumerate(procesadas)
-        )
-        boton_zip = format_html(
-            '<a href="/api/v1/piezas/{}/descargar-imagenes-ia/" '
-            'style="display:inline-flex;align-items:center;gap:.4rem;'
-            'background:#417690;color:#fff;border-radius:4px;padding:6px 14px;'
-            'font-size:13px;font-weight:bold;text-decoration:none;margin-bottom:8px">'
-            '⬇ Descargar todas ({} imágenes)</a>',
-            obj.pk, count,
+            for i, img in enumerate(imagenes)
         )
         return format_html(
-            '{}'
             '<div class="pieza-carousel" data-count="{}">'
             '<div class="pc-track">{}</div>'
             '<button class="pc-btn pc-prev" type="button">&#8249;</button>'
@@ -168,11 +140,11 @@ class InventarioPiezaAdmin(EmpresaMixin, admin.ModelAdmin):
             '<div class="pc-dots">{}</div>'
             '</div>'
             '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">{}</div>',
-            boton_zip, count,
+            count,
             mark_safe(slides_html), mark_safe(dots_html),
             mark_safe(descargas),
         )
-    carrusel_imagenes.short_description = "Carrusel de imágenes IA"
+    carrusel_imagenes.short_description = "Carrusel de imágenes"
 
     def delete_view(self, request, object_id, extra_context=None):
         try:

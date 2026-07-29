@@ -79,6 +79,21 @@ class FiguraImagen(models.Model):
     imagen_procesada = models.ImageField(upload_to=upload_figura_procesada, null=True, blank=True, verbose_name="Imagen IA (estudio)")
     ia_error         = models.TextField(blank=True, default="", verbose_name="Error de procesamiento IA")
     orden            = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+    IA, NORMAL, AMBAS = "ia", "normal", "ambas"
+    MODO_CARRUSEL_CHOICES = [
+        (IA,     "Solo IA"),
+        (NORMAL, "Solo original"),
+        (AMBAS,  "Ambas"),
+    ]
+    modo_carrusel = models.CharField(
+        max_length=10,
+        choices=MODO_CARRUSEL_CHOICES,
+        default=IA,
+        verbose_name="Mostrar en carrusel",
+        help_text="Solo IA: muestra la imagen IA si existe (si no, cae a la original). "
+                   "Solo original: muestra siempre la imagen normal. "
+                   "Ambas: muestra las dos como fotos separadas en el carrusel.",
+    )
 
     class Meta:
         ordering        = ["orden", "id"]

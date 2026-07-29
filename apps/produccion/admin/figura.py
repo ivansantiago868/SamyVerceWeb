@@ -30,7 +30,7 @@ class FiguraImagenInlineForm(forms.ModelForm):
 
     class Meta:
         model   = FiguraImagen
-        fields  = ("imagen", "orden")
+        fields  = ("imagen", "orden", "modo_carrusel")
         widgets = {"imagen": DragDropImageWidget()}
 
 
@@ -38,7 +38,7 @@ class FiguraImagenInline(admin.TabularInline):
     model           = FiguraImagen
     form            = FiguraImagenInlineForm
     extra           = 1
-    fields          = ("imagen", "orden", "procesar_con_ia", "preview_ia")
+    fields          = ("imagen", "orden", "procesar_con_ia", "modo_carrusel", "preview_ia")
     readonly_fields = ("preview_ia",)
 
     @admin.display(description="Vista IA")
@@ -105,9 +105,10 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
     inlines            = [FiguraImagenInline, FiguraPiezaInline]
     fieldsets = (
-        ("Galería IA", {
+        ("Galería", {
             "fields": ("carrusel_ia",),
-            "description": "Imágenes procesadas por IA. Se actualiza al guardar nuevas imágenes.",
+            "description": "Respeta lo elegido en \"Mostrar en carrusel\" por cada imagen (Solo IA / "
+                           "Solo original / Ambas). Se actualiza al guardar.",
         }),
         (None, {
             "fields": ("nombre", "categorias", "etiquetas", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
@@ -126,21 +127,31 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         js = ("admin/js/figura_ia_descripcion.js",)
 
     def get_urls(self):
-        from apps.produccion.views.pdf_catalogo_figuras import exportar_catalogo_pdf, exportar_catalogo_pdf_real, exportar_catalogo_pdf_mixto
+        from apps.produccion.views.pdf_catalogo_figuras import exportar_catalogo_pdf
+        from apps.produccion.views.zip_catalogo_figuras import exportar_zip_precios
         from apps.produccion.views.ia_descripcion import generar_descripcion_ia
+        from apps.produccion.views.reintentar_ia import (
+            reintentar_ia_fallidas, conteo_ia_fallidas, estado_ia_reintento,
+        )
         return [
             path("catalogo-pdf/",
                  self.admin_site.admin_view(exportar_catalogo_pdf),
                  name="figuras_catalogo_pdf"),
-            path("catalogo-pdf-real/",
-                 self.admin_site.admin_view(exportar_catalogo_pdf_real),
-                 name="figuras_catalogo_pdf_real"),
-            path("catalogo-pdf-mixto/",
-                 self.admin_site.admin_view(exportar_catalogo_pdf_mixto),
-                 name="figuras_catalogo_pdf_mixto"),
+            path("descargar-zip-precios/",
+                 self.admin_site.admin_view(exportar_zip_precios),
+                 name="figuras_zip_precios"),
             path("generar-descripcion-ia/",
                  self.admin_site.admin_view(generar_descripcion_ia),
                  name="figuras_generar_descripcion_ia"),
+            path("reintentar-ia-fallidas/",
+                 self.admin_site.admin_view(reintentar_ia_fallidas),
+                 name="figuras_reintentar_ia_fallidas"),
+            path("conteo-ia-fallidas/",
+                 self.admin_site.admin_view(conteo_ia_fallidas),
+                 name="figuras_conteo_ia_fallidas"),
+            path("estado-ia-reintento/",
+                 self.admin_site.admin_view(estado_ia_reintento),
+                 name="figuras_estado_ia_reintento"),
         ] + super().get_urls()
 
     def save_formset(self, request, form, formset, change):
@@ -196,24 +207,41 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         primera = next(iter(obj.imagenes.all()), None)
         if not primera:
             return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
+
         if primera.imagen_procesada:
             return format_html(
                 '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
                 'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
                 primera.imagen_procesada.url,
             )
-        if primera.imagen:
-            return format_html(
-                '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
-                'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">',
-                primera.imagen.url,
-            )
+
+        if not primera.imagen:
+            if primera.ia_error:
+                return format_html(
+                    '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
+                    primera.ia_error, primera.ia_error,
+                )
+            return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
+
+        # Sin imagen IA todavía: mostrar la foto normal, pero sin ocultar si sigue
+        # procesando o si el procesamiento falló (el campo "imagen" siempre existe,
+        # así que este estado debe mostrarse aparte, no en lugar de la miniatura).
         if primera.ia_error:
-            return format_html(
-                '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
-                primera.ia_error, primera.ia_error,
+            estado = format_html(
+                '<div style="color:#c0392b;font-size:10px" title="{}">✗ Error IA</div>',
+                primera.ia_error,
             )
-        return format_html('<span style="color:#ccc;font-size:18px">⏳</span>')
+        else:
+            estado = format_html('<div style="color:#999;font-size:10px">⏳ Generando IA…</div>')
+
+        return format_html(
+            '<div style="text-align:center">'
+            '<img src="{}" style="height:90px;max-width:120px;border-radius:8px;'
+            'object-fit:contain;background:#f5f5f5;box-shadow:0 1px 6px rgba(0,0,0,.15)">'
+            '{}'
+            '</div>',
+            primera.imagen.url, estado,
+        )
 
     @admin.display(description="Categorías")
     def categorias_display(self, obj):
@@ -226,8 +254,23 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     def carrusel_ia(self, obj):
         if not obj or not obj.pk:
             return mark_safe('<p style="color:#6c757d;font-style:italic">Guarda la figura primero.</p>')
-        procesadas = [img for img in obj.imagenes.all() if img.imagen_procesada]
-        if not procesadas:
+
+        def _urls_mostrar(img):
+            url_ia = img.imagen_procesada.url if img.imagen_procesada else None
+            url_normal = img.imagen.url if img.imagen else None
+            if img.modo_carrusel == FiguraImagen.AMBAS:
+                return [u for u in (url_ia, url_normal) if u]
+            if img.modo_carrusel == FiguraImagen.NORMAL:
+                return [url_normal] if url_normal else []
+            # IA (default): usar la IA si existe, si no caer a la normal.
+            return [url_ia] if url_ia else ([url_normal] if url_normal else [])
+
+        disponibles = []
+        for img in obj.imagenes.all():
+            for url in _urls_mostrar(img):
+                disponibles.append((img, url))
+
+        if not disponibles:
             con_error = [img for img in obj.imagenes.all() if img.ia_error]
             if con_error:
                 errores_html = "".join(
@@ -238,18 +281,18 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                     '<ul style="color:#c0392b;font-size:12px">{}</ul>',
                     mark_safe(errores_html),
                 )
-            return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Sin imágenes IA aún. Agrega imágenes en el panel inferior.</p>')
+            return mark_safe('<p style="color:#6c757d;font-style:italic">⏳ Sin imágenes aún. Agrega imágenes en el panel inferior.</p>')
 
-        count = len(procesadas)
+        count = len(disponibles)
         slides = "".join(
             format_html(
                 '<div class="pc-slide">'
-                '<img src="{}" alt="IA {}" style="cursor:zoom-in;max-width:100%;height:auto" '
+                '<img src="{}" alt="Imagen {}" style="cursor:zoom-in;max-width:100%;height:auto" '
                 'onclick="window._svLightbox&&window._svLightbox.open(this.src)">'
                 '</div>',
-                img.imagen_procesada.url, i + 1,
+                url, i + 1,
             )
-            for i, img in enumerate(procesadas)
+            for i, (img, url) in enumerate(disponibles)
         )
         dots = "".join(
             format_html(
@@ -264,9 +307,9 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                 'background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;'
                 'padding:4px 10px;font-size:12px;color:#495057;text-decoration:none;margin:2px">'
                 '⬇ Imagen {}</a>',
-                img.imagen_procesada.url, i + 1,
+                url, i + 1,
             )
-            for i, img in enumerate(procesadas)
+            for i, (img, url) in enumerate(disponibles)
         )
         boton_zip = format_html(
             '<a href="/api/v1/figuras/{}/descargar-imagenes-ia/" '
@@ -288,7 +331,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             boton_zip, count,
             mark_safe(slides), mark_safe(dots), mark_safe(descargas),
         )
-    carrusel_ia.short_description = "Carrusel imágenes IA"
+    carrusel_ia.short_description = "Carrusel de imágenes"
 
     def costo_total_display(self, obj):
         return f"${obj.costo_total:,.0f}" if obj.pk else "—"

@@ -112,13 +112,6 @@ class InventarioPiezaForm(forms.ModelForm):
 
 
 class PiezaImagenInlineForm(forms.ModelForm):
-    procesar_con_ia = forms.BooleanField(
-        required=False,
-        initial=True,
-        label="Procesar con IA",
-        widget=forms.CheckboxInput(attrs={"title": "Marcar para generar imagen IA automáticamente"}),
-    )
-
     class Meta:
         model   = PiezaImagen
         fields  = ("imagen",)
@@ -130,26 +123,21 @@ class PiezaImagenInline(admin.TabularInline):
     form            = PiezaImagenInlineForm
     extra           = 1
     can_delete      = True
-    fields          = ("imagen", "procesar_con_ia", "orden_display", "preview_ia")
-    readonly_fields = ("orden_display", "preview_ia",)
+    fields          = ("imagen", "orden_display", "preview")
+    readonly_fields = ("orden_display", "preview")
     verbose_name_plural = "Imágenes de la pieza (marca ✓ en 'Eliminar' para borrar)"
 
     @admin.display(description="Orden")
     def orden_display(self, obj):
         return obj.orden if obj.pk else "—"
 
-    @admin.display(description="Vista IA")
-    def preview_ia(self, obj):
-        if obj.imagen_procesada:
+    @admin.display(description="Vista previa")
+    def preview(self, obj):
+        if obj.imagen:
             return format_html(
                 '<img src="{}" style="height:72px;border-radius:6px;'
                 'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
-                obj.imagen_procesada.url,
-            )
-        if getattr(obj, "ia_error", ""):
-            return format_html(
-                '<span style="color:#c0392b;font-size:11px" title="{}">✗ {}</span>',
-                obj.ia_error, obj.ia_error,
+                obj.imagen.url,
             )
         return format_html('<span style="color:#aaa;font-size:11px">—</span>')
 

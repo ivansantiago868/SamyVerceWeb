@@ -1,0 +1,3517 @@
+[
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Admin",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Vendor",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Maker",
+    "permissions": [
+      [
+        "add_categoriafigura",
+        "produccion",
+        "categoriafigura"
+      ],
+      [
+        "change_categoriafigura",
+        "produccion",
+        "categoriafigura"
+      ],
+      [
+        "delete_categoriafigura",
+        "produccion",
+        "categoriafigura"
+      ],
+      [
+        "view_categoriafigura",
+        "produccion",
+        "categoriafigura"
+      ],
+      [
+        "add_cliente",
+        "produccion",
+        "cliente"
+      ],
+      [
+        "change_cliente",
+        "produccion",
+        "cliente"
+      ],
+      [
+        "delete_cliente",
+        "produccion",
+        "cliente"
+      ],
+      [
+        "view_cliente",
+        "produccion",
+        "cliente"
+      ],
+      [
+        "add_etiquetafigura",
+        "produccion",
+        "etiquetafigura"
+      ],
+      [
+        "change_etiquetafigura",
+        "produccion",
+        "etiquetafigura"
+      ],
+      [
+        "delete_etiquetafigura",
+        "produccion",
+        "etiquetafigura"
+      ],
+      [
+        "view_etiquetafigura",
+        "produccion",
+        "etiquetafigura"
+      ],
+      [
+        "add_figura",
+        "produccion",
+        "figura"
+      ],
+      [
+        "change_figura",
+        "produccion",
+        "figura"
+      ],
+      [
+        "delete_figura",
+        "produccion",
+        "figura"
+      ],
+      [
+        "view_figura",
+        "produccion",
+        "figura"
+      ],
+      [
+        "add_figuraimagen",
+        "produccion",
+        "figuraimagen"
+      ],
+      [
+        "change_figuraimagen",
+        "produccion",
+        "figuraimagen"
+      ],
+      [
+        "delete_figuraimagen",
+        "produccion",
+        "figuraimagen"
+      ],
+      [
+        "view_figuraimagen",
+        "produccion",
+        "figuraimagen"
+      ],
+      [
+        "add_figurapieza",
+        "produccion",
+        "figurapieza"
+      ],
+      [
+        "change_figurapieza",
+        "produccion",
+        "figurapieza"
+      ],
+      [
+        "delete_figurapieza",
+        "produccion",
+        "figurapieza"
+      ],
+      [
+        "view_figurapieza",
+        "produccion",
+        "figurapieza"
+      ],
+      [
+        "add_gasto",
+        "produccion",
+        "gasto"
+      ],
+      [
+        "change_gasto",
+        "produccion",
+        "gasto"
+      ],
+      [
+        "delete_gasto",
+        "produccion",
+        "gasto"
+      ],
+      [
+        "view_gasto",
+        "produccion",
+        "gasto"
+      ],
+      [
+        "add_impresora",
+        "produccion",
+        "impresora"
+      ],
+      [
+        "change_impresora",
+        "produccion",
+        "impresora"
+      ],
+      [
+        "delete_impresora",
+        "produccion",
+        "impresora"
+      ],
+      [
+        "view_impresora",
+        "produccion",
+        "impresora"
+      ],
+      [
+        "add_insumo",
+        "produccion",
+        "insumo"
+      ],
+      [
+        "change_insumo",
+        "produccion",
+        "insumo"
+      ],
+      [
+        "delete_insumo",
+        "produccion",
+        "insumo"
+      ],
+      [
+        "view_insumo",
+        "produccion",
+        "insumo"
+      ],
+      [
+        "add_inventariopieza",
+        "produccion",
+        "inventariopieza"
+      ],
+      [
+        "change_inventariopieza",
+        "produccion",
+        "inventariopieza"
+      ],
+      [
+        "delete_inventariopieza",
+        "produccion",
+        "inventariopieza"
+      ],
+      [
+        "view_inventariopieza",
+        "produccion",
+        "inventariopieza"
+      ],
+      [
+        "view_material",
+        "produccion",
+        "material"
+      ],
+      [
+        "add_pedido",
+        "produccion",
+        "pedido"
+      ],
+      [
+        "change_pedido",
+        "produccion",
+        "pedido"
+      ],
+      [
+        "delete_pedido",
+        "produccion",
+        "pedido"
+      ],
+      [
+        "view_pedido",
+        "produccion",
+        "pedido"
+      ],
+      [
+        "add_piezaimagen",
+        "produccion",
+        "piezaimagen"
+      ],
+      [
+        "change_piezaimagen",
+        "produccion",
+        "piezaimagen"
+      ],
+      [
+        "delete_piezaimagen",
+        "produccion",
+        "piezaimagen"
+      ],
+      [
+        "view_piezaimagen",
+        "produccion",
+        "piezaimagen"
+      ],
+      [
+        "add_tarea",
+        "produccion",
+        "tarea"
+      ],
+      [
+        "change_tarea",
+        "produccion",
+        "tarea"
+      ],
+      [
+        "delete_tarea",
+        "produccion",
+        "tarea"
+      ],
+      [
+        "view_tarea",
+        "produccion",
+        "tarea"
+      ],
+      [
+        "view_tipomaterial",
+        "produccion",
+        "tipomaterial"
+      ],
+      [
+        "add_venta",
+        "produccion",
+        "venta"
+      ],
+      [
+        "change_venta",
+        "produccion",
+        "venta"
+      ],
+      [
+        "delete_venta",
+        "produccion",
+        "venta"
+      ],
+      [
+        "view_venta",
+        "produccion",
+        "venta"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Super Admin Plataforma",
+    "permissions": [
+      [
+        "add_user",
+        "auth",
+        "user"
+      ],
+      [
+        "change_user",
+        "auth",
+        "user"
+      ],
+      [
+        "delete_user",
+        "auth",
+        "user"
+      ],
+      [
+        "view_user",
+        "auth",
+        "user"
+      ],
+      [
+        "add_empresa",
+        "produccion",
+        "empresa"
+      ],
+      [
+        "change_empresa",
+        "produccion",
+        "empresa"
+      ],
+      [
+        "delete_empresa",
+        "produccion",
+        "empresa"
+      ],
+      [
+        "view_empresa",
+        "produccion",
+        "empresa"
+      ],
+      [
+        "add_blacklistedtoken",
+        "token_blacklist",
+        "blacklistedtoken"
+      ],
+      [
+        "change_blacklistedtoken",
+        "token_blacklist",
+        "blacklistedtoken"
+      ],
+      [
+        "delete_blacklistedtoken",
+        "token_blacklist",
+        "blacklistedtoken"
+      ],
+      [
+        "view_blacklistedtoken",
+        "token_blacklist",
+        "blacklistedtoken"
+      ],
+      [
+        "add_outstandingtoken",
+        "token_blacklist",
+        "outstandingtoken"
+      ],
+      [
+        "change_outstandingtoken",
+        "token_blacklist",
+        "outstandingtoken"
+      ],
+      [
+        "delete_outstandingtoken",
+        "token_blacklist",
+        "outstandingtoken"
+      ],
+      [
+        "view_outstandingtoken",
+        "token_blacklist",
+        "outstandingtoken"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Admin Empresa",
+    "permissions": [
+      [
+        "add_user",
+        "auth",
+        "user"
+      ],
+      [
+        "change_user",
+        "auth",
+        "user"
+      ],
+      [
+        "delete_user",
+        "auth",
+        "user"
+      ],
+      [
+        "view_user",
+        "auth",
+        "user"
+      ],
+      [
+        "add_material",
+        "produccion",
+        "material"
+      ],
+      [
+        "change_material",
+        "produccion",
+        "material"
+      ],
+      [
+        "delete_material",
+        "produccion",
+        "material"
+      ],
+      [
+        "view_material",
+        "produccion",
+        "material"
+      ],
+      [
+        "add_tipomaterial",
+        "produccion",
+        "tipomaterial"
+      ],
+      [
+        "change_tipomaterial",
+        "produccion",
+        "tipomaterial"
+      ],
+      [
+        "delete_tipomaterial",
+        "produccion",
+        "tipomaterial"
+      ],
+      [
+        "view_tipomaterial",
+        "produccion",
+        "tipomaterial"
+      ],
+      [
+        "add_variablesfijas",
+        "produccion",
+        "variablesfijas"
+      ],
+      [
+        "change_variablesfijas",
+        "produccion",
+        "variablesfijas"
+      ],
+      [
+        "delete_variablesfijas",
+        "produccion",
+        "variablesfijas"
+      ],
+      [
+        "view_variablesfijas",
+        "produccion",
+        "variablesfijas"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$DmV9XZtNYNKBzzf7SyyNBp$RqwJW5MqeZ3Qs4XBiEnTMJxfcdUVXhEUoNnveszD3qs=",
+    "last_login": "2026-07-25T20:52:59.660Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "ivansantiago868@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-25T06:55:04.377Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$HOHOh6qKYNr47fycxUOVrx$7SCzWISYFc8aYlOe4SU6yc5FBs50XvZUviXKN78fBsQ=",
+    "last_login": "2026-06-25T06:33:40.289Z",
+    "is_superuser": true,
+    "username": "kivandy",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-22T03:37:06.749Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Md2dq3r7DPcipapGf0z6Ra$CfRJxzYny14AYVQr+L/mZCYczcgC45Y4/wHWm5yxHNI=",
+    "last_login": "2026-04-28T03:34:38.259Z",
+    "is_superuser": false,
+    "username": "SamyVerce",
+    "first_name": "",
+    "last_name": "",
+    "email": "ivansantiago868@hotmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-28T03:31:38.617Z",
+    "groups": [
+      [
+        "Admin Empresa"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$oBlNC5x6yLTkFtGpbgwGE1$XacsjFon3jgimkKPDH+Bx5aiMnczIEpKIlXuf0XoUBI=",
+    "last_login": "2026-07-27T23:21:02.322Z",
+    "is_superuser": false,
+    "username": "maker",
+    "first_name": "Samy Verce",
+    "last_name": "maker",
+    "email": "ivansantiago868@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-28T03:37:00.784Z",
+    "groups": [
+      [
+        "Maker"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "aadd9de47f8f4a229d722f0a5be2f3bd",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzQ5OTk0NiwiaWF0IjoxNzc2ODk1MTQ2LCJqdGkiOiJhYWRkOWRlNDdmOGY0YTIyOWQ3MjJmMGE1YmUyZjNiZCIsInVzZXJfaWQiOiIxIn0._FmEU30kJZOnKwI6MBPSGDkeDgfVlQyXnZQ3JlYHhoc",
+    "created_at": "2026-04-22T21:59:06.299Z",
+    "expires_at": "2026-04-29T21:59:06Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "d9f45ee6f2e340c392d822b4c5bb0ee4",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzUwNjE2OSwiaWF0IjoxNzc2OTAxMzY5LCJqdGkiOiJkOWY0NWVlNmYyZTM0MGMzOTJkODIyYjRjNWJiMGVlNCIsInVzZXJfaWQiOiIxIn0.Tzon74ARx2y0Cb-9ztb8mzvxhHzrIEjQmqm3avbBxbY",
+    "created_at": "2026-04-22T23:42:49.590Z",
+    "expires_at": "2026-04-29T23:42:49Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "46b43f75960140e6a3373f5f9d2ec62a",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzUxNTUxNCwiaWF0IjoxNzc2OTEwNzE0LCJqdGkiOiI0NmI0M2Y3NTk2MDE0MGU2YTMzNzNmNWY5ZDJlYzYyYSIsInVzZXJfaWQiOiIxIn0.wwPfVg41rJ1srtUc3GawFLgpXHPAJ_avbgxaLqXnYWA",
+    "created_at": "2026-04-23T02:18:34.421Z",
+    "expires_at": "2026-04-30T02:18:34Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 4,
+  "fields": {
+    "user": null,
+    "jti": "499f8dbfe6ca441d8754abbbb185595f",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU3OTAzOSwiaWF0IjoxNzc2OTc0MjM5LCJqdGkiOiI0OTlmOGRiZmU2Y2E0NDFkODc1NGFiYmJiMTg1NTk1ZiIsInVzZXJfaWQiOiIxMiJ9.7dlZsbGFG9pFKVt4q8OkTL1xmo492VR21VoiFdSxM_8",
+    "created_at": "2026-04-23T19:57:19.335Z",
+    "expires_at": "2026-04-30T19:57:19Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 5,
+  "fields": {
+    "user": null,
+    "jti": "5d86bef9a16f476496df8b7ca2d33b0a",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU3OTIxMiwiaWF0IjoxNzc2OTc0NDEyLCJqdGkiOiI1ZDg2YmVmOWExNmY0NzY0OTZkZjhiN2NhMmQzM2IwYSIsInVzZXJfaWQiOiIxMiJ9.tm-VY2fgS0OvF5E_Iff1KBuoWIup1YTjMKpCWz0eIO0",
+    "created_at": "2026-04-23T20:00:12.436Z",
+    "expires_at": "2026-04-30T20:00:12Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 6,
+  "fields": {
+    "user": null,
+    "jti": "254bece803a8467883d66297da7a5a5a",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU3OTY4OSwiaWF0IjoxNzc2OTc0ODg5LCJqdGkiOiIyNTRiZWNlODAzYTg0Njc4ODNkNjYyOTdkYTdhNWE1YSIsInVzZXJfaWQiOiIxMiJ9.J90NnuTGK02BA8u4jfVlDLhofdB1pyoWc5HFcdys12o",
+    "created_at": "2026-04-23T20:08:09.527Z",
+    "expires_at": "2026-04-30T20:08:09Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 7,
+  "fields": {
+    "user": null,
+    "jti": "168d32621cc744fdbd2d5b4d6a77b825",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU4Mzc1OCwiaWF0IjoxNzc2OTc4OTU4LCJqdGkiOiIxNjhkMzI2MjFjYzc0NGZkYmQyZDViNGQ2YTc3YjgyNSIsInVzZXJfaWQiOiIxMiJ9.2BqeCsntnNUZyOqcpMzIdgSrDHdSh30F1v0xzW2QAgs",
+    "created_at": "2026-04-23T21:15:58.824Z",
+    "expires_at": "2026-04-30T21:15:58Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 8,
+  "fields": {
+    "user": null,
+    "jti": "3acccf04c2b04efa9989e5ab49ae3c98",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU4NzQzNSwiaWF0IjoxNzc2OTgyNjM1LCJqdGkiOiIzYWNjY2YwNGMyYjA0ZWZhOTk4OWU1YWI0OWFlM2M5OCIsInVzZXJfaWQiOiIxMiJ9.lIeG92XM2NXEzHvfTwsld4MN58zlzFrIZpeheI69zXM",
+    "created_at": "2026-04-23T22:17:15.523Z",
+    "expires_at": "2026-04-30T22:17:15Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 9,
+  "fields": {
+    "user": null,
+    "jti": "e18c4a7ee49440bfb49ebf3a2e2f1d24",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzU4OTA2NywiaWF0IjoxNzc2OTg0MjY3LCJqdGkiOiJlMThjNGE3ZWU0OTQ0MGJmYjQ5ZWJmM2EyZTJmMWQyNCIsInVzZXJfaWQiOiIxNCJ9.aj9bLfSFTB86suZFJ-mnEut17zdQ3FEo8Qqf15VOozQ",
+    "created_at": "2026-04-23T22:44:27.793Z",
+    "expires_at": "2026-04-30T22:44:27Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 10,
+  "fields": {
+    "user": null,
+    "jti": "8b902a265968469d8e63901f72b16903",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzY1NDAxNSwiaWF0IjoxNzc3MDQ5MjE1LCJqdGkiOiI4YjkwMmEyNjU5Njg0NjlkOGU2MzkwMWY3MmIxNjkwMyIsInVzZXJfaWQiOiIxNCJ9.GOOi0WGlPFNgXufeT81s_OcRHgo5jl9d4rQvtKIBiqE",
+    "created_at": "2026-04-24T16:46:55.064Z",
+    "expires_at": "2026-05-01T16:46:55Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 11,
+  "fields": {
+    "user": null,
+    "jti": "d5dfa89fc0b5440a8b07bfd04a1d11e2",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzY1NDAzNCwiaWF0IjoxNzc3MDQ5MjM0LCJqdGkiOiJkNWRmYTg5ZmMwYjU0NDBhOGIwN2JmZDA0YTFkMTFlMiIsInVzZXJfaWQiOiIxNCJ9.aOvS6YkYKEW9p4L6o4lDOAnxV9YFL8Hp8dLTbCH65uM",
+    "created_at": "2026-04-24T16:47:14.768Z",
+    "expires_at": "2026-05-01T16:47:14Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 12,
+  "fields": {
+    "user": null,
+    "jti": "c8b6c9aff1f044c6b70e1854a0d17cc3",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzY1NDA2OSwiaWF0IjoxNzc3MDQ5MjY5LCJqdGkiOiJjOGI2YzlhZmYxZjA0NGM2YjcwZTE4NTRhMGQxN2NjMyIsInVzZXJfaWQiOiIxNCJ9.JcnJKhYlhF97ZY65E0_IsPBjB5KMl7dGOo-mjdDQbdw",
+    "created_at": "2026-04-24T16:47:49.189Z",
+    "expires_at": "2026-05-01T16:47:49Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 13,
+  "fields": {
+    "user": null,
+    "jti": "30b783eb3b4b43909e22353c7dcc387f",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzY2MDk1NCwiaWF0IjoxNzc3MDU2MTU0LCJqdGkiOiIzMGI3ODNlYjNiNGI0MzkwOWUyMjM1M2M3ZGNjMzg3ZiIsInVzZXJfaWQiOiIxNCJ9.85WU5ritYtbKy0LxrIN-5NiV-LY3v8YySDSQaSdk5sM",
+    "created_at": "2026-04-24T18:42:34.840Z",
+    "expires_at": "2026-05-01T18:42:34Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "eb8474c79b5549478431f9a38ddebf2b",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3Nzg5OTkxNSwiaWF0IjoxNzc3Mjk1MTE1LCJqdGkiOiJlYjg0NzRjNzliNTU0OTQ3ODQzMWY5YTM4ZGRlYmYyYiIsInVzZXJfaWQiOiIxIn0.aUaXX998cT3_8aOR84RbbBlE2BRY7wtgs7XM2qyN4LE",
+    "created_at": "2026-04-27T13:05:15.343Z",
+    "expires_at": "2026-05-04T13:05:15Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "0bcf9f2542984f50987b00633af9d904",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkwNjc1NSwiaWF0IjoxNzc3MzAxOTU1LCJqdGkiOiIwYmNmOWYyNTQyOTg0ZjUwOTg3YjAwNjMzYWY5ZDkwNCIsInVzZXJfaWQiOiIxIn0.91ddsXh0-3rd1pS8HUBtcYonLolWGsOn5HPgkcpK4Zc",
+    "created_at": "2026-04-27T14:59:15.223Z",
+    "expires_at": "2026-05-04T14:59:15Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 16,
+  "fields": {
+    "user": null,
+    "jti": "d9d8e828db824746b17de4cf840ec8c9",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkwNzE1NywiaWF0IjoxNzc3MzAyMzU3LCJqdGkiOiJkOWQ4ZTgyOGRiODI0NzQ2YjE3ZGU0Y2Y4NDBlYzhjOSIsInVzZXJfaWQiOiIxNyJ9.SvDobgrplnhJdN84lrqRaj7iiRgj0ysGqZEviB1CVrY",
+    "created_at": "2026-04-27T15:05:57.757Z",
+    "expires_at": "2026-05-04T15:05:57Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 17,
+  "fields": {
+    "user": null,
+    "jti": "672e67fed29546a48fcb4681fa9fdae1",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkwNzQ2NiwiaWF0IjoxNzc3MzAyNjY2LCJqdGkiOiI2NzJlNjdmZWQyOTU0NmE0OGZjYjQ2ODFmYTlmZGFlMSIsInVzZXJfaWQiOiIxNyJ9.J85JqW9ObBpGy466zJKk6i6PQFR3qWctR_SbrxL3-LU",
+    "created_at": "2026-04-27T15:11:06.744Z",
+    "expires_at": "2026-05-04T15:11:06Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 18,
+  "fields": {
+    "user": null,
+    "jti": "7e6136c67f01427cbfa4f1c5b1498773",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkwNzU5OSwiaWF0IjoxNzc3MzAyNzk5LCJqdGkiOiI3ZTYxMzZjNjdmMDE0MjdjYmZhNGYxYzViMTQ5ODc3MyIsInVzZXJfaWQiOiIxNyJ9.nGnRQCCCRSEUk5ruPgi7vOFuLLgqO-ex9qNG-VzmNTA",
+    "created_at": "2026-04-27T15:13:19.930Z",
+    "expires_at": "2026-05-04T15:13:19Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 19,
+  "fields": {
+    "user": null,
+    "jti": "eb60ad5f7b0c4876955c2403e31059af",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkwNzgwNSwiaWF0IjoxNzc3MzAzMDA1LCJqdGkiOiJlYjYwYWQ1ZjdiMGM0ODc2OTU1YzI0MDNlMzEwNTlhZiIsInVzZXJfaWQiOiIxNyJ9._laGnZDnNeYiIs71fsSV_tyDUUTCoQAVj4zR75vhcUA",
+    "created_at": "2026-04-27T15:16:45.635Z",
+    "expires_at": "2026-05-04T15:16:45Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 20,
+  "fields": {
+    "user": null,
+    "jti": "e9b3b7b4155b424bbf063fa7cd5e3a6e",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkxNjg2OSwiaWF0IjoxNzc3MzEyMDY5LCJqdGkiOiJlOWIzYjdiNDE1NWI0MjRiYmYwNjNmYTdjZDVlM2E2ZSIsInVzZXJfaWQiOiIxNyJ9.sOB4E29OlDz_9zisyXknsG_J4CN9R8llYNnqJk8PDcI",
+    "created_at": "2026-04-27T17:47:49.237Z",
+    "expires_at": "2026-05-04T17:47:49Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 21,
+  "fields": {
+    "user": null,
+    "jti": "c60ff6b5e3904a39abaad7ac9feb7c85",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkxNjg2OSwiaWF0IjoxNzc3MzEyMDY5LCJqdGkiOiJjNjBmZjZiNWUzOTA0YTM5YWJhYWQ3YWM5ZmViN2M4NSIsInVzZXJfaWQiOiIxNyJ9.6wEPoBVns_AzAv9HMq-t8owxDc-6QtOpTZyMTjRQxpc",
+    "created_at": "2026-04-27T17:47:49.237Z",
+    "expires_at": "2026-05-04T17:47:49Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 22,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "dd2df134da1d4759b200067b586a2b15",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkyMDUzNywiaWF0IjoxNzc3MzE1NzM3LCJqdGkiOiJkZDJkZjEzNGRhMWQ0NzU5YjIwMDA2N2I1ODZhMmIxNSIsInVzZXJfaWQiOiIxIn0.UOcvbkdZFFK-40mVpHKblDE_ZbGATMBud8UrfvDl8IQ",
+    "created_at": "2026-04-27T18:48:57.361Z",
+    "expires_at": "2026-05-04T18:48:57Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 23,
+  "fields": {
+    "user": null,
+    "jti": "f60bc42295004e43873e736309b0403d",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkyMDY4MywiaWF0IjoxNzc3MzE1ODgzLCJqdGkiOiJmNjBiYzQyMjk1MDA0ZTQzODczZTczNjMwOWIwNDAzZCIsInVzZXJfaWQiOiIxNyJ9.i7Gh044pJ0aiiLkP5DUXK6kVrZen6rgMex-KUoUQ_fY",
+    "created_at": "2026-04-27T18:51:23.386Z",
+    "expires_at": "2026-05-04T18:51:23Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 24,
+  "fields": {
+    "user": null,
+    "jti": "dd2dadaa758d46bf97bd6cc6e605be02",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkyNDM3NCwiaWF0IjoxNzc3MzE5NTc0LCJqdGkiOiJkZDJkYWRhYTc1OGQ0NmJmOTdiZDZjYzZlNjA1YmUwMiIsInVzZXJfaWQiOiIxNyJ9.2BaWb5bMKyKcHZO1iAc1iao-c4j9-xTbXnpRAVy8XeA",
+    "created_at": "2026-04-27T19:52:54.624Z",
+    "expires_at": "2026-05-04T19:52:54Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 25,
+  "fields": {
+    "user": null,
+    "jti": "3d25eb6eaee54883a5d4377ccb1c4c5c",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkyODE5MywiaWF0IjoxNzc3MzIzMzkzLCJqdGkiOiIzZDI1ZWI2ZWFlZTU0ODgzYTVkNDM3N2NjYjFjNGM1YyIsInVzZXJfaWQiOiIxNyJ9.mbUqQp32bMD-43CpOLvHIEilVLUvV78lxYt89aRgFHQ",
+    "created_at": "2026-04-27T20:56:33.112Z",
+    "expires_at": "2026-05-04T20:56:33Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 26,
+  "fields": {
+    "user": null,
+    "jti": "5d3fe99320a34da8bb23af2ad6aae0fc",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkzMzA4NSwiaWF0IjoxNzc3MzI4Mjg1LCJqdGkiOiI1ZDNmZTk5MzIwYTM0ZGE4YmIyM2FmMmFkNmFhZTBmYyIsInVzZXJfaWQiOiIxNyJ9.wbgof8TbffzQKt8xsLD46lRjneUoNeqbfNmoeZV4-js",
+    "created_at": "2026-04-27T22:18:05.357Z",
+    "expires_at": "2026-05-04T22:18:05Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 27,
+  "fields": {
+    "user": null,
+    "jti": "d84f5ac0e3274ccb8e3750938b16ac2e",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkzMzA4NSwiaWF0IjoxNzc3MzI4Mjg1LCJqdGkiOiJkODRmNWFjMGUzMjc0Y2NiOGUzNzUwOTM4YjE2YWMyZSIsInVzZXJfaWQiOiIxNyJ9.x5YnyFRlHO66QwEqjnfZ1u7arJcVoADiP8KnTjn2ts4",
+    "created_at": "2026-04-27T22:18:05.356Z",
+    "expires_at": "2026-05-04T22:18:05Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 28,
+  "fields": {
+    "user": null,
+    "jti": "2c50997143344f0fb602d066021c25d6",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkzMzA4NSwiaWF0IjoxNzc3MzI4Mjg1LCJqdGkiOiIyYzUwOTk3MTQzMzQ0ZjBmYjYwMmQwNjYwMjFjMjVkNiIsInVzZXJfaWQiOiIxNyJ9.EPfU71zmsQUK6Hn25bL8vKhIcu6mjb4X2Z0TgtZelOk",
+    "created_at": "2026-04-27T22:18:05.358Z",
+    "expires_at": "2026-05-04T22:18:05Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 29,
+  "fields": {
+    "user": null,
+    "jti": "dacfa0a88e0049a9a08e9262626c0f74",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkzNTU1MSwiaWF0IjoxNzc3MzMwNzUxLCJqdGkiOiJkYWNmYTBhODhlMDA0OWE5YTA4ZTkyNjI2MjZjMGY3NCIsInVzZXJfaWQiOiIxOSJ9.C6_CVtUqLMPOh8WJlQFZ7n5kuTqT0r_CKL2tYabQTLA",
+    "created_at": "2026-04-27T22:59:11.215Z",
+    "expires_at": "2026-05-04T22:59:11Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 30,
+  "fields": {
+    "user": null,
+    "jti": "2388b871886f4f17851c0c474ffd4404",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3NzkzNjIyMiwiaWF0IjoxNzc3MzMxNDIyLCJqdGkiOiIyMzg4Yjg3MTg4NmY0ZjE3ODUxYzBjNDc0ZmZkNDQwNCIsInVzZXJfaWQiOiIxOSJ9.PfxX3RQU6IPPbcHiDOMDr2vJWnw5pi1k5uO9nF-vvDM",
+    "created_at": "2026-04-27T23:10:22.568Z",
+    "expires_at": "2026-05-04T23:10:22Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 31,
+  "fields": {
+    "user": null,
+    "jti": "02446df7f13b45a8bcce32eb4462836e",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3Nzk0MDgwOCwiaWF0IjoxNzc3MzM2MDA4LCJqdGkiOiIwMjQ0NmRmN2YxM2I0NWE4YmNjZTMyZWI0NDYyODM2ZSIsInVzZXJfaWQiOiIxOSJ9.qqzLCh6tFHFEjp8Hk3wzCYDyrJzqkFVc_PsvMV1LCo0",
+    "created_at": "2026-04-28T00:26:48.343Z",
+    "expires_at": "2026-05-05T00:26:48Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 32,
+  "fields": {
+    "user": null,
+    "jti": "f18e69d5e1a24d498cdbcd1db533aaa5",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3Nzk0MzkyNiwiaWF0IjoxNzc3MzM5MTI2LCJqdGkiOiJmMThlNjlkNWUxYTI0ZDQ5OGNkYmNkMWRiNTMzYWFhNSIsInVzZXJfaWQiOiIzIn0.M7MjbrnPpczSCOkQupdEmUvzlb6ywNpozgD3YMQZTb0",
+    "created_at": "2026-04-28T01:18:46.818Z",
+    "expires_at": "2026-05-05T01:18:46Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 33,
+  "fields": {
+    "user": null,
+    "jti": "b44d5d6786fd4e7db1a98fe7afcb3876",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3Nzk0NzY4NSwiaWF0IjoxNzc3MzQyODg1LCJqdGkiOiJiNDRkNWQ2Nzg2ZmQ0ZTdkYjFhOThmZTdhZmNiMzg3NiIsInVzZXJfaWQiOiIzIn0.0odseaN7RLcjZ3GIwv_Z42KsBbHFbF6Khax5uz-0OcI",
+    "created_at": "2026-04-28T02:21:25.868Z",
+    "expires_at": "2026-05-05T02:21:25Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 34,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "139b2e4e0f224e9d9c748976c09a738c",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3Nzk1MjM1MCwiaWF0IjoxNzc3MzQ3NTUwLCJqdGkiOiIxMzliMmU0ZTBmMjI0ZTlkOWM3NDg5NzZjMDlhNzM4YyIsInVzZXJfaWQiOiIzIn0.G7d5rm6A3v07PI-Rrg4Lm94GZU8CU4tMLTqk_jOV97o",
+    "created_at": "2026-04-28T03:39:10.542Z",
+    "expires_at": "2026-05-05T03:39:10Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 35,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "1788a8703dca453fb3bd36007d0f82f6",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODE5NDI5NywiaWF0IjoxNzc3NTg5NDk3LCJqdGkiOiIxNzg4YTg3MDNkY2E0NTNmYjNiZDM2MDA3ZDBmODJmNiIsInVzZXJfaWQiOiIzIn0.iq6Uqh26nwe1RvwQCcPbh6zR9tssHqsuVnqzFoXxmFI",
+    "created_at": "2026-04-30T22:51:37.896Z",
+    "expires_at": "2026-05-07T22:51:37Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 36,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "c1a0f88f9537478db917c513f711c9bf",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODE5NDI5NywiaWF0IjoxNzc3NTg5NDk3LCJqdGkiOiJjMWEwZjg4Zjk1Mzc0NzhkYjkxN2M1MTNmNzExYzliZiIsInVzZXJfaWQiOiIzIn0.sNmyKle6H5gSOo_CBIg-j6pJ6GdvRTzSIN7f8p7YX88",
+    "created_at": "2026-04-30T22:51:37.897Z",
+    "expires_at": "2026-05-07T22:51:37Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 37,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "d51e59579c1f4a1a854150f532640ef4",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODE5NDI5NywiaWF0IjoxNzc3NTg5NDk3LCJqdGkiOiJkNTFlNTk1NzljMWY0YTFhODU0MTUwZjUzMjY0MGVmNCIsInVzZXJfaWQiOiIzIn0.KZ6cE34kN6b8JQ6d-YPlEU-XpJaMViu88G27zihFEOc",
+    "created_at": "2026-04-30T22:51:37.902Z",
+    "expires_at": "2026-05-07T22:51:37Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 38,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "9fea29c4e1474c44a7c68ba8926ad525",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODIwMDg5NywiaWF0IjoxNzc3NTk2MDk3LCJqdGkiOiI5ZmVhMjljNGUxNDc0YzQ0YTdjNjhiYTg5MjZhZDUyNSIsInVzZXJfaWQiOiIzIn0.BQWcd2jIdhBzaLDOxGfd3RsrSVkZ5cthmSKBVfWaRQY",
+    "created_at": "2026-05-01T00:41:37.426Z",
+    "expires_at": "2026-05-08T00:41:37Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 39,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "17c74c45d3fe450a94cc347377563f70",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODI1Nzc1OCwiaWF0IjoxNzc3NjUyOTU4LCJqdGkiOiIxN2M3NGM0NWQzZmU0NTBhOTRjYzM0NzM3NzU2M2Y3MCIsInVzZXJfaWQiOiIzIn0.y09BUF7qOxikchRAN_TVrR9eTmidi14ynPqVYNRVma8",
+    "created_at": "2026-05-01T16:29:18.322Z",
+    "expires_at": "2026-05-08T16:29:18Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 40,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "9b9b288f95c64a33a76b6ac762cc482c",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODI1Nzc1OCwiaWF0IjoxNzc3NjUyOTU4LCJqdGkiOiI5YjliMjg4Zjk1YzY0YTMzYTc2YjZhYzc2MmNjNDgyYyIsInVzZXJfaWQiOiIzIn0.SXOWSDFHlvLU-5gCbHGbjjCcLqP9yNA3IRnM4700yPM",
+    "created_at": "2026-05-01T16:29:18.324Z",
+    "expires_at": "2026-05-08T16:29:18Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 41,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "df57210c6fdb43aca3fb1129762f18fd",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3ODI1Nzc1OCwiaWF0IjoxNzc3NjUyOTU4LCJqdGkiOiJkZjU3MjEwYzZmZGI0M2FjYTNmYjExMjk3NjJmMThmZCIsInVzZXJfaWQiOiIzIn0.BdLmgl_S0oMJv7mU6jcfFYwhkHyB_9A0ctpE2LHWwgM",
+    "created_at": "2026-05-01T16:29:18.323Z",
+    "expires_at": "2026-05-08T16:29:18Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 42,
+  "fields": {
+    "user": [
+      "kivandy"
+    ],
+    "jti": "96e716eb81e04b57bb3a828de2d802fc",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4Mjk3NDAyNywiaWF0IjoxNzgyMzY5MjI3LCJqdGkiOiI5NmU3MTZlYjgxZTA0YjU3YmIzYTgyOGRlMmQ4MDJmYyIsInVzZXJfaWQiOiIxIn0.6tbJUxy9Gk7faC4VanWNxHEAnpxFiV-_FuxqK0QVpdo",
+    "created_at": "2026-06-25T06:33:47.762Z",
+    "expires_at": "2026-07-02T06:33:47Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 43,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "bf19761119d04d938b2cc19b6c0a3124",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NDc2NDgyMywiaWF0IjoxNzg0MTYwMDIzLCJqdGkiOiJiZjE5NzYxMTE5ZDA0ZDkzOGIyY2MxOWI2YzBhMzEyNCIsInVzZXJfaWQiOiI0In0.OMqj6S6Z741Hf9ngcz6ParnzXYV9xZnn-nsbnVGv88A",
+    "created_at": "2026-07-16T00:00:23.660Z",
+    "expires_at": "2026-07-23T00:00:23Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 44,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "c0c4d1428c1247368285d5daf096c817",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NDc3MDYxNSwiaWF0IjoxNzg0MTY1ODE1LCJqdGkiOiJjMGM0ZDE0MjhjMTI0NzM2ODI4NWQ1ZGFmMDk2YzgxNyIsInVzZXJfaWQiOiI0In0.5aT643UbeLOJo2Gb5qEGS47L10VmvQZkhfm_eUzsgiA",
+    "created_at": "2026-07-16T01:36:55.649Z",
+    "expires_at": "2026-07-23T01:36:55Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 45,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "jti": "bf8db2fb565c4cd99e8385f0e5ff8c82",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTYxNzU5MiwiaWF0IjoxNzg1MDEyNzkyLCJqdGkiOiJiZjhkYjJmYjU2NWM0Y2Q5OWU4Mzg1ZjBlNWZmOGM4MiIsInVzZXJfaWQiOiIxIn0.LIsRfhfA_jHyRwvqEeIqgVvNgrtEZ3Q43YNxmQ3t3TE",
+    "created_at": "2026-07-25T20:53:12.984Z",
+    "expires_at": "2026-08-01T20:53:12Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 46,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "34b1c27b82cd496da74a97b49b1fa352",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTgwODA1MCwiaWF0IjoxNzg1MjAzMjUwLCJqdGkiOiIzNGIxYzI3YjgyY2Q0OTZkYTc0YTk3YjQ5YjFmYTM1MiIsInVzZXJfaWQiOiI0In0.78egIcYLCdio4p_vU6c9RcHJmg7NZEfeAucP4zsVLDk",
+    "created_at": "2026-07-28T01:47:30.460Z",
+    "expires_at": "2026-08-04T01:47:30Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 47,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "6ab9e7f50a1e4743b6a817842414f980",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTgwODA5MCwiaWF0IjoxNzg1MjAzMjkwLCJqdGkiOiI2YWI5ZTdmNTBhMWU0NzQzYjZhODE3ODQyNDE0Zjk4MCIsInVzZXJfaWQiOiI0In0.BIVKsiEsHKF9AqKrKQNZo4TvHJCF0vW8WV233OdABfw",
+    "created_at": "2026-07-28T01:48:10.429Z",
+    "expires_at": "2026-08-04T01:48:10Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 48,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "52d8e9c43f2c4e0884fdee3d04d46a58",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTgxMjIwOSwiaWF0IjoxNzg1MjA3NDA5LCJqdGkiOiI1MmQ4ZTljNDNmMmM0ZTA4ODRmZGVlM2QwNGQ0NmE1OCIsInVzZXJfaWQiOiI0In0.35S19QWYQk_VhIhe03xXULxkBjoT1UWmb57FOG5CwMI",
+    "created_at": "2026-07-28T02:56:49.344Z",
+    "expires_at": "2026-08-04T02:56:49Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 49,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "f932e728078f438e916234cc36d14bb8",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTg1NjUxOSwiaWF0IjoxNzg1MjUxNzE5LCJqdGkiOiJmOTMyZTcyODA3OGY0MzhlOTE2MjM0Y2MzNmQxNGJiOCIsInVzZXJfaWQiOiI0In0.XFH1_jyWkGtRWjFrKneYwPFIdt2-1soEw0_94bxG9MU",
+    "created_at": "2026-07-28T15:15:19.923Z",
+    "expires_at": "2026-08-04T15:15:19Z"
+  }
+},
+{
+  "model": "token_blacklist.outstandingtoken",
+  "pk": 50,
+  "fields": {
+    "user": [
+      "maker"
+    ],
+    "jti": "9bf9436a26e8405aaf1ae175987e91a4",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NTg2MjU5OSwiaWF0IjoxNzg1MjU3Nzk5LCJqdGkiOiI5YmY5NDM2YTI2ZTg0MDVhYWYxYWUxNzU5ODdlOTFhNCIsInVzZXJfaWQiOiI0In0.mtp-BgrXYYSfAa9vDBEG5NtUHbWn4beXWpTuGyxz2sQ",
+    "created_at": "2026-07-28T16:56:39.845Z",
+    "expires_at": "2026-08-04T16:56:39Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 1,
+  "fields": {
+    "token": 1,
+    "blacklisted_at": "2026-04-22T23:42:49.611Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 2,
+  "fields": {
+    "token": 6,
+    "blacklisted_at": "2026-04-23T21:15:58.997Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 3,
+  "fields": {
+    "token": 12,
+    "blacklisted_at": "2026-04-24T18:42:34.855Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 4,
+  "fields": {
+    "token": 14,
+    "blacklisted_at": "2026-04-27T14:59:15.233Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 5,
+  "fields": {
+    "token": 19,
+    "blacklisted_at": "2026-04-27T17:47:49.255Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 7,
+  "fields": {
+    "token": 23,
+    "blacklisted_at": "2026-04-27T19:52:54.663Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 8,
+  "fields": {
+    "token": 25,
+    "blacklisted_at": "2026-04-27T22:18:05.378Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 11,
+  "fields": {
+    "token": 30,
+    "blacklisted_at": "2026-04-28T00:26:48.363Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 12,
+  "fields": {
+    "token": 32,
+    "blacklisted_at": "2026-04-28T02:21:25.888Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 13,
+  "fields": {
+    "token": 34,
+    "blacklisted_at": "2026-04-30T22:51:37.920Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 16,
+  "fields": {
+    "token": 38,
+    "blacklisted_at": "2026-05-01T16:29:18.338Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 17,
+  "fields": {
+    "token": 43,
+    "blacklisted_at": "2026-07-16T01:36:55.673Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 18,
+  "fields": {
+    "token": 47,
+    "blacklisted_at": "2026-07-28T02:56:49.360Z"
+  }
+},
+{
+  "model": "token_blacklist.blacklistedtoken",
+  "pk": 19,
+  "fields": {
+    "token": 49,
+    "blacklisted_at": "2026-07-28T16:56:39.863Z"
+  }
+},
+{
+  "model": "produccion.empresa",
+  "pk": 1,
+  "fields": {
+    "nombre": "SamyVerce",
+    "nit": "",
+    "email": "ivansantiago868@hotmail.com",
+    "telefono": "3046476072",
+    "direccion": "cr 20#185-58",
+    "logo": "",
+    "activa": true,
+    "creado_en": "2026-04-28T03:31:38.614Z"
+  }
+},
+{
+  "model": "produccion.perfilusuario",
+  "pk": 1,
+  "fields": {
+    "usuario": [
+      "admin"
+    ],
+    "empresa": null
+  }
+},
+{
+  "model": "produccion.perfilusuario",
+  "pk": 20,
+  "fields": {
+    "usuario": [
+      "SamyVerce"
+    ],
+    "empresa": 1
+  }
+},
+{
+  "model": "produccion.perfilusuario",
+  "pk": 21,
+  "fields": {
+    "usuario": [
+      "maker"
+    ],
+    "empresa": 1
+  }
+},
+{
+  "model": "produccion.cliente",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Fusion Retro Gaming",
+    "tipo_documento": "CE",
+    "documento": "2931364",
+    "email": "",
+    "telefono": "3125113818",
+    "direccion": "Diagonal 42 A sur #81G-32 piso #2 Bogotá",
+    "notas": "",
+    "creado_en": "2026-04-28T03:40:18.494Z"
+  }
+},
+{
+  "model": "produccion.impresora",
+  "pk": 18,
+  "fields": {
+    "empresa": 1,
+    "nombre": "BambuaLab X1C",
+    "tipo": "Filamento",
+    "costo": "5000000.00",
+    "vida_util_horas": 8000,
+    "costo_mantenimiento_anual": "300000.00",
+    "consumo_promedio_kw": "0.130",
+    "activa": true
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PETG"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "ABS"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 4,
+  "fields": {
+    "empresa": 1,
+    "nombre": "ASA"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 5,
+  "fields": {
+    "empresa": 1,
+    "nombre": "TPU"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Resina"
+  }
+},
+{
+  "model": "produccion.tipomaterial",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nylon"
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA Estándar",
+    "tipo": 1
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA+",
+    "tipo": 1
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA Matte",
+    "tipo": 1
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 4,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA Silk",
+    "tipo": 1
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 5,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PLA Madera",
+    "tipo": 1
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PETG Estándar",
+    "tipo": 2
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "nombre": "PETG Carbon",
+    "tipo": 2
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 8,
+  "fields": {
+    "empresa": 1,
+    "nombre": "ABS Estándar",
+    "tipo": 3
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 9,
+  "fields": {
+    "empresa": 1,
+    "nombre": "ABS+",
+    "tipo": 3
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 10,
+  "fields": {
+    "empresa": 1,
+    "nombre": "ASA Estándar",
+    "tipo": 4
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 11,
+  "fields": {
+    "empresa": 1,
+    "nombre": "TPU 95A",
+    "tipo": 5
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 12,
+  "fields": {
+    "empresa": 1,
+    "nombre": "TPU 85A",
+    "tipo": 5
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 13,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Resina Estándar",
+    "tipo": 6
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 14,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Resina ABS-Like",
+    "tipo": 6
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 15,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Resina Flexible",
+    "tipo": 6
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 16,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nylon PA12",
+    "tipo": 7
+  }
+},
+{
+  "model": "produccion.material",
+  "pk": 17,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nylon PA6-GF",
+    "tipo": 7
+  }
+},
+{
+  "model": "produccion.insumo",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "producto": "[CUUI-1] Filamento amarrillo",
+    "material": 1,
+    "precio": "65000.00",
+    "cantidad_inicial": "230.00",
+    "cantidad_final": "80.00",
+    "actualizado_en": "2026-04-28T03:42:45.194Z"
+  }
+},
+{
+  "model": "produccion.insumo",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "producto": "[CUUI-2] Filamento Blanco",
+    "material": 1,
+    "precio": "73810.00",
+    "cantidad_inicial": "0.00",
+    "cantidad_final": "520.00",
+    "actualizado_en": "2026-04-28T03:50:38.067Z"
+  }
+},
+{
+  "model": "produccion.gasto",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "cuui": 1,
+    "articulo": "Filamento amarrillo",
+    "material": 1,
+    "peso": "1000.00",
+    "costo": "65000.00",
+    "fecha": "2026-04-15"
+  }
+},
+{
+  "model": "produccion.gasto",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "cuui": 2,
+    "articulo": "Filamento Blanco",
+    "material": 1,
+    "peso": "1000.00",
+    "costo": "73810.00",
+    "fecha": "2026-04-26"
+  }
+},
+{
+  "model": "produccion.variablesfijas",
+  "pk": 1,
+  "fields": {
+    "empresa": null,
+    "precio_rollo_filamento": "80000.00",
+    "peso_rollo_gramos": "1000.00",
+    "costo_electricidad_kwh": "850.00",
+    "consumo_impresora_kw": "0.150",
+    "valor_hora_trabajo": "25000.00",
+    "margen_ganancia": "0.3500",
+    "margen_fallos": "0.1000",
+    "costo_impresora": "1500000.00",
+    "vida_util_horas": 5000,
+    "costo_mantenimiento_anual": "200000.00",
+    "horas_totales_anio": 8760,
+    "costo_empaque": "1500.00"
+  }
+},
+{
+  "model": "produccion.variablesfijas",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "precio_rollo_filamento": "80000.00",
+    "peso_rollo_gramos": "1000.00",
+    "costo_electricidad_kwh": "850.00",
+    "consumo_impresora_kw": "0.150",
+    "valor_hora_trabajo": "25000.00",
+    "margen_ganancia": "0.3500",
+    "margen_fallos": "0.1000",
+    "costo_impresora": "1500000.00",
+    "vida_util_horas": 5000,
+    "costo_mantenimiento_anual": "200000.00",
+    "horas_totales_anio": 8760,
+    "costo_empaque": "1500.00"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Recuadro - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "peso_gramos": "70.00",
+    "tiempo_impresion_horas": "4.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "4550.00",
+    "costo_energia": "510.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "5060.00",
+    "amortizacion_fallos": "506.00",
+    "depreciacion_pieza": "2500.00",
+    "mantenimiento_preventivo": "136.99",
+    "costo_total_real": "8202.99",
+    "precio_venta_sugerido": "13000.00",
+    "archivo_3mf": "",
+    "imagen": "1jBppivECi-FW2mMUBWJdJcVmGMgR5O0X",
+    "imagen_procesada": "1JxkVcBr680gW9yQOIsto96jn-TKYneBZ",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-15T23:35:55.011Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Estuche - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "peso_gramos": "40.00",
+    "tiempo_impresion_horas": "2.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "2600.00",
+    "costo_energia": "255.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "2855.00",
+    "amortizacion_fallos": "285.50",
+    "depreciacion_pieza": "1250.00",
+    "mantenimiento_preventivo": "68.49",
+    "costo_total_real": "4458.99",
+    "precio_venta_sugerido": "7000.00",
+    "archivo_3mf": "",
+    "imagen": "1GOXfyshiDhInZ6i-Z3rxYncsN0Ke1b2r",
+    "imagen_procesada": "1ZP4eebC7X1ud8ijoEBQfluzov3aTpJAC",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-15T23:36:52.313Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Portada - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "peso_gramos": "20.00",
+    "tiempo_impresion_horas": "6.00",
+    "tiempo_postproceso_horas": "0.20",
+    "costo_empaque": "0.00",
+    "costo_material": "1300.00",
+    "costo_energia": "765.00",
+    "costo_tiempo": "5000.00",
+    "subtotal_produccion": "7065.00",
+    "amortizacion_fallos": "706.50",
+    "depreciacion_pieza": "3750.00",
+    "mantenimiento_preventivo": "205.48",
+    "costo_total_real": "11726.98",
+    "precio_venta_sugerido": "19000.00",
+    "archivo_3mf": "",
+    "imagen": "1p9iqvz7skS1dnhLsY5UdnjsGDVeK18Nc",
+    "imagen_procesada": "1OjGhbvjG1nXy7Vch-DRCC87pzxUufvHM",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-15T23:34:59.936Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 4,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Mazo TCG Pokemon",
+    "peso_gramos": "32.00",
+    "tiempo_impresion_horas": "0.10",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "2560.00",
+    "costo_energia": "12.75",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "2572.75",
+    "amortizacion_fallos": "257.28",
+    "depreciacion_pieza": "30.00",
+    "mantenimiento_preventivo": "2.28",
+    "costo_total_real": "2862.31",
+    "precio_venta_sugerido": "5000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-27T23:27:53.408Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 5,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Medio - Mazo TCG Pokemon",
+    "peso_gramos": "13.00",
+    "tiempo_impresion_horas": "0.40",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "1040.00",
+    "costo_energia": "51.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "1091.00",
+    "amortizacion_fallos": "109.10",
+    "depreciacion_pieza": "120.00",
+    "mantenimiento_preventivo": "9.13",
+    "costo_total_real": "1329.23",
+    "precio_venta_sugerido": "3000.00",
+    "archivo_3mf": "",
+    "imagen": "1vhLN4NpTvohEHVK9BmSUgPGqbBtetD4r",
+    "imagen_procesada": "1KOenEIqphHpB9WnRjgjsVzl3-e-o96K9",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-16T02:33:18.277Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Tapa - Mazo TCG Pokemon",
+    "peso_gramos": "30.00",
+    "tiempo_impresion_horas": "0.10",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "2400.00",
+    "costo_energia": "12.75",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "2412.75",
+    "amortizacion_fallos": "241.28",
+    "depreciacion_pieza": "30.00",
+    "mantenimiento_preventivo": "2.28",
+    "costo_total_real": "2686.31",
+    "precio_venta_sugerido": "5000.00",
+    "archivo_3mf": "",
+    "imagen": "1DnIzQRuCR0SfDNjFWQYWjD6vKyeWSYeY",
+    "imagen_procesada": "1cN9vEdGzso6wbtuxBZhj5t-uQfq-71FQ",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-16T02:34:50.718Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte Anillos Mano",
+    "peso_gramos": "122.00",
+    "tiempo_impresion_horas": "5.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "9760.00",
+    "costo_energia": "637.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "10397.50",
+    "amortizacion_fallos": "1039.75",
+    "depreciacion_pieza": "1500.00",
+    "mantenimiento_preventivo": "114.16",
+    "costo_total_real": "13051.41",
+    "precio_venta_sugerido": "21000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T01:48:37.715Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 8,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para cartuchos de juegos de Nintendo 64",
+    "peso_gramos": "190.00",
+    "tiempo_impresion_horas": "5.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "15200.00",
+    "costo_energia": "637.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "15837.50",
+    "amortizacion_fallos": "1583.75",
+    "depreciacion_pieza": "1500.00",
+    "mantenimiento_preventivo": "114.16",
+    "costo_total_real": "19035.41",
+    "precio_venta_sugerido": "30000.00",
+    "archivo_3mf": "",
+    "imagen": "1NULGQs4hp9sh9u6VN73UruJ4_-MRLYMB",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T02:57:21.327Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 9,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Cajon - Cajón portacartuchos Nintendo 64 N64",
+    "peso_gramos": "470.00",
+    "tiempo_impresion_horas": "9.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "37600.00",
+    "costo_energia": "1147.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "38747.50",
+    "amortizacion_fallos": "3874.75",
+    "depreciacion_pieza": "2700.00",
+    "mantenimiento_preventivo": "205.48",
+    "costo_total_real": "45527.73",
+    "precio_venta_sugerido": "71000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T03:01:07.499Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 10,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Cajón portacartuchos Nintendo 64 N64",
+    "peso_gramos": "343.00",
+    "tiempo_impresion_horas": "8.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "27440.00",
+    "costo_energia": "1020.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "28460.00",
+    "amortizacion_fallos": "2846.00",
+    "depreciacion_pieza": "2400.00",
+    "mantenimiento_preventivo": "182.65",
+    "costo_total_real": "33888.65",
+    "precio_venta_sugerido": "53000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T03:01:36.307Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 11,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo - Cajón portacartuchos Nintendo 64 N64",
+    "peso_gramos": "4.00",
+    "tiempo_impresion_horas": "0.10",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "320.00",
+    "costo_energia": "12.75",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "332.75",
+    "amortizacion_fallos": "33.27",
+    "depreciacion_pieza": "30.00",
+    "mantenimiento_preventivo": "2.28",
+    "costo_total_real": "398.30",
+    "precio_venta_sugerido": "1000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T03:02:02.385Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 12,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para 6 Juegos Nintendo 64 N64",
+    "peso_gramos": "160.00",
+    "tiempo_impresion_horas": "5.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "12800.00",
+    "costo_energia": "637.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "13437.50",
+    "amortizacion_fallos": "1343.75",
+    "depreciacion_pieza": "1500.00",
+    "mantenimiento_preventivo": "114.16",
+    "costo_total_real": "16395.41",
+    "precio_venta_sugerido": "26000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:15:23.516Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 13,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte universal para Consola - fácil y rápido",
+    "peso_gramos": "40.00",
+    "tiempo_impresion_horas": "2.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "3200.00",
+    "costo_energia": "255.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "3455.00",
+    "amortizacion_fallos": "345.50",
+    "depreciacion_pieza": "600.00",
+    "mantenimiento_preventivo": "45.66",
+    "costo_total_real": "4446.16",
+    "precio_venta_sugerido": "7000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:23:35.314Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 14,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Soporte para juegos de SNES - Base extendida",
+    "peso_gramos": "208.00",
+    "tiempo_impresion_horas": "6.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "16640.00",
+    "costo_energia": "765.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "17405.00",
+    "amortizacion_fallos": "1740.50",
+    "depreciacion_pieza": "1800.00",
+    "mantenimiento_preventivo": "136.99",
+    "costo_total_real": "21082.49",
+    "precio_venta_sugerido": "33000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:28:27.012Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 15,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo - Soporte para juegos de SNES - Base extendida",
+    "peso_gramos": "20.00",
+    "tiempo_impresion_horas": "1.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "1600.00",
+    "costo_energia": "127.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "1727.50",
+    "amortizacion_fallos": "172.75",
+    "depreciacion_pieza": "300.00",
+    "mantenimiento_preventivo": "22.83",
+    "costo_total_real": "2223.08",
+    "precio_venta_sugerido": "4000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:28:49.111Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 16,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo - Soporte para 12 estuches de juegos de Nintendo Wii",
+    "peso_gramos": "5.00",
+    "tiempo_impresion_horas": "0.20",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "400.00",
+    "costo_energia": "25.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "425.50",
+    "amortizacion_fallos": "42.55",
+    "depreciacion_pieza": "60.00",
+    "mantenimiento_preventivo": "4.57",
+    "costo_total_real": "532.62",
+    "precio_venta_sugerido": "1000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:38:16.170Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 17,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Soporte para 12 estuches de juegos de Nintendo Wii",
+    "peso_gramos": "250.00",
+    "tiempo_impresion_horas": "7.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "20000.00",
+    "costo_energia": "892.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "20892.50",
+    "amortizacion_fallos": "2089.25",
+    "depreciacion_pieza": "2100.00",
+    "mantenimiento_preventivo": "159.82",
+    "costo_total_real": "25241.57",
+    "precio_venta_sugerido": "39000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:39:25.837Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 18,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte/estante para juegos - PS3 - PS4 - PS5",
+    "peso_gramos": "280.00",
+    "tiempo_impresion_horas": "7.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "22400.00",
+    "costo_energia": "892.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "23292.50",
+    "amortizacion_fallos": "2329.25",
+    "depreciacion_pieza": "2100.00",
+    "mantenimiento_preventivo": "159.82",
+    "costo_total_real": "27881.57",
+    "precio_venta_sugerido": "43000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:46:16.022Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 19,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Soporte de juegos Nintendo Switch 2 10/12/15 - Con logotipo",
+    "peso_gramos": "135.00",
+    "tiempo_impresion_horas": "4.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "10800.00",
+    "costo_energia": "510.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "11310.00",
+    "amortizacion_fallos": "1131.00",
+    "depreciacion_pieza": "1200.00",
+    "mantenimiento_preventivo": "91.32",
+    "costo_total_real": "13732.32",
+    "precio_venta_sugerido": "22000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:50:58.644Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 20,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo - Soporte de juegos Nintendo Switch 2 10/12/15 - Con logotipo",
+    "peso_gramos": "6.00",
+    "tiempo_impresion_horas": "0.50",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "480.00",
+    "costo_energia": "63.75",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "543.75",
+    "amortizacion_fallos": "54.38",
+    "depreciacion_pieza": "150.00",
+    "mantenimiento_preventivo": "11.42",
+    "costo_total_real": "759.55",
+    "precio_venta_sugerido": "2000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:51:22.202Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 21,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo - Soporte para 12 juegos de GameCube, discos Nintendo",
+    "peso_gramos": "14.00",
+    "tiempo_impresion_horas": "1.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "1120.00",
+    "costo_energia": "127.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "1247.50",
+    "amortizacion_fallos": "124.75",
+    "depreciacion_pieza": "300.00",
+    "mantenimiento_preventivo": "22.83",
+    "costo_total_real": "1695.08",
+    "precio_venta_sugerido": "3000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:56:45.927Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 22,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Soporte para 12 juegos de GameCube, discos Nintendo",
+    "peso_gramos": "240.00",
+    "tiempo_impresion_horas": "6.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "19200.00",
+    "costo_energia": "765.00",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "19965.00",
+    "amortizacion_fallos": "1996.50",
+    "depreciacion_pieza": "1800.00",
+    "mantenimiento_preventivo": "136.99",
+    "costo_total_real": "23898.49",
+    "precio_venta_sugerido": "37000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T15:57:23.863Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 23,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo 64 (N64) Cartridge Display Stand",
+    "peso_gramos": "200.00",
+    "tiempo_impresion_horas": "5.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "16000.00",
+    "costo_energia": "637.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "16637.50",
+    "amortizacion_fallos": "1663.75",
+    "depreciacion_pieza": "1500.00",
+    "mantenimiento_preventivo": "114.16",
+    "costo_total_real": "19915.41",
+    "precio_venta_sugerido": "31000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T16:56:43.764Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 24,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo  64 Expandable Video Game Cartridge Shelf",
+    "peso_gramos": "98.00",
+    "tiempo_impresion_horas": "1.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "7840.00",
+    "costo_energia": "127.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "7967.50",
+    "amortizacion_fallos": "796.75",
+    "depreciacion_pieza": "300.00",
+    "mantenimiento_preventivo": "22.83",
+    "costo_total_real": "9087.08",
+    "precio_venta_sugerido": "14000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T17:06:41.585Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 25,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Base - Soporte para juegos de Super Nintendo",
+    "peso_gramos": "200.00",
+    "tiempo_impresion_horas": "5.00",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "16000.00",
+    "costo_energia": "637.50",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "16637.50",
+    "amortizacion_fallos": "1663.75",
+    "depreciacion_pieza": "1500.00",
+    "mantenimiento_preventivo": "114.16",
+    "costo_total_real": "19915.41",
+    "precio_venta_sugerido": "31000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T17:15:44.661Z"
+  }
+},
+{
+  "model": "produccion.inventariopieza",
+  "pk": 26,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Logo  - Soporte para juegos de Super Nintendo",
+    "peso_gramos": "10.00",
+    "tiempo_impresion_horas": "0.10",
+    "tiempo_postproceso_horas": "0.00",
+    "costo_empaque": "0.00",
+    "costo_material": "800.00",
+    "costo_energia": "12.75",
+    "costo_tiempo": "0.00",
+    "subtotal_produccion": "812.75",
+    "amortizacion_fallos": "81.28",
+    "depreciacion_pieza": "30.00",
+    "mantenimiento_preventivo": "2.28",
+    "costo_total_real": "926.31",
+    "precio_venta_sugerido": "2000.00",
+    "archivo_3mf": "",
+    "imagen": "",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "url_referencia": null,
+    "actualizado_en": "2026-07-28T17:16:08.148Z"
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 21,
+  "fields": {
+    "pieza": 3,
+    "imagen": "1SERBXbkhiswSU8tG83iuP6SbzXtG5VdJ",
+    "imagen_procesada": "1orotk72jNVQF09wJ6zuEdwkKBXMNxo1Z",
+    "ia_error": "",
+    "orden": 0
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 22,
+  "fields": {
+    "pieza": 1,
+    "imagen": "1ogvFMKx9nw9l1UV7PllhXzOP5tC5Q6Go",
+    "imagen_procesada": "17e8cgJ3yuS05KIBAtg0n6xEi21Gldm_b",
+    "ia_error": "",
+    "orden": 0
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 23,
+  "fields": {
+    "pieza": 2,
+    "imagen": "1SFudJdiM_QSO7mYFsW3o7sc9VOC-EMn-",
+    "imagen_procesada": "17eC4yFwYIBfypM9Zn0dKIpax5pWlNhrK",
+    "ia_error": "",
+    "orden": 0
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 29,
+  "fields": {
+    "pieza": 4,
+    "imagen": "1FM1YZ3oqLoz1shvtQiDilcI8he6ZReHK",
+    "imagen_procesada": "1xRI5UnsKZdIPOEPC8Y_-cz2Ce5ilLsbQ",
+    "ia_error": "",
+    "orden": 1
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 30,
+  "fields": {
+    "pieza": 7,
+    "imagen": "1WyRB8cVbTW82_Urz-3P_XdUrJoE85j5a",
+    "imagen_procesada": "10BdW2DqRNWo85n1KOk38SAPPFUHtBCLM",
+    "ia_error": "",
+    "orden": 0
+  }
+},
+{
+  "model": "produccion.piezaimagen",
+  "pk": 31,
+  "fields": {
+    "pieza": 8,
+    "imagen": "1y5KkVOX8cTQNO1yUINxQFridopcgLBC0",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0
+  }
+},
+{
+  "model": "produccion.categoriafigura",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Video Juegos"
+  }
+},
+{
+  "model": "produccion.categoriafigura",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "TCG"
+  }
+},
+{
+  "model": "produccion.categoriafigura",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Exhibidores y Joyeros"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Video Juegos"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo Switch"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Retro"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 4,
+  "fields": {
+    "empresa": 1,
+    "nombre": "TCG Pokemon"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 5,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Exhibidores"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Joyeros"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Anillos"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 8,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo 64"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 9,
+  "fields": {
+    "empresa": 1,
+    "nombre": "N64"
+  }
+},
+{
+  "model": "produccion.etiquetafigura",
+  "pk": 10,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo"
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "descripcion": "¿Extrañas los 90? Revive la época dorada del gaming mientras proteges tus títulos favoritos de Nintendo Switch. Este case premium con diseño icónico de GameBoy Classic es el accesorio definitivo para todo fan de la \"Gran N\".\r\n\r\nCapacidad: Guarda hasta 10 cartuchos de Switch y 2 tarjetas Micro SD.\r\n\r\nProtección Total: Interior de silicona suave de alta densidad que evita rayones y absorbe impactos.\r\n\r\nCierre Magnético: Seguro y fácil de abrir; tus juegos no se saldrán por accidente en el morral.\r\n\r\nPortátil: Diseño ultra compacto que cabe en cualquier bolsillo.\r\n\r\n¡El regalo perfecto para ti o para ese amigo fanático de lo retro!",
+    "archivo_3mf": "1b1blsBZiR9BSchwi4tS45MJktAgOLCEQ",
+    "creado_en": "2026-04-28T03:52:59.350Z",
+    "actualizado_en": "2026-07-27T23:29:16.166Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      2,
+      3,
+      1
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Mazo TCG Pokemon",
+    "descripcion": "",
+    "archivo_3mf": "1ILcsme7QWMM4jdLrhAytThDXEezfMb0L",
+    "creado_en": "2026-07-28T01:42:43.099Z",
+    "actualizado_en": "2026-07-28T01:42:43.099Z",
+    "categorias": [
+      2
+    ],
+    "etiquetas": [
+      4
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Exhibidor Mano Soporte Joyas Anillo Manillas Pulsera",
+    "descripcion": "",
+    "archivo_3mf": "14RKvm9CTGts9DilVys9zX3EHtsxrw0BT",
+    "creado_en": "2026-07-28T02:37:41.213Z",
+    "actualizado_en": "2026-07-28T02:37:41.213Z",
+    "categorias": [
+      3
+    ],
+    "etiquetas": [
+      7,
+      5,
+      6
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 4,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para cartuchos de juegos de Nintendo 64",
+    "descripcion": "",
+    "archivo_3mf": "12SxhV6SJ9Cpkbjtunzwl8vyrU5_AIsdL",
+    "creado_en": "2026-07-28T02:58:25.533Z",
+    "actualizado_en": "2026-07-28T02:58:41.927Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      9,
+      10,
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 5,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Cajón portacartuchos Nintendo 64 N64",
+    "descripcion": "Mantén tus valiosos cartuchos de Nintendo 64 perfectamente organizados y protegidos con nuestro exclusivo cajón portacartuchos N64. Su diseño a medida, impreso en 3D, garantiza un ajuste seguro para tus juegos, evitando el polvo y el desorden. Dale a tu colección el lugar que se merece, ten tus títulos favoritos siempre a mano y tu espacio de juego impecable.",
+    "archivo_3mf": "1L7wFdEDhsuFBWoFYrWXC930OCJkbVt5r",
+    "creado_en": "2026-07-28T03:03:37.064Z",
+    "actualizado_en": "2026-07-28T18:17:44.884Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      9,
+      10,
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 6,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para 6 Juegos Nintendo 64 N64",
+    "descripcion": "",
+    "archivo_3mf": "1Tk5-bx-8kCHsUMAzn53WUTLzbPnZxZVP",
+    "creado_en": "2026-07-28T15:16:44.724Z",
+    "actualizado_en": "2026-07-28T15:16:44.724Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 7,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte universal para Consola - fácil y rápido",
+    "descripcion": "",
+    "archivo_3mf": "1F8ELzTl9D0UMKR9OxBteemzavrbY1fpG",
+    "creado_en": "2026-07-28T15:24:37.017Z",
+    "actualizado_en": "2026-07-28T15:30:17.298Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": []
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 8,
+  "fields": {
+    "empresa": 1,
+    "nombre": "￼￼Soporte para Juegos Retro — Soporte de Exhibición SNES",
+    "descripcion": "",
+    "archivo_3mf": "1eO0n94-6f8kUAbjszXpcv39vYyxc1OF6",
+    "creado_en": "2026-07-28T15:31:42.901Z",
+    "actualizado_en": "2026-07-28T15:32:13.837Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 9,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para 12 estuches de juegos de Nintendo Wii",
+    "descripcion": "",
+    "archivo_3mf": "1fpGc7a6VmI5FfHtgJj7ZZgOwJJZd4LVR",
+    "creado_en": "2026-07-28T15:41:06.333Z",
+    "actualizado_en": "2026-07-28T15:41:06.333Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 10,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte/estante para juegos - PS3 - PS4 - PS5",
+    "descripcion": "",
+    "archivo_3mf": "1QN97VgB26aNoy7ZqaC3p8CNfV6bK0ZrO",
+    "creado_en": "2026-07-28T15:47:17.613Z",
+    "actualizado_en": "2026-07-28T15:47:17.613Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 11,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte de juegos Nintendo Switch 2 10/12/15 - Con logotipo",
+    "descripcion": "Optimiza tu experiencia de juego con el Soporte de juegos Nintendo Switch 2. Este diseño robusto te permite elegir entre ángulos de visión personalizables (10, 12, 15 grados) para la máxima comodidad en cualquier partida. Su elegante logotipo integrado añade un toque distintivo y estilo a tu setup gaming. Disfruta de una estabilidad superior y el mejor ángulo para tus aventuras en Nintendo Switch 2.",
+    "archivo_3mf": "14XkHWbh3Gh8zLDcdRRQI1PPjWMSoRrs0",
+    "creado_en": "2026-07-28T15:52:59.356Z",
+    "actualizado_en": "2026-07-28T15:52:59.356Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 12,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para 12 juegos de GameCube, discos Nintendo",
+    "descripcion": "",
+    "archivo_3mf": "1dEuIsc0YuMcQ9c6xYkBzAJO-OVsEnDl2",
+    "creado_en": "2026-07-28T15:58:26.451Z",
+    "actualizado_en": "2026-07-28T15:58:26.451Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 13,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Nintendo 64 (N64) Cartridge Display Stand",
+    "descripcion": "",
+    "archivo_3mf": "1jj8SnyHb_El2D8yr8ohCtyuLeBF5gh9r",
+    "creado_en": "2026-07-28T16:57:35.314Z",
+    "actualizado_en": "2026-07-28T16:57:35.314Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5,
+      10,
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 14,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Exibidor expandible de Nintendo 64",
+    "descripcion": "",
+    "archivo_3mf": "1fkmL4THTwpR6xtrmdiX3D7aBNZ3Qh0mg",
+    "creado_en": "2026-07-28T17:09:38.381Z",
+    "actualizado_en": "2026-07-28T17:09:38.381Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      9,
+      10,
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figura",
+  "pk": 15,
+  "fields": {
+    "empresa": 1,
+    "nombre": "Soporte para juegos de Super Nintendo",
+    "descripcion": "",
+    "archivo_3mf": "1j8a2h7mkJdVnNuppkZ321-fXFE_igjdC",
+    "creado_en": "2026-07-28T17:17:28.262Z",
+    "actualizado_en": "2026-07-28T17:17:28.262Z",
+    "categorias": [
+      1
+    ],
+    "etiquetas": [
+      5,
+      9,
+      10,
+      8
+    ]
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 20,
+  "fields": {
+    "figura": 1,
+    "imagen": "1NZgtJMpo0U-OIWjIsUo5dAA7TMRJT43n",
+    "imagen_procesada": "1G_KfYGwD4ojRLmoboGIGhKx2WfTBAG3_",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 21,
+  "fields": {
+    "figura": 1,
+    "imagen": "1Yah0Ibra-17zeAVytZK-rllUGGpqCSCv",
+    "imagen_procesada": "1n901XzklCv7WtRwrMeCFGeaRvVEUsM3z",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 22,
+  "fields": {
+    "figura": 1,
+    "imagen": "1BGOdA_LyX-PIGr2-0hZGUS18pcNLC6QO",
+    "imagen_procesada": "1q0MIAhX8N-729Wg3GhXSoC8qXON7cuaH",
+    "ia_error": "",
+    "orden": 2,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 23,
+  "fields": {
+    "figura": 1,
+    "imagen": "1-mHK-KgzoFWEpMYp4Q894cFMspScgNK8",
+    "imagen_procesada": "1GAxN2KY29xmwEgirFSIJjr3ItOZXDt_2",
+    "ia_error": "",
+    "orden": 3,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 24,
+  "fields": {
+    "figura": 1,
+    "imagen": "1l__kbjtIJbk15vABv-X0i1cP1FP0Fo6C",
+    "imagen_procesada": "1iUfid17oQVScMi7UZ8VsrdQuURZ5Stkw",
+    "ia_error": "",
+    "orden": 4,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 25,
+  "fields": {
+    "figura": 2,
+    "imagen": "1oW__q6lGelYGlxShSy4enNTWAdhwITtT",
+    "imagen_procesada": "1f08nvcxMU0fBOjsSomtZn0v1t7DrW4Ir",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 26,
+  "fields": {
+    "figura": 3,
+    "imagen": "1GXwQ6JQ_eu6PPadXQVQYxSUfEgmWGl5c",
+    "imagen_procesada": "1cNroaLVK6_R3G-xHDCPub6k2un8RYi4z",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 27,
+  "fields": {
+    "figura": 4,
+    "imagen": "12jebmhcNeTYfxW63oa75ZEGl5lWVgDYj",
+    "imagen_procesada": "1E-dr81Pyemkp3QEYCOmBX7BQPfarnQiO",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 28,
+  "fields": {
+    "figura": 5,
+    "imagen": "1IZNo0g1fQX3QyEEB_clcpk9wHfBwAdNk",
+    "imagen_procesada": "1-iXRLQh6xK_igZC_ayzXRvgJA-JGWFIN",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 29,
+  "fields": {
+    "figura": 6,
+    "imagen": "1Mpgmv_2-kTHbz7plpIO99IbzXnLuItoj",
+    "imagen_procesada": "13steLKLYwNpH6leQ4eGExHYelIMHwbAg",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 30,
+  "fields": {
+    "figura": 7,
+    "imagen": "1TPbUdOyQOuJKRHYEXlCLAJrkFX-x8cQP",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 31,
+  "fields": {
+    "figura": 7,
+    "imagen": "16cWBzKcNf3VvHpseFB4-8v4WPBB8ycI1",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 32,
+  "fields": {
+    "figura": 7,
+    "imagen": "1RLrWRYoEdWvn31DmfQ1GeuJI2zP9sn91",
+    "imagen_procesada": "1qO9bDA5Ef2CDThlSBJhx_H0JiK54JvOj",
+    "ia_error": "",
+    "orden": 2,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 33,
+  "fields": {
+    "figura": 8,
+    "imagen": "1xGn6vnXG--tH74p2bV1o4xS2Y3CfucAt",
+    "imagen_procesada": "1YdgfWFveIv1gLTGHgTCcuE-iSEJQMb10",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 34,
+  "fields": {
+    "figura": 8,
+    "imagen": "1jT-jBZ40GjpX778-au5G-zwi2f_QgPlt",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 35,
+  "fields": {
+    "figura": 8,
+    "imagen": "14jQjmxh4S6N0iIL6aGQ-Zgd6KHdKBDqb",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 2,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 36,
+  "fields": {
+    "figura": 9,
+    "imagen": "1z98u4pk0bPBL89ZelCAUGbDoCNWcgATv",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 37,
+  "fields": {
+    "figura": 9,
+    "imagen": "10VmRqm4TjznyY4QEmh7JY_YlV00D99kY",
+    "imagen_procesada": "1X1m0_dHULjc7OH_Nfk8qdqEe0VkRUFE_",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 38,
+  "fields": {
+    "figura": 10,
+    "imagen": "1eX9Lu8y1EAvqiKNvnTOtdEOGj5lg4f8u",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 39,
+  "fields": {
+    "figura": 10,
+    "imagen": "1kGEn8p7fao6UdYhxIT7s7_iG_wJ_V1cd",
+    "imagen_procesada": "1DGzG9SGAQqwLg_ixq_D-PfVWTBES396V",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 40,
+  "fields": {
+    "figura": 10,
+    "imagen": "1dgrkgUnHqKkQXNK1OVBbuwS5fCC5iA0D",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 2,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 41,
+  "fields": {
+    "figura": 11,
+    "imagen": "17OHaheM_nM9XzTECR_XzmaKtZ_4MEifm",
+    "imagen_procesada": "1zwcTvPZgDrwfDszyi0rawtqImctP10sm",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 42,
+  "fields": {
+    "figura": 12,
+    "imagen": "1R5OY3fjP5vBNgGO4s-H8EZ4ED2OETEpH",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 43,
+  "fields": {
+    "figura": 13,
+    "imagen": "1mTBrQnArcZX1L8MHLHOzuWgKk57uJqWq",
+    "imagen_procesada": "1Ln9otNkQ9BV1IlxFPjqCDZAZM9QzTyy4",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 44,
+  "fields": {
+    "figura": 14,
+    "imagen": "1ui-ZOkAMQp_ksTJNN7A56TCPiJrMVsGy",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 45,
+  "fields": {
+    "figura": 14,
+    "imagen": "1D1UUXxJPv_0PxP1UwkwsUddxN1y-omC1",
+    "imagen_procesada": "1tz0tR33bYZdJthdds9XDZ8PW_VpzWPAJ",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 46,
+  "fields": {
+    "figura": 15,
+    "imagen": "1mWsq_wK8nU5Vyj0yLQjgxB5Ekj1uQpfj",
+    "imagen_procesada": "1r-8jbiFbEhWG3KknmHaiTdXtVMYyCgl5",
+    "ia_error": "",
+    "orden": 0,
+    "mostrar_imagen_ia": true
+  }
+},
+{
+  "model": "produccion.figuraimagen",
+  "pk": 47,
+  "fields": {
+    "figura": 5,
+    "imagen": "1zPRUHADMErtFnNRoacSWZ-V-euZ6bNa4",
+    "imagen_procesada": "",
+    "ia_error": "",
+    "orden": 1,
+    "mostrar_imagen_ia": false
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 1,
+  "fields": {
+    "figura": 1,
+    "pieza": 2,
+    "insumo": 2,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 2,
+  "fields": {
+    "figura": 1,
+    "pieza": 3,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 3,
+  "fields": {
+    "figura": 1,
+    "pieza": 1,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 4,
+  "fields": {
+    "figura": 2,
+    "pieza": 4,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 5,
+  "fields": {
+    "figura": 2,
+    "pieza": 5,
+    "insumo": 2,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 6,
+  "fields": {
+    "figura": 2,
+    "pieza": 6,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 7,
+  "fields": {
+    "figura": 3,
+    "pieza": 7,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 8,
+  "fields": {
+    "figura": 4,
+    "pieza": 8,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 9,
+  "fields": {
+    "figura": 5,
+    "pieza": 10,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 10,
+  "fields": {
+    "figura": 5,
+    "pieza": 9,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 11,
+  "fields": {
+    "figura": 5,
+    "pieza": 11,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 12,
+  "fields": {
+    "figura": 6,
+    "pieza": 12,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 13,
+  "fields": {
+    "figura": 7,
+    "pieza": 13,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 14,
+  "fields": {
+    "figura": 8,
+    "pieza": 14,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 15,
+  "fields": {
+    "figura": 8,
+    "pieza": 15,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 16,
+  "fields": {
+    "figura": 9,
+    "pieza": 17,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 17,
+  "fields": {
+    "figura": 9,
+    "pieza": 16,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 18,
+  "fields": {
+    "figura": 10,
+    "pieza": 18,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 19,
+  "fields": {
+    "figura": 11,
+    "pieza": 19,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 20,
+  "fields": {
+    "figura": 11,
+    "pieza": 20,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 21,
+  "fields": {
+    "figura": 12,
+    "pieza": 22,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 22,
+  "fields": {
+    "figura": 12,
+    "pieza": 21,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 23,
+  "fields": {
+    "figura": 13,
+    "pieza": 23,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 24,
+  "fields": {
+    "figura": 14,
+    "pieza": 24,
+    "insumo": null,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 25,
+  "fields": {
+    "figura": 15,
+    "pieza": 25,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.figurapieza",
+  "pk": 26,
+  "fields": {
+    "figura": 15,
+    "pieza": 26,
+    "insumo": 1,
+    "cantidad": 1
+  }
+},
+{
+  "model": "produccion.pedido",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "numero_pedido": "100001",
+    "prioridad": "Medio",
+    "cliente": 6,
+    "figura": 1,
+    "cantidad": 10,
+    "realizados": 10,
+    "gr_pieza": "0.00",
+    "precio_unidad": "39000.00",
+    "fecha_entrega": "2026-04-30",
+    "maquina": 18,
+    "estado": "Listo",
+    "descripcion": "",
+    "creado_en": "2026-04-28T03:56:01.320Z"
+  }
+},
+{
+  "model": "produccion.pedidomaterial",
+  "pk": 1,
+  "fields": {
+    "pedido": 1,
+    "pieza": 2,
+    "material": 2
+  }
+},
+{
+  "model": "produccion.pedidomaterial",
+  "pk": 2,
+  "fields": {
+    "pedido": 1,
+    "pieza": 3,
+    "material": 1
+  }
+},
+{
+  "model": "produccion.pedidomaterial",
+  "pk": 3,
+  "fields": {
+    "pedido": 1,
+    "pieza": 1,
+    "material": 1
+  }
+},
+{
+  "model": "produccion.venta",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "fecha": "2026-04-30",
+    "notas": "",
+    "creado_en": "2026-04-30T22:54:51.984Z",
+    "pedidos": [
+      1
+    ]
+  }
+},
+{
+  "model": "produccion.tarea",
+  "pk": 1,
+  "fields": {
+    "empresa": 1,
+    "prioridad": "Medio",
+    "pedido": 1,
+    "cliente": 6,
+    "cliente_texto": "",
+    "producto": "Estuche - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "cantidad": 10,
+    "realizados": 10,
+    "precio_total": "70000.00",
+    "fecha_entrega": "2026-04-30",
+    "maquina": 18,
+    "estado": "Listo",
+    "descripcion": "[Porta Juegos Nintendo Switch Diseño Retro GameBoy]",
+    "creado_en": "2026-04-28T03:56:01.343Z"
+  }
+},
+{
+  "model": "produccion.tarea",
+  "pk": 2,
+  "fields": {
+    "empresa": 1,
+    "prioridad": "Medio",
+    "pedido": 1,
+    "cliente": 6,
+    "cliente_texto": "",
+    "producto": "Portada - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "cantidad": 10,
+    "realizados": 10,
+    "precio_total": "190000.00",
+    "fecha_entrega": "2026-04-30",
+    "maquina": 18,
+    "estado": "Listo",
+    "descripcion": "[Porta Juegos Nintendo Switch Diseño Retro GameBoy]",
+    "creado_en": "2026-04-28T03:56:01.346Z"
+  }
+},
+{
+  "model": "produccion.tarea",
+  "pk": 3,
+  "fields": {
+    "empresa": 1,
+    "prioridad": "Medio",
+    "pedido": 1,
+    "cliente": 6,
+    "cliente_texto": "",
+    "producto": "Recuadro - Porta Juegos Nintendo Switch Diseño Retro GameBoy",
+    "cantidad": 10,
+    "realizados": 10,
+    "precio_total": "130000.00",
+    "fecha_entrega": "2026-04-30",
+    "maquina": 18,
+    "estado": "Listo",
+    "descripcion": "[Porta Juegos Nintendo Switch Diseño Retro GameBoy]",
+    "creado_en": "2026-04-28T03:56:01.347Z"
+  }
+}
+]

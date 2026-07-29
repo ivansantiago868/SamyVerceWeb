@@ -19,7 +19,7 @@ from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Vent
 from apps.produccion.serializers import (
     VariablesFijasSerializer, InventarioPiezaSerializer,
     PedidoSerializer, VentaSerializer, TareaSerializer,
-    FiguraSerializer, FiguraPiezaSerializer,
+    FiguraSerializer, FiguraPiezaSerializer, FiguraPublicaSerializer,
 )
 from apps.produccion.services import PedidoService, VentaService, TareaService
 from apps.produccion.controllers.variables_fijas_controller import VariablesFijasController
@@ -199,6 +199,17 @@ class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre", "descripcion"]
     ordering_fields  = ["nombre", "creado_en"]
+
+    @action(
+        detail=False, methods=["get"], url_path="publico",
+        authentication_classes=[], permission_classes=[AllowAny],
+    )
+    def publico(self, request):
+        """Catálogo público (dominio raíz): solo nombre, descripción, imágenes
+        y precio total — sin costo ni desglose de piezas."""
+        qs = Figura.objects.prefetch_related("imagenes").order_by("nombre")
+        serializer = FiguraPublicaSerializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
 
     @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")
     def descargar_imagenes_ia(self, request, pk=None):

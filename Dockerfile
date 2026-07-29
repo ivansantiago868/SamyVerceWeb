@@ -6,10 +6,11 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Dependencias del sistema necesarias para psycopg2
+# Dependencias del sistema necesarias para psycopg2 y fuente para superponer texto en imágenes (Pillow)
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar dependencias Python
@@ -28,4 +29,4 @@ RUN chmod +x entrypoint.sh
 EXPOSE 8000
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
