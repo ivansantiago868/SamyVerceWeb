@@ -75,13 +75,29 @@ class FiguraPublicaSerializer(serializers.ModelSerializer):
     """Serializer para el catálogo público (dominio raíz): solo lo que puede
     ver un visitante — nombre, descripción, imágenes y precio total. Nunca
     expone costo_total ni el desglose de figura_piezas (son datos internos
-    de margen/costo del negocio)."""
+    de margen/costo del negocio).
+
+    Si el contexto trae "comision" (la de un Cliente, resuelta del lado del
+    servidor a partir de ?cliente=<id>), el precio se incrementa en ese %.
+    El cliente en sí (nombre, comisión, etc.) nunca se expone en la
+    respuesta — solo se usa para calcular el precio ya ajustado."""
     imagenes     = serializers.SerializerMethodField()
-    precio_total = serializers.ReadOnlyField()
+    categorias   = serializers.SerializerMethodField()
+    precio_total = serializers.SerializerMethodField()
 
     class Meta:
         model  = Figura
-        fields = ["id", "nombre", "descripcion", "imagenes", "precio_total"]
+        fields = ["id", "nombre", "descripcion", "imagenes", "categorias", "precio_total"]
 
     def get_imagenes(self, obj):
         return _imagenes_aplanadas(obj, self.context.get("request"))
+
+    def get_categorias(self, obj):
+        return [c.nombre for c in obj.categorias.all()]
+
+    def get_precio_total(self, obj):
+        base = obj.precio_total
+        comision = self.context.get("comision")
+        if comision:
+            return round(float(base) * (1 + float(comision) / 100))
+        return base

@@ -55,6 +55,21 @@
     }
     .btn-brand:hover { background: var(--brand-dark); color: #fff; }
 
+    .filtro-bar {
+      display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem;
+    }
+    .filtro-bar label {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .82rem; font-weight: 600; color: var(--text-2);
+    }
+    .filtro-bar label i { color: var(--brand); }
+    .filtro-bar select {
+      background: var(--surface-1); border: 1px solid var(--border); color: var(--text-1);
+      border-radius: var(--r-md); padding: .5rem .9rem; font-size: .85rem; font-weight: 500;
+      cursor: pointer; min-width: 200px;
+    }
+    .filtro-bar select:focus { outline: none; border-color: var(--brand); }
+
     /* ── Tarjetas de figura ── */
     .figuras-grid {
       display: grid;
@@ -83,9 +98,19 @@
     .figura-card:hover .carousel-control-prev,
     .figura-card:hover .carousel-control-next { opacity: .8; }
     .carousel-control-prev-icon, .carousel-control-next-icon { width: 18px; height: 18px; }
+    /* Indicadores del carrusel: puntos bien visibles en vez de las líneas finas por defecto */
+    .carousel-indicators { margin-bottom: .6rem; gap: .3rem; }
+    .carousel-indicators [data-bs-target] {
+      width: 8px; height: 8px; border-radius: 50%;
+      background-color: #fff; opacity: .85; border: none;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+      transition: background-color .15s, transform .15s;
+    }
+    .carousel-indicators [data-bs-target].active {
+      background-color: var(--brand); opacity: 1; transform: scale(1.25);
+    }
     /* Carrusel detalle */
     .carousel-detalle .carousel-item img { height: 260px; object-fit: cover; border-radius: var(--r-md); }
-    .carousel-detalle .carousel-indicators [data-bs-target] { background-color: var(--brand); }
 
     .figura-card-body { padding: 1.1rem 1.25rem; }
     .figura-card-name { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; }
@@ -130,15 +155,22 @@
       <h1><i class="bi bi-puzzle-fill me-2" style="color:var(--brand)"></i>Catálogo de Figuras</h1>
       <p>Explorá nuestras figuras — hacé clic en una para ver los detalles.</p>
     </div>
-    <a class="btn-brand" href="/catalogo.pdf">
+    <a class="btn-brand" id="btn-descargar-pdf" href="/catalogo.pdf">
       <i class="bi bi-file-earmark-pdf-fill"></i> Descargar catálogo PDF
     </a>
+  </div>
+
+  <div class="filtro-bar">
+    <label for="filtro-categoria"><i class="bi bi-funnel-fill"></i> Categoría</label>
+    <select id="filtro-categoria" onchange="aplicarFiltroCategoria()">
+      <option value="">Todas las categorías</option>
+    </select>
   </div>
 
   <div id="figuras-grid" class="figuras-grid"></div>
   <div id="empty-state" style="display:none">
     <i class="bi bi-puzzle"></i>
-    <p>Aún no hay figuras publicadas.</p>
+    <p id="empty-state-msg">Aún no hay figuras publicadas.</p>
   </div>
 </main>
 
@@ -153,9 +185,17 @@
   const BASE = '';
 
   window.addEventListener('DOMContentLoaded', async () => {
-    await cargarFiguras();
-    // Deep-link desde el catálogo PDF: /?figura=<id> abre el detalle directo.
+    // Si el link trae ?cliente=<id>, se reenvía a la API (ajusta el precio
+    // según su % de comisión) y al botón de descarga del PDF.
     const params = new URLSearchParams(window.location.search);
+    const clienteId = params.get('cliente');
+    if (clienteId) {
+      const btnPdf = document.getElementById('btn-descargar-pdf');
+      if (btnPdf) btnPdf.href = `/catalogo.pdf?cliente=${encodeURIComponent(clienteId)}`;
+    }
+
+    await cargarFiguras(clienteId);
+    // Deep-link desde el catálogo PDF: /?figura=<id> abre el detalle directo.
     const figuraId = parseInt(params.get('figura'));
     if (figuraId) verDetalle(figuraId);
   });
@@ -164,27 +204,52 @@
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
   }
 
-  async function cargarFiguras() {
+  async function cargarFiguras(clienteId) {
     const grid  = document.getElementById('figuras-grid');
     const empty = document.getElementById('empty-state');
     grid.innerHTML = `<div style="color:var(--text-3);grid-column:1/-1;text-align:center;padding:3rem">
       <i class="bi bi-arrow-repeat spin" style="font-size:2rem"></i></div>`;
     try {
-      const r = await fetch(`${BASE}/api/v1/figuras/publico/`);
+      const qs = clienteId ? `?cliente=${encodeURIComponent(clienteId)}` : '';
+      const r = await fetch(`${BASE}/api/v1/figuras/publico/${qs}`);
       if (!r.ok) throw new Error();
       const items = await r.json();
-      if (!items.length) {
-        grid.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-      empty.style.display = 'none';
-      grid.innerHTML = items.map(renderCard).join('');
-      initCarousels(grid);
       window._figurasCache = items;
+      poblarFiltroCategorias(items);
+      renderGrid(items);
     } catch {
       grid.innerHTML = `<p style="color:var(--text-2);grid-column:1/-1">No se pudo cargar el catálogo.</p>`;
     }
+  }
+
+  function poblarFiltroCategorias(items) {
+    const sel = document.getElementById('filtro-categoria');
+    const categorias = [...new Set(items.flatMap(f => f.categorias || []))].sort((a, b) => a.localeCompare(b));
+    sel.innerHTML = '<option value="">Todas las categorías</option>' +
+      categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function aplicarFiltroCategoria() {
+    const cat = document.getElementById('filtro-categoria').value;
+    const items = window._figurasCache || [];
+    const filtrados = cat ? items.filter(f => (f.categorias || []).includes(cat)) : items;
+    renderGrid(filtrados, !!cat);
+  }
+
+  function renderGrid(items, filtrado) {
+    const grid  = document.getElementById('figuras-grid');
+    const empty = document.getElementById('empty-state');
+    if (!items.length) {
+      grid.innerHTML = '';
+      document.getElementById('empty-state-msg').textContent = filtrado
+        ? 'No hay figuras en esta categoría.'
+        : 'Aún no hay figuras publicadas.';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = items.map(renderCard).join('');
+    initCarousels(grid);
   }
 
   function initCarousels(scope) {

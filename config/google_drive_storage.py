@@ -1,4 +1,5 @@
 import os
+import threading
 from django.conf import settings
 from django.core.files.storage import Storage
 from django.utils.deconstruct import deconstructible
@@ -78,24 +79,39 @@ def get_or_create_folder_path(service, path, root_folder_id):
 
 @deconstructible
 class GoogleDriveStorage(Storage):
+    """
+    google-api-python-client (y el httplib2.Http que usa por debajo) no es
+    thread-safe: no se puede compartir una misma instancia de `service` entre
+    hilos. Esta storage es un singleton de Django (DEFAULT_FILE_STORAGE) y el
+    procesamiento IA lanza un hilo por imagen (`procesar_en_background`), así
+    que si dos imágenes se suben a Drive al mismo tiempo (por ejemplo, al usar
+    "Reintentar IA fallidas" sobre varias a la vez) y comparten la misma
+    conexión, las respuestas HTTP se corrompen entre sí — de ahí errores como
+    "HttpError 200 OK", "string indices must be integers" o el Content-Range
+    que no coincide. Por eso `service` se guarda en threading.local(): cada
+    hilo obtiene su propia conexión.
+    """
 
     def __init__(self):
         self.root_folder_id = settings.GOOGLE_DRIVE_FOLDER_ID
-        self._service = None
+        self._local = threading.local()
         self._folder_cache = {}
+        self._folder_lock = threading.Lock()
 
     @property
     def service(self):
-        if self._service is None:
-            self._service = _get_drive_service()
-        return self._service
+        if not hasattr(self._local, "service"):
+            self._local.service = _get_drive_service()
+        return self._local.service
 
     def _get_folder_id(self, path):
-        """Obtiene (con caché) el ID de la carpeta para un path dado."""
+        """Obtiene (con caché, protegida por lock) el ID de la carpeta para un path dado."""
         if path not in self._folder_cache:
-            self._folder_cache[path] = get_or_create_folder_path(
-                self.service, path, self.root_folder_id
-            )
+            with self._folder_lock:
+                if path not in self._folder_cache:
+                    self._folder_cache[path] = get_or_create_folder_path(
+                        self.service, path, self.root_folder_id
+                    )
         return self._folder_cache[path]
 
     def _save(self, name, content):

@@ -94,11 +94,12 @@ def _descargar_imagen(url):
         return None, 1.0
 
 
-def _urls_para_pdf(imagenes_qs):
+def _urls_por_modo(imagenes_qs):
     """
-    Devuelve las URLs a incluir en el PDF respetando lo elegido por imagen en
-    el carrusel (mismo criterio que el carrusel público y el de admin):
-    Solo IA, Solo original, o Ambas (aporta 2 URLs).
+    Devuelve TODAS las URLs de las imágenes de una figura, respetando lo
+    elegido por imagen en el carrusel (mismo criterio que el carrusel
+    público y el de admin): Solo IA, Solo original, o Ambas (aporta 2 URLs).
+    Sin límite de cantidad.
     """
     urls = []
     for fi in imagenes_qs:
@@ -114,20 +115,30 @@ def _urls_para_pdf(imagenes_qs):
                 urls.append(url_ia)
             elif url_normal:
                 urls.append(url_normal)
-    return urls[:5]
+    return urls
 
 
-def _bloque_producto(figura, ancho_bloque, base_url=None):
+def _urls_para_pdf(imagenes_qs):
+    """Igual que `_urls_por_modo`, pero limitado a 5 imágenes (espacio del collage del PDF)."""
+    return _urls_por_modo(imagenes_qs)[:5]
+
+
+def _bloque_producto(figura, ancho_bloque, base_url=None, cliente_id=None, comision=None):
     """
     Tarjeta de producto estilo catálogo digital: foto a la izquierda,
     nombre + descripción + pastilla de precio a la derecha. Si se pasa
     `base_url`, el nombre y el precio quedan clickeables hacia la ficha
-    del producto en la web pública (deep-link ?figura=<id>).
+    del producto en la web pública (deep-link ?figura=<id>[&cliente=<id>]).
+    Si se pasa `comision`, el precio mostrado se incrementa en ese %.
     """
     ancho_img = ancho_bloque * 0.34
     ancho_txt = ancho_bloque * 0.66
 
-    link = f"{base_url}/?figura={figura.pk}" if base_url else None
+    link = None
+    if base_url:
+        link = f"{base_url}/?figura={figura.pk}"
+        if cliente_id:
+            link += f"&cliente={cliente_id}"
 
     urls = _urls_para_pdf(figura.imagenes.all())
     img_flow = None
@@ -150,7 +161,11 @@ def _bloque_producto(figura, ancho_bloque, base_url=None):
     if link:
         contenido_txt.append(Paragraph(f'<a href="{link}">Ver en la web →</a>', _st_card_link))
     contenido_txt.append(Spacer(1, 6))
-    contenido_txt.append(PrecioBadge(f"${figura.precio_total:,.0f} COP", link=link))
+
+    precio = float(figura.precio_total)
+    if comision:
+        precio = round(precio * (1 + float(comision) / 100))
+    contenido_txt.append(PrecioBadge(f"${precio:,.0f} COP", link=link))
 
     tabla = Table([[contenido_img, contenido_txt]], colWidths=[ancho_img, ancho_txt])
     tabla.setStyle(TableStyle([
@@ -165,7 +180,7 @@ def _bloque_producto(figura, ancho_bloque, base_url=None):
     return tabla
 
 
-def _grid_figuras(figuras_lista, ancho_disponible, base_url=None):
+def _grid_figuras(figuras_lista, ancho_disponible, base_url=None, cliente_id=None, comision=None):
     """Grilla de 2 columnas de tarjetas de producto, como un catálogo digital."""
     gap = 0.7 * cm
     ancho_bloque = (ancho_disponible - gap) / 2
@@ -173,7 +188,10 @@ def _grid_figuras(figuras_lista, ancho_disponible, base_url=None):
     filas = []
     fila = []
     for figura in figuras_lista:
-        fila.append(_bloque_producto(figura, ancho_bloque, base_url=base_url))
+        fila.append(_bloque_producto(
+            figura, ancho_bloque, base_url=base_url,
+            cliente_id=cliente_id, comision=comision,
+        ))
         if len(fila) == 2:
             filas.append(fila)
             fila = []
@@ -238,7 +256,8 @@ def _decorar_pagina(canvas, doc):
     canvas.restoreState()
 
 
-def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url=None):
+def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url=None,
+                  cliente_id=None, comision=None):
     """Construye el PDF del catálogo con identidad visual SamyVerse."""
     buf = io.BytesIO()
     PAGE_W, _ = A4
@@ -307,7 +326,7 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url
     # ── FIGURAS: grilla de 2 columnas estilo catálogo digital ──────────────────
     if categoria:
         # Ya filtrado a una sola categoría: sin secciones, grilla plana.
-        story.append(_grid_figuras(list(figuras), ancho, base_url=base_url))
+        story.append(_grid_figuras(list(figuras), ancho, base_url=base_url, cliente_id=cliente_id, comision=comision))
     else:
         # Sin filtro: agrupar en secciones por categoría (una figura con
         # varias categorías aparece repetida en cada sección que le aplica).
@@ -315,7 +334,7 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url
             nombre_categoria = cat.nombre if cat else "Sin categoría"
             story.append(Paragraph(nombre_categoria.upper(), st_categoria))
             story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceAfter=8))
-            story.append(_grid_figuras(figuras_cat, ancho, base_url=base_url))
+            story.append(_grid_figuras(figuras_cat, ancho, base_url=base_url, cliente_id=cliente_id, comision=comision))
             story.append(Spacer(1, 0.4 * cm))
 
     doc.build(story, onFirstPage=_decorar_pagina, onLaterPages=_decorar_pagina)
@@ -350,9 +369,24 @@ def _qs_y_empresa(request):
 
 
 def _responder_pdf_catalogo(request):
+    from apps.produccion.models import Cliente
+
     figuras, nombre_empresa, empresa, categoria = _qs_y_empresa(request)
     base_url = request.build_absolute_uri("/").rstrip("/")
-    buf = _generar_pdf(figuras, nombre_empresa, empresa=empresa, categoria=categoria, base_url=base_url)
+
+    cliente_id = request.GET.get("cliente")
+    comision = None
+    if cliente_id:
+        cliente = Cliente.objects.filter(pk=cliente_id).only("comision").first()
+        if cliente:
+            comision = cliente.comision
+        else:
+            cliente_id = None
+
+    buf = _generar_pdf(
+        figuras, nombre_empresa, empresa=empresa, categoria=categoria, base_url=base_url,
+        cliente_id=cliente_id, comision=comision,
+    )
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras.pdf"'
     return response

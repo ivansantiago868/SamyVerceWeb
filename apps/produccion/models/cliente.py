@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from .empresa import Empresa
 
@@ -18,6 +19,12 @@ class Cliente(models.Model):
     email          = models.EmailField(blank=True)
     telefono       = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
     direccion      = models.TextField(blank=True, verbose_name="Dirección")
+    comision       = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Comisión (%)",
+        help_text="Porcentaje de comisión asociado a este cliente.",
+    )
     notas          = models.TextField(blank=True)
     creado_en      = models.DateTimeField(auto_now_add=True)
 

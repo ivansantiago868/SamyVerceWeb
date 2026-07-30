@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
-from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea, Figura, FiguraPieza
+from apps.produccion.models import VariablesFijas, InventarioPieza, Pedido, Venta, Tarea, Figura, FiguraPieza, Cliente
 from apps.produccion.serializers import (
     VariablesFijasSerializer, InventarioPiezaSerializer,
     PedidoSerializer, VentaSerializer, TareaSerializer,
@@ -206,9 +206,21 @@ class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     )
     def publico(self, request):
         """Catálogo público (dominio raíz): solo nombre, descripción, imágenes
-        y precio total — sin costo ni desglose de piezas."""
-        qs = Figura.objects.prefetch_related("imagenes").order_by("nombre")
-        serializer = FiguraPublicaSerializer(qs, many=True, context={"request": request})
+        y precio total — sin costo ni desglose de piezas.
+
+        Si viene ?cliente=<id>, el precio se incrementa según la comisión (%)
+        de ese cliente. El cliente nunca se expone en la respuesta, solo se
+        usa para calcular el precio ya ajustado."""
+        qs = Figura.objects.prefetch_related("imagenes", "categorias").order_by("nombre")
+
+        comision = None
+        cliente_id = request.GET.get("cliente")
+        if cliente_id:
+            cliente = Cliente.objects.filter(pk=cliente_id).only("comision").first()
+            if cliente:
+                comision = cliente.comision
+
+        serializer = FiguraPublicaSerializer(qs, many=True, context={"request": request, "comision": comision})
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"], url_path="descargar-imagenes-ia")

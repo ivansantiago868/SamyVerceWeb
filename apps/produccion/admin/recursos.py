@@ -13,7 +13,7 @@ from apps.produccion.admin.mixins import EmpresaMixin, GastoMultipleForm
 @admin.register(Cliente)
 class ClienteAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa = {"Maker"}
-    list_display  = ("nombre", "tipo_documento", "documento", "email", "telefono")
+    list_display  = ("nombre", "tipo_documento", "documento", "email", "telefono", "comision")
     search_fields = ("nombre", "email", "documento")
     list_filter   = ("tipo_documento",)
 

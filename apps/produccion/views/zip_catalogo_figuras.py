@@ -6,7 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from PIL import Image as PILImage, ImageDraw, ImageFont
 
-from apps.produccion.views.pdf_catalogo_figuras import _qs_y_empresa, _descargar_imagen
+from apps.produccion.views.pdf_catalogo_figuras import _qs_y_empresa, _descargar_imagen, _urls_por_modo
 
 # Rutas típicas del paquete fonts-dejavu-core en Debian/Ubuntu (imagen base del Dockerfile).
 _FONT_PATHS = [
@@ -25,14 +25,6 @@ def _cargar_fuente(tamano):
         except OSError:
             continue
     return ImageFont.load_default()
-
-
-def _imagen_principal(figura):
-    """Imagen a usar como portada: la IA si existe, si no la original."""
-    primera = next(iter(figura.imagenes.all()), None)
-    if not primera:
-        return None
-    return primera.imagen_procesada if primera.imagen_procesada else primera.imagen
 
 
 def _con_precio(imagen_buf, precio):
@@ -58,34 +50,41 @@ def _con_precio(imagen_buf, precio):
     return salida
 
 
+def _slug(texto, alterno):
+    base = "".join(c if c.isalnum() else "_" for c in texto).lower().strip("_")
+    return base or alterno
+
+
 @staff_member_required
 def exportar_zip_precios(request):
-    """ZIP con la imagen principal de cada figura (respeta los filtros activos del listado),
-    con el precio de venta superpuesto en cada imagen."""
+    """ZIP con TODAS las imágenes de cada figura (respeta los filtros activos
+    del listado y lo elegido en el carrusel de cada imagen: Solo IA / Solo
+    original / Ambas), cada una con el precio de venta superpuesto, y
+    separadas en una carpeta por figura dentro del ZIP."""
     figuras, _nombre_empresa, _empresa, _categoria = _qs_y_empresa(request)
 
     buf_zip = io.BytesIO()
-    usados = {}
+    carpetas_usadas = {}
     with zipfile.ZipFile(buf_zip, "w", zipfile.ZIP_DEFLATED) as zf:
         for figura in figuras:
-            campo = _imagen_principal(figura)
-            if not campo:
+            urls = _urls_por_modo(figura.imagenes.all())
+            if not urls:
                 continue
 
-            imagen_buf, _ratio = _descargar_imagen(campo.url)
-            if not imagen_buf:
-                continue
+            carpeta_base = _slug(figura.nombre, f"figura_{figura.pk}")
+            n_carpeta = carpetas_usadas.get(carpeta_base, 0) + 1
+            carpetas_usadas[carpeta_base] = n_carpeta
+            carpeta = carpeta_base if n_carpeta == 1 else f"{carpeta_base}_{n_carpeta}"
 
-            try:
-                final_buf = _con_precio(imagen_buf, figura.precio_total)
-            except Exception:
-                continue
-
-            base = "".join(c if c.isalnum() else "_" for c in figura.nombre).lower() or f"figura_{figura.pk}"
-            n = usados.get(base, 0) + 1
-            usados[base] = n
-            nombre_archivo = f"{base}.jpg" if n == 1 else f"{base}_{n}.jpg"
-            zf.writestr(nombre_archivo, final_buf.read())
+            for i, url in enumerate(urls, 1):
+                imagen_buf, _ratio = _descargar_imagen(url)
+                if not imagen_buf:
+                    continue
+                try:
+                    final_buf = _con_precio(imagen_buf, figura.precio_total)
+                except Exception:
+                    continue
+                zf.writestr(f"{carpeta}/imagen_{i:02d}.jpg", final_buf.read())
 
     buf_zip.seek(0)
     response = HttpResponse(buf_zip.read(), content_type="application/zip")
