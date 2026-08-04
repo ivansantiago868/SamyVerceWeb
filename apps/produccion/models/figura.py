@@ -47,7 +47,6 @@ class Figura(models.Model):
                                          related_name="figuras", verbose_name="Etiquetas")
     nombre      = models.CharField(max_length=255, verbose_name="Nombre de la figura")
     descripcion = models.TextField(blank=True, verbose_name="Descripción")
-    archivo_3mf = models.FileField(upload_to="figuras/3mf/", null=True, blank=True, verbose_name="Archivo 3MF")
     creado_en   = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
@@ -131,6 +130,35 @@ class FiguraImagen(models.Model):
 def borrar_archivos_figura_imagen(sender, instance, **kwargs):
     _borrar_campo_drive(instance.imagen)
     _borrar_campo_drive(instance.imagen_procesada)
+
+
+class FiguraArchivo3MF(models.Model):
+    figura  = models.ForeignKey(Figura, on_delete=models.CASCADE,
+                                related_name="archivos_3mf", verbose_name="Figura")
+    archivo = models.FileField(upload_to="figuras/3mf/", verbose_name="Archivo 3MF")
+    nombre  = models.CharField(max_length=255, blank=True, verbose_name="Nombre / descripción")
+    orden   = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        ordering        = ["orden", "id"]
+        verbose_name    = "Archivo 3MF de figura"
+        verbose_name_plural = "Archivos 3MF de figura"
+
+    def __str__(self):
+        return self.nombre or f"3MF #{self.orden} — {self.figura.nombre}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.figura_id is not None:
+            max_orden = FiguraArchivo3MF.objects.filter(figura_id=self.figura_id).aggregate(
+                m=Max("orden")
+            )["m"]
+            self.orden = (max_orden + 1) if max_orden is not None else 0
+        super().save(*args, **kwargs)
+
+
+@receiver(post_delete, sender=FiguraArchivo3MF)
+def borrar_archivo_3mf_figura(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.archivo)
 
 
 class FiguraPieza(models.Model):

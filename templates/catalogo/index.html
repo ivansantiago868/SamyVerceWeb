@@ -145,7 +145,7 @@
 <header>
   <a href="/" class="brand">
     <div class="brand-icon"><i class="bi bi-puzzle-fill"></i></div>
-    <span class="brand-name">SamyVerce</span>
+    <span class="brand-name" id="brand-name">SamyVerce</span>
   </a>
 </header>
 
@@ -155,9 +155,14 @@
       <h1><i class="bi bi-puzzle-fill me-2" style="color:var(--brand)"></i>Catálogo de Figuras</h1>
       <p>Explorá nuestras figuras — hacé clic en una para ver los detalles.</p>
     </div>
-    <a class="btn-brand" id="btn-descargar-pdf" href="/catalogo.pdf">
-      <i class="bi bi-file-earmark-pdf-fill"></i> Descargar catálogo PDF
-    </a>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <a class="btn-brand" id="btn-descargar-pdf" href="/catalogo.pdf">
+        <i class="bi bi-file-earmark-pdf-fill"></i> Descargar catálogo PDF
+      </a>
+      <a class="btn-brand" id="btn-descargar-zip" href="/catalogo.zip" style="background:#e65100">
+        <i class="bi bi-file-earmark-zip-fill"></i> Descargar ZIP con precios
+      </a>
+    </div>
   </div>
 
   <div class="filtro-bar">
@@ -186,12 +191,24 @@
 
   window.addEventListener('DOMContentLoaded', async () => {
     // Si el link trae ?cliente=<id>, se reenvía a la API (ajusta el precio
-    // según su % de comisión) y al botón de descarga del PDF.
+    // según su % de comisión) y a los botones de descarga (PDF y ZIP).
     const params = new URLSearchParams(window.location.search);
     const clienteId = params.get('cliente');
     if (clienteId) {
       const btnPdf = document.getElementById('btn-descargar-pdf');
       if (btnPdf) btnPdf.href = `/catalogo.pdf?cliente=${encodeURIComponent(clienteId)}`;
+      const btnZip = document.getElementById('btn-descargar-zip');
+      if (btnZip) btnZip.href = `/catalogo.zip?cliente=${encodeURIComponent(clienteId)}`;
+
+      // Muestra el nombre del cliente en vez del de la empresa en el encabezado.
+      fetch(`${BASE}/api/v1/clientes/${encodeURIComponent(clienteId)}/publico/`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.nombre) {
+            document.getElementById('brand-name').textContent = data.nombre;
+          }
+        })
+        .catch(() => {});
     }
 
     await cargarFiguras(clienteId);

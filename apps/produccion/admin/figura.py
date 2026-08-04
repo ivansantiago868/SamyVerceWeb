@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import path
 from django.utils.html import format_html, mark_safe
-from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza
+from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
 
 
@@ -57,6 +57,21 @@ class FiguraImagenInline(admin.TabularInline):
         return format_html('<span style="color:#aaa;font-size:11px">⏳ procesando…</span>')
 
 
+class FiguraArchivo3MFInlineForm(forms.ModelForm):
+    class Meta:
+        model   = FiguraArchivo3MF
+        fields  = ("archivo", "nombre", "orden")
+        widgets = {"archivo": DragDropFileWidget()}
+
+
+class FiguraArchivo3MFInline(admin.TabularInline):
+    model  = FiguraArchivo3MF
+    form   = FiguraArchivo3MFInlineForm
+    extra  = 1
+    fields = ("archivo", "nombre", "orden")
+    verbose_name_plural = "Archivos 3MF"
+
+
 class FiguraPiezaInline(admin.TabularInline):
     model               = FiguraPieza
     extra               = 1
@@ -90,7 +105,6 @@ class FiguraAdminForm(forms.ModelForm):
     class Meta:
         model   = Figura
         fields  = "__all__"
-        widgets = {"archivo_3mf": DragDropFileWidget()}
 
 
 @admin.register(Figura)
@@ -103,7 +117,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     filter_horizontal  = ("categorias", "etiquetas")
     search_fields      = ("nombre", "descripcion")
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
-    inlines            = [FiguraImagenInline, FiguraPiezaInline]
+    inlines            = [FiguraImagenInline, FiguraArchivo3MFInline, FiguraPiezaInline]
     fieldsets = (
         ("Galería", {
             "fields": ("carrusel_ia",),
@@ -111,7 +125,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                            "Solo original / Ambas). Se actualiza al guardar.",
         }),
         (None, {
-            "fields": ("nombre", "categorias", "etiquetas", "archivo_3mf", "prompt_ia", "boton_generar_ia", "descripcion"),
+            "fields": ("nombre", "categorias", "etiquetas", "prompt_ia", "boton_generar_ia", "descripcion"),
         }),
         ("Totales", {
             "fields": ("costo_total_display", "precio_total_display"),

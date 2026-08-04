@@ -6,6 +6,7 @@ Lógica de negocio → services/  |  Serialización → serializers/
 """
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -26,6 +27,19 @@ class ClienteView(EmpresaViewSetMixin, viewsets.ModelViewSet):
     filter_backends  = [filters.SearchFilter, filters.OrderingFilter]
     search_fields    = ["nombre", "email", "documento"]
     ordering_fields  = ["nombre", "creado_en"]
+
+    @action(
+        detail=True, methods=["get"], url_path="publico",
+        authentication_classes=[], permission_classes=[AllowAny],
+    )
+    def publico(self, request, pk=None):
+        """Para el catálogo público (dominio raíz, ?cliente=<id>): solo el
+        nombre del cliente, para personalizar el encabezado. Nunca expone
+        email, teléfono, documento, comisión ni ningún otro dato."""
+        cliente = Cliente.objects.filter(pk=pk).only("nombre").first()
+        if not cliente:
+            return Response({"detail": "No encontrado."}, status=404)
+        return Response({"nombre": cliente.nombre})
 
 
 class ImpresoraView(EmpresaViewSetMixin, viewsets.ModelViewSet):

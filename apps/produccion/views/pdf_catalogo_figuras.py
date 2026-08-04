@@ -1,4 +1,5 @@
 import io
+from functools import partial
 import requests
 from PIL import Image as PILImage  # noqa: F401 usado en _collage
 
@@ -238,8 +239,10 @@ def _agrupar_por_categoria(figuras):
     return resultado
 
 
-def _decorar_pagina(canvas, doc):
-    """Callback: pinta fondo rosa claro en cada página y footer de marca."""
+def _decorar_pagina(canvas, doc, cliente_nombre=None):
+    """Callback: pinta fondo rosa claro en cada página y footer de marca.
+    Descargado desde el link de un cliente: el pie de página muestra su
+    nombre en vez de la web/eslogan de la empresa."""
     PAGE_W, PAGE_H = A4
     canvas.saveState()
     # Fondo
@@ -252,12 +255,16 @@ def _decorar_pagina(canvas, doc):
     # Footer texto
     canvas.setFont("Helvetica", 7)
     canvas.setFillColor(GRAY_BODY)
-    canvas.drawCentredString(PAGE_W / 2, 8, f"Pág. {doc.page}  ·  www.samyverse3d.com  ·  UN UNIVERSO DE SORPRESAS")
+    if cliente_nombre:
+        texto_footer = f"Pág. {doc.page}  ·  Catálogo preparado para {cliente_nombre}"
+    else:
+        texto_footer = f"Pág. {doc.page}  ·  www.samyverse3d.com  ·  UN UNIVERSO DE SORPRESAS"
+    canvas.drawCentredString(PAGE_W / 2, 8, texto_footer)
     canvas.restoreState()
 
 
 def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url=None,
-                  cliente_id=None, comision=None):
+                  cliente_id=None, comision=None, cliente_nombre=None):
     """Construye el PDF del catálogo con identidad visual SamyVerse."""
     buf = io.BytesIO()
     PAGE_W, _ = A4
@@ -309,7 +316,8 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url
 
     story.append(HRFlowable(width=ancho, color=VOXEL_MAG, thickness=2, spaceAfter=12))
     story.append(Paragraph("CATÁLOGO DE FIGURAS", st_cover_title))
-    story.append(Paragraph(nombre_empresa, st_cover_sub))
+    # Descargado desde el link de un cliente: mostrar su nombre en vez del de la empresa.
+    story.append(Paragraph(cliente_nombre or nombre_empresa, st_cover_sub))
     story.append(Paragraph("UN UNIVERSO DE SORPRESAS", st_cover_slogan))
     story.append(HRFlowable(width=ancho, color=CYBER_CYAN, thickness=1, spaceBefore=8, spaceAfter=12))
 
@@ -320,7 +328,8 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url
     ))
     if categoria:
         story.append(Paragraph(f"Categoría: {categoria.nombre}", st_badge))
-    story.append(Paragraph("www.samyverse3d.com", st_cover_url))
+    if not cliente_nombre:
+        story.append(Paragraph("www.samyverse3d.com", st_cover_url))
     story.append(Spacer(1, 3 * cm))
 
     # ── FIGURAS: grilla de 2 columnas estilo catálogo digital ──────────────────
@@ -337,7 +346,8 @@ def _generar_pdf(figuras, nombre_empresa, empresa=None, categoria=None, base_url
             story.append(_grid_figuras(figuras_cat, ancho, base_url=base_url, cliente_id=cliente_id, comision=comision))
             story.append(Spacer(1, 0.4 * cm))
 
-    doc.build(story, onFirstPage=_decorar_pagina, onLaterPages=_decorar_pagina)
+    decorador = partial(_decorar_pagina, cliente_nombre=cliente_nombre)
+    doc.build(story, onFirstPage=decorador, onLaterPages=decorador)
     buf.seek(0)
     return buf
 
@@ -368,24 +378,29 @@ def _qs_y_empresa(request):
     return qs, nombre, empresa, categoria
 
 
-def _responder_pdf_catalogo(request):
+def _resolver_cliente(request):
+    """Lee ?cliente=<id> y devuelve (cliente_id, comision, cliente_nombre).
+    Si no viene el parámetro o el id no existe, devuelve todo None — el
+    llamador debe usar entonces los precios/datos base de la empresa."""
     from apps.produccion.models import Cliente
 
+    cliente_id = request.GET.get("cliente")
+    if not cliente_id:
+        return None, None, None
+    cliente = Cliente.objects.filter(pk=cliente_id).only("comision", "nombre").first()
+    if not cliente:
+        return None, None, None
+    return cliente_id, cliente.comision, cliente.nombre
+
+
+def _responder_pdf_catalogo(request):
     figuras, nombre_empresa, empresa, categoria = _qs_y_empresa(request)
     base_url = request.build_absolute_uri("/").rstrip("/")
-
-    cliente_id = request.GET.get("cliente")
-    comision = None
-    if cliente_id:
-        cliente = Cliente.objects.filter(pk=cliente_id).only("comision").first()
-        if cliente:
-            comision = cliente.comision
-        else:
-            cliente_id = None
+    cliente_id, comision, cliente_nombre = _resolver_cliente(request)
 
     buf = _generar_pdf(
         figuras, nombre_empresa, empresa=empresa, categoria=categoria, base_url=base_url,
-        cliente_id=cliente_id, comision=comision,
+        cliente_id=cliente_id, comision=comision, cliente_nombre=cliente_nombre,
     )
     response = HttpResponse(buf, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="catalogo_figuras.pdf"'

@@ -25,6 +25,7 @@ from config.backup_db_views import (
     listar_backups, iniciar_restaurar_backup, estado_restaurar_backup,
 )
 from apps.produccion.views.pdf_catalogo_figuras import exportar_catalogo_pdf_publico
+from apps.produccion.views.zip_catalogo_figuras import exportar_zip_precios_publico
 
 urlpatterns = [
     # Admin
@@ -59,6 +60,7 @@ urlpatterns = [
     # ── Interfaces gráficas ───────────────────────────────────────
     path("",                TemplateView.as_view(template_name="catalogo/index.html"), name="home"),
     path("catalogo.pdf",     exportar_catalogo_pdf_publico,                            name="catalogo-pdf-publico"),
+    path("catalogo.zip",     exportar_zip_precios_publico,                             name="catalogo-zip-publico"),
     path("cotizador/",   TemplateView.as_view(template_name="cotizador/index.html"),   name="cotizador-ui"),
     path("figuras/",     TemplateView.as_view(template_name="figuras/index.html"),     name="figuras-ui"),
     path("cotizador3d/", TemplateView.as_view(template_name="cotizador3d/index.html"), name="cotizador3d-ui"),

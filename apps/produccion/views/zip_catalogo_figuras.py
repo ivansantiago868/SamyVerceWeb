@@ -6,7 +6,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from PIL import Image as PILImage, ImageDraw, ImageFont
 
-from apps.produccion.views.pdf_catalogo_figuras import _qs_y_empresa, _descargar_imagen, _urls_por_modo
+from apps.produccion.views.pdf_catalogo_figuras import (
+    _qs_y_empresa, _descargar_imagen, _urls_por_modo, _resolver_cliente,
+)
 
 # Rutas típicas del paquete fonts-dejavu-core en Debian/Ubuntu (imagen base del Dockerfile).
 _FONT_PATHS = [
@@ -55,13 +57,16 @@ def _slug(texto, alterno):
     return base or alterno
 
 
-@staff_member_required
-def exportar_zip_precios(request):
+def _generar_zip_precios(request):
     """ZIP con TODAS las imágenes de cada figura (respeta los filtros activos
     del listado y lo elegido en el carrusel de cada imagen: Solo IA / Solo
     original / Ambas), cada una con el precio de venta superpuesto, y
-    separadas en una carpeta por figura dentro del ZIP."""
+    separadas en una carpeta por figura dentro del ZIP.
+
+    Si viene ?cliente=<id>, el precio mostrado se incrementa según su %
+    de comisión; sin ese parámetro, se usan los precios base de la empresa."""
     figuras, _nombre_empresa, _empresa, _categoria = _qs_y_empresa(request)
+    _cliente_id, comision, _cliente_nombre = _resolver_cliente(request)
 
     buf_zip = io.BytesIO()
     carpetas_usadas = {}
@@ -70,6 +75,10 @@ def exportar_zip_precios(request):
             urls = _urls_por_modo(figura.imagenes.all())
             if not urls:
                 continue
+
+            precio = float(figura.precio_total)
+            if comision:
+                precio = round(precio * (1 + float(comision) / 100))
 
             carpeta_base = _slug(figura.nombre, f"figura_{figura.pk}")
             n_carpeta = carpetas_usadas.get(carpeta_base, 0) + 1
@@ -81,7 +90,7 @@ def exportar_zip_precios(request):
                 if not imagen_buf:
                     continue
                 try:
-                    final_buf = _con_precio(imagen_buf, figura.precio_total)
+                    final_buf = _con_precio(imagen_buf, precio)
                 except Exception:
                     continue
                 zf.writestr(f"{carpeta}/imagen_{i:02d}.jpg", final_buf.read())
@@ -90,3 +99,16 @@ def exportar_zip_precios(request):
     response = HttpResponse(buf_zip.read(), content_type="application/zip")
     response["Content-Disposition"] = 'attachment; filename="figuras_precios.zip"'
     return response
+
+
+@staff_member_required
+def exportar_zip_precios(request):
+    """ZIP (uso interno/admin) con el precio de venta superpuesto en cada imagen."""
+    return _generar_zip_precios(request)
+
+
+def exportar_zip_precios_publico(request):
+    """Mismo ZIP, accesible sin sesión — para el botón de descarga del
+    catálogo público en el dominio raíz. Con ?cliente=<id> ajusta el precio
+    según su comisión; sin él, usa los precios base de la empresa."""
+    return _generar_zip_precios(request)
