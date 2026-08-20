@@ -62,6 +62,17 @@ class Figura(models.Model):
     def total_piezas(self):
         return sum(fp.cantidad for fp in self.figura_piezas.all())
 
+    @property
+    def primera_imagen_url(self):
+        primera = self.imagenes.first()
+        if not primera:
+            return None
+        if primera.imagen_procesada:
+            return primera.imagen_procesada.url
+        if primera.imagen:
+            return primera.imagen.url
+        return None
+
     class Meta:
         ordering        = ["nombre"]
         verbose_name    = "Figura"
@@ -146,6 +157,18 @@ class FiguraArchivo3MF(models.Model):
 
     def __str__(self):
         return self.nombre or f"3MF #{self.orden} — {self.figura.nombre}"
+
+    @property
+    def descarga_url(self):
+        if not self.archivo:
+            return None
+        name = self.archivo.name
+        # IDs de Drive no tienen "/" ni "."; con ese ID, .url() usa el dominio
+        # de miniaturas de imágenes (lh3.googleusercontent.com), que no sirve
+        # bien archivos binarios como .3mf. Se arma el link de descarga directa.
+        if name and "/" not in name and "." not in name:
+            return f"https://drive.google.com/uc?export=download&id={name}"
+        return self.archivo.url
 
     def save(self, *args, **kwargs):
         if not self.pk and self.figura_id is not None:

@@ -6,10 +6,42 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AutocompleteSelect
 from django.core.exceptions import ValidationError
+from django.urls import path, reverse
+from django.utils.html import format_html, format_html_join
 
 from apps.produccion.models import Pedido, PedidoMaterial, Tarea, FiguraPieza
+from apps.produccion.admin.figura import FiguraAutocompleteJsonView
 from apps.produccion.admin.mixins import EmpresaMixin
+
+
+class FiguraAutocompleteSelect(AutocompleteSelect):
+    """Apunta el autocomplete de "figura" a la vista propia de PedidoAdmin,
+    que sí incluye la miniatura (el endpoint admin:autocomplete compartido no la trae)."""
+
+    def get_url(self):
+        return reverse("admin:pedido_figura_autocomplete")
+
+
+class DatalistTextInput(forms.TextInput):
+    """Input de texto con sugerencias (<datalist>) de valores existentes.
+
+    A diferencia de un <select>, sigue aceptando un valor nuevo que no
+    esté en las sugerencias (necesario para números de pedido nuevos).
+    """
+
+    def __init__(self, attrs=None, choices=()):
+        super().__init__(attrs)
+        self.choices = choices
+
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs         = dict(attrs or {})
+        list_id       = f"{attrs.get('id', name)}_list"
+        attrs["list"] = list_id
+        input_html    = super().render(name, value, attrs, renderer)
+        options_html  = format_html_join("", "<option value='{}'>", ((c,) for c in self.choices))
+        return format_html("{}<datalist id='{}'>{}</datalist>", input_html, list_id, options_html)
 
 
 class TareaForm(forms.ModelForm):
@@ -50,8 +82,9 @@ class PedidoMaterialInline(admin.TabularInline):
 
 class PedidoForm(forms.ModelForm):
     class Meta:
-        model  = Pedido
-        fields = "__all__"
+        model   = Pedido
+        fields  = "__all__"
+        widgets = {"numero_pedido": DatalistTextInput()}
 
     def clean(self):
         cleaned = super().clean()
@@ -64,15 +97,28 @@ class PedidoForm(forms.ModelForm):
 class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
     form                = PedidoForm
     grupos_empresa      = {"Maker"}
-    list_display        = ("numero_pedido", "cliente", "figura",
+    list_display        = ("miniatura_figura", "numero_pedido", "cliente", "figura",
                            "cantidad", "realizados", "restantes", "estado",
                            "fecha_entrega", "prioridad", "maquina")
-    list_editable       = ("estado",)
+    list_editable       = ("cantidad", "estado")
     list_filter         = ("estado", "prioridad", "maquina")
     search_fields       = ("numero_pedido", "cliente__nombre", "figura__nombre", "descripcion")
     readonly_fields     = ("restantes", "realizados", "peso_total", "precio_total", "gr_pieza", "precio_unidad")
     autocomplete_fields = ["cliente", "figura"]
     inlines             = [PedidoMaterialInline]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("figura").prefetch_related("figura__imagenes")
+
+    @admin.display(description="Miniatura")
+    def miniatura_figura(self, obj):
+        url = obj.figura.primera_imagen_url if obj.figura_id else None
+        if not url:
+            return "—"
+        return format_html(
+            '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:4px">',
+            url,
+        )
 
     def get_inline_instances(self, request, obj=None):
         inlines = super().get_inline_instances(request, obj)
@@ -81,35 +127,123 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
             return [i for i in inlines if not isinstance(i, PedidoMaterialInline)]
         return inlines
 
+    def get_urls(self):
+        return [
+            path(
+                "figura-autocomplete/",
+                self.admin_site.admin_view(FiguraAutocompleteJsonView.as_view(admin_site=self.admin_site)),
+                name="pedido_figura_autocomplete",
+            ),
+        ] + super().get_urls()
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "figura":
+            kwargs["widget"] = FiguraAutocompleteSelect(db_field, self.admin_site, using=kwargs.get("using"))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        FormClass = super().get_form(request, obj, **kwargs)
+        FormClass.base_fields["numero_pedido"].widget.choices = list(
+            self.get_queryset(request)
+            .exclude(numero_pedido="")
+            .order_by("numero_pedido")
+            .values_list("numero_pedido", flat=True)
+            .distinct()
+        )
+        return FormClass
+
     def save_model(self, request, obj, form, change):
         if change:
-            anterior_estado = Pedido.objects.values_list("estado", flat=True).get(pk=obj.pk)
+            anterior = Pedido.objects.values("estado", "cantidad").get(pk=obj.pk)
             super().save_model(request, obj, form, change)
-            obj.refresh_from_db(fields=["estado"])
-            if obj.estado != anterior_estado:
+            obj.refresh_from_db(fields=["estado", "cantidad"])
+            if obj.estado != anterior["estado"]:
                 Tarea.objects.filter(pedido=obj).update(estado=obj.estado)
+            if obj.cantidad != anterior["cantidad"]:
+                self._sincronizar_tareas_cantidad(obj)
         else:
             super().save_model(request, obj, form, change)
 
+    @staticmethod
+    def _sincronizar_tareas_cantidad(pedido):
+        """Recalcula cantidad y precio_total de las Tareas de un Pedido cuando
+        cambia Pedido.cantidad, con la misma fórmula que usa la creación
+        inicial en signals.crear_tarea_desde_pedido (Venta no se actualiza
+        aparte: sus totales se calculan en vivo desde Pedido.precio_total)."""
+        if not pedido.figura_id:
+            return
+        for tarea in Tarea.objects.filter(pedido=pedido):
+            try:
+                fp = FiguraPieza.objects.select_related("pieza").get(
+                    figura_id=pedido.figura_id,
+                    pieza__nombre=tarea.producto,
+                )
+            except FiguraPieza.DoesNotExist:
+                continue
+            tarea.cantidad = fp.cantidad * pedido.cantidad
+            tarea.precio_total = round(fp.subtotal_precio * pedido.cantidad, 2)
+            tarea.save(update_fields=["cantidad", "precio_total"])
+
     class Media:
         js = ("admin/js/pedido_producto.js",)
+
+
+class OcultarListosFilter(admin.SimpleListFilter):
+    """Oculta las tareas 'Listo' por defecto (sin parámetro en la URL).
+    Se muestra como dos opciones (en vez del 'Todo' automático de Django)
+    para que el estado por defecto sea "ocultar", no "mostrar todo"."""
+
+    title = "Vista"
+    parameter_name = "ocultar_listos"
+
+    def lookups(self, request, model_admin):
+        return (("no", "Mostrar todos"),)
+
+    def choices(self, changelist):
+        yield {
+            "selected": self.value() != "no",
+            "query_string": changelist.get_query_string(remove=[self.parameter_name]),
+            "display": "Ocultar listos",
+        }
+        yield {
+            "selected": self.value() == "no",
+            "query_string": changelist.get_query_string({self.parameter_name: "no"}),
+            "display": "Mostrar todos",
+        }
+
+    def queryset(self, request, queryset):
+        if self.value() == "no":
+            return queryset
+        return queryset.exclude(estado=Tarea.Estado.LISTO)
 
 
 @admin.register(Tarea)
 class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
     form                = TareaForm
     grupos_empresa      = {"Maker"}
-    list_display        = ("producto","cliente","prioridad", 
+    list_display        = ("miniatura_figura", "producto","cliente","prioridad",
                            "piezas_por_figura", "cantidad", "realizados", "restantes",
                            "fecha_entrega", "maquina", "estado")
     list_editable       = ("realizados", "estado")
-    list_filter         = ("estado", "prioridad", "maquina")
+    list_filter         = (OcultarListosFilter, "estado", "prioridad", "maquina")
     search_fields       = ("producto", "cliente_texto", "cliente__nombre")
     readonly_fields     = ("restantes", "piezas_por_figura")
     autocomplete_fields = ["cliente"]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("pedido__figura")
+        return super().get_queryset(request).select_related("pedido__figura").prefetch_related("pedido__figura__imagenes")
+
+    @admin.display(description="Miniatura")
+    def miniatura_figura(self, obj):
+        if not obj.pedido_id or not obj.pedido.figura_id:
+            return "—"
+        url = obj.pedido.figura.primera_imagen_url
+        if not url:
+            return "—"
+        return format_html(
+            '<img src="{}" style="width:44px;height:44px;object-fit:cover;border-radius:4px">',
+            url,
+        )
 
     @admin.display(description="Piezas/figura")
     def piezas_por_figura(self, obj):

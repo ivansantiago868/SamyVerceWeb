@@ -51,9 +51,10 @@ class VentaAdmin(EmpresaMixin, admin.ModelAdmin):
         venta   = get_object_or_404(Venta, pk=venta_id)
         pedidos = venta.pedidos.select_related("cliente", "figura", "maquina").all()
         total   = sum(p.precio_total for p in pedidos)
+        cliente = next((p.cliente for p in pedidos if p.cliente), None)
         return HttpResponse(render_to_string(
             "admin/produccion/cotizacion.html",
-            {"venta": venta, "pedidos": pedidos, "total": total},
+            {"venta": venta, "pedidos": pedidos, "total": total, "cliente": cliente},
             request=request,
         ))
 

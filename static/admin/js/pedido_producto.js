@@ -1,5 +1,9 @@
-(function ($) {
+document.addEventListener('DOMContentLoaded', function () {
     'use strict';
+    // django.jQuery solo existe una vez que jquery.init.js corrió; este script
+    // se carga antes en el <head>, así que no se puede leer django.jQuery al
+    // nivel superior (rompía todo el archivo con "$ is not a function").
+    var $ = django.jQuery;
 
     function rellenarDesdeFigura(figuraId) {
         if (!figuraId) return;
@@ -20,11 +24,35 @@
         if (precioUnidad) precioUnidad.value  = '';
     }
 
-    $(document).ready(function () {
-        if ($('#id_figura').val()) rellenarDesdeFigura($('#id_figura').val());
+    function conMiniatura(data) {
+        if (!data.id || !data.img) return data.text;
+        var $item = $(
+            '<span style="display:flex;align-items:center;gap:8px">' +
+            '<img style="width:34px;height:34px;object-fit:cover;border-radius:4px;flex-shrink:0">' +
+            '<span></span>' +
+            '</span>'
+        );
+        $item.find('img').attr('src', data.img);
+        $item.find('span').text(data.text);
+        return $item;
+    }
 
-        $(document).on('select2:select', '#id_figura', function (e) { rellenarDesdeFigura(e.params.data.id); });
-        $(document).on('select2:clear',  '#id_figura', limpiarCampos);
-    });
+    function activarMiniaturas() {
+        var $figura = $('#id_figura');
+        var data    = $figura.data('select2');
+        if (!data) return;
+        data.options.options.templateResult    = conMiniatura;
+        data.options.options.templateSelection = conMiniatura;
+    }
 
-}(django.jQuery));
+    if ($('#id_figura').val()) rellenarDesdeFigura($('#id_figura').val());
+
+    $(document).on('select2:select', '#id_figura', function (e) { rellenarDesdeFigura(e.params.data.id); });
+    $(document).on('select2:clear',  '#id_figura', limpiarCampos);
+
+    // Aunque ya pasó DOMContentLoaded, autocomplete.js inicializa select2 en su
+    // propio handler jQuery "ready"; con setTimeout(0) nos aseguramos de correr
+    // después de que termine (los listeners de un mismo evento corren en orden
+    // de registro, y setTimeout solo se procesa cuando todos ya terminaron).
+    setTimeout(activarMiniaturas, 0);
+});

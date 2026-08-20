@@ -1,9 +1,19 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.views.autocomplete import AutocompleteJsonView
 from django.urls import path
-from django.utils.html import format_html, mark_safe
+from django.utils.html import format_html, format_html_join, mark_safe
 from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
+
+
+class FiguraAutocompleteJsonView(AutocompleteJsonView):
+    """Agrega la miniatura (primera imagen del carrusel) a cada resultado del autocomplete."""
+
+    def serialize_result(self, obj, to_field_name):
+        result = super().serialize_result(obj, to_field_name)
+        result["img"] = obj.primera_imagen_url
+        return result
 
 
 @admin.register(CategoriaFigura)
@@ -111,7 +121,7 @@ class FiguraAdminForm(forms.ModelForm):
 class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa     = {"Maker"}
     form               = FiguraAdminForm
-    list_display       = ("miniatura_ia", "nombre", "categorias_display", "etiquetas_display", "total_piezas", "costo_total_display", "precio_total_display", "actualizado_en")
+    list_display       = ("miniatura_ia", "nombre", "categorias_display", "etiquetas_display", "total_piezas", "costo_total_display", "precio_total_display", "descargar_3mf", "actualizado_en")
     list_display_links = ("miniatura_ia", "nombre")
     list_filter        = ("categorias", "etiquetas")
     filter_horizontal  = ("categorias", "etiquetas")
@@ -200,7 +210,26 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("imagenes", "categorias", "etiquetas")
+        return super().get_queryset(request).prefetch_related("imagenes", "categorias", "etiquetas", "archivos_3mf")
+
+    @admin.display(description="3MF")
+    def descargar_3mf(self, obj):
+        archivos = [a for a in obj.archivos_3mf.all() if a.descarga_url]
+        if not archivos:
+            return "—"
+        return format_html_join(
+            "",
+            '<a href="{}" target="_blank" rel="noopener noreferrer"'
+            ' onclick="event.stopPropagation()"'
+            ' style="display:inline-block;background:#417690;color:#fff;'
+            'padding:4px 10px;border-radius:4px;text-decoration:none;'
+            'font-size:12px;font-weight:bold;white-space:nowrap;margin:2px 4px 2px 0">'
+            '⬇ {}</a>',
+            (
+                (archivo.descarga_url, archivo.nombre or f"3MF #{i}")
+                for i, archivo in enumerate(archivos, start=1)
+            ),
+        )
 
     @admin.display(description="Generar descripción")
     def boton_generar_ia(self, obj):

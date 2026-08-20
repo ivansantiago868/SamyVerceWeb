@@ -319,45 +319,41 @@
   </header>
 
   <!-- Datos del cliente -->
-  {% for pedido in pedidos %}
-  {% if pedido.cliente %}
+  {% if cliente %}
   <section class="section" aria-label="Datos del cliente">
-    <div class="section-title">
-      Cliente{% if pedidos|length > 1 %} — Pedido {{ pedido.numero_pedido }}{% endif %}
-    </div>
+    <div class="section-title">Cliente</div>
     <div class="client-grid">
       <div>
         <div class="field-label">Nombre / Razón social</div>
-        <div class="field-value">{{ pedido.cliente.nombre }}</div>
+        <div class="field-value">{{ cliente.nombre }}</div>
       </div>
-      {% if pedido.cliente.documento %}
+      {% if cliente.documento %}
       <div>
-        <div class="field-label">{{ pedido.cliente.get_tipo_documento_display }}</div>
-        <div class="field-value">{{ pedido.cliente.documento }}</div>
+        <div class="field-label">{{ cliente.get_tipo_documento_display }}</div>
+        <div class="field-value">{{ cliente.documento }}</div>
       </div>
       {% endif %}
-      {% if pedido.cliente.email %}
+      {% if cliente.email %}
       <div>
         <div class="field-label">Email</div>
-        <div class="field-value">{{ pedido.cliente.email }}</div>
+        <div class="field-value">{{ cliente.email }}</div>
       </div>
       {% endif %}
-      {% if pedido.cliente.telefono %}
+      {% if cliente.telefono %}
       <div>
         <div class="field-label">Teléfono</div>
-        <div class="field-value">{{ pedido.cliente.telefono }}</div>
+        <div class="field-value">{{ cliente.telefono }}</div>
       </div>
       {% endif %}
-      {% if pedido.cliente.direccion %}
+      {% if cliente.direccion %}
       <div class="full-width">
         <div class="field-label">Dirección</div>
-        <div class="field-value">{{ pedido.cliente.direccion }}</div>
+        <div class="field-value">{{ cliente.direccion }}</div>
       </div>
       {% endif %}
     </div>
   </section>
   {% endif %}
-  {% endfor %}
 
   <!-- Detalle del pedido -->
   <section class="section" aria-label="Detalle del pedido">
@@ -365,7 +361,6 @@
     <table class="items" aria-label="Líneas de pedido">
       <thead>
         <tr>
-          <th scope="col">N° Pedido</th>
           <th scope="col">Descripción</th>
           <th scope="col" class="r" style="width:80px">Cant.</th>
           <th scope="col" class="r" style="width:140px">Precio unit.</th>
@@ -375,7 +370,6 @@
       <tbody>
         {% for pedido in pedidos %}
         <tr>
-          <td>{{ pedido.numero_pedido|default:"—" }}</td>
           <td>
             <div class="desc-main">{% if pedido.figura %}{{ pedido.figura.nombre }}{% else %}—{% endif %}</div>
             {% if pedido.descripcion %}<div class="desc-notes">{{ pedido.descripcion }}</div>{% endif %}
@@ -392,14 +386,6 @@
   <!-- Totales -->
   <div class="totals-wrap" aria-label="Totales">
     <div class="totals-box">
-      {% for pedido in pedidos %}
-      {% if pedidos|length > 1 %}
-      <div class="total-row">
-        <span>Pedido {{ pedido.numero_pedido|default:pedido.id }}</span>
-        <span>$ {{ pedido.precio_total|floatformat:"0g" }} COP</span>
-      </div>
-      {% endif %}
-      {% endfor %}
       <div class="total-final">
         <span>TOTAL</span>
         <span>$ {{ total|floatformat:"0g" }} COP</span>
