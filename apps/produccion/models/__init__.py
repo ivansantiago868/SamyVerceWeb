@@ -12,7 +12,7 @@ from .variables_fijas  import VariablesFijas
 from .inventario_pieza import InventarioPieza, PiezaImagen
 from .pedido           import Pedido, PedidoMaterial
 from .venta_tarea      import Venta, Tarea
-from .figura           import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF
+from .figura           import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF, FiguraColor, FiguraTipo
 from .diseno3d         import Diseno3D
 
 __all__ = [
@@ -23,5 +23,6 @@ __all__ = [
     "VariablesFijas", "InventarioPieza", "PiezaImagen",
     "Pedido", "PedidoMaterial", "Venta", "Tarea",
     "CategoriaFigura", "EtiquetaFigura", "Figura", "FiguraImagen", "FiguraPieza", "FiguraArchivo3MF",
+    "FiguraColor", "FiguraTipo",
     "Diseno3D",
 ]

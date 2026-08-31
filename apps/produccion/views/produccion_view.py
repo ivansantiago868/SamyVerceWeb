@@ -209,9 +209,11 @@ class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
         y precio total — sin costo ni desglose de piezas.
 
         Si viene ?cliente=<id>, el precio se incrementa según la comisión (%)
-        de ese cliente. El cliente nunca se expone en la respuesta, solo se
-        usa para calcular el precio ya ajustado."""
-        qs = Figura.objects.prefetch_related("imagenes", "categorias").order_by("nombre")
+        de ese cliente, y si ese cliente tiene categorías configuradas en
+        Cliente.categorias_visibles, el catálogo se filtra a solo esas
+        categorías (sin ninguna configurada, se ven todas). El cliente nunca
+        se expone en la respuesta, solo se usa para ajustar precio y filtro."""
+        qs = Figura.objects.prefetch_related("imagenes", "categorias", "colores", "tipos").order_by("nombre")
 
         comision = None
         cliente_id = request.GET.get("cliente")
@@ -219,6 +221,9 @@ class FiguraView(EmpresaViewSetMixin, viewsets.ModelViewSet):
             cliente = Cliente.objects.filter(pk=cliente_id).only("comision").first()
             if cliente:
                 comision = cliente.comision
+                categorias_ids = list(cliente.categorias_visibles.values_list("id", flat=True))
+                if categorias_ids:
+                    qs = qs.filter(categorias__id__in=categorias_ids).distinct()
 
         serializer = FiguraPublicaSerializer(qs, many=True, context={"request": request, "comision": comision})
         return Response(serializer.data)

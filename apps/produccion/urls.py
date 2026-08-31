@@ -19,6 +19,10 @@ from apps.produccion.views import (
     CotizadorDesdeCatalogoView, CotizadorDesdeCatalogoLoteView,
     # Diseño 3D
     Diseno3DCrearView, Diseno3DListView, Diseno3DDetalleView,
+    # Carrito
+    CarritoCheckoutView,
+    # Portal del cliente
+    ClienteLoginView, ClienteLogoutView, ClienteMeView, ClienteMisPedidosView,
 )
 
 # ── CRUD automático vía Router ────────────────────────────────────
@@ -51,4 +55,19 @@ diseno3d_urls = [
     path("diseno3d/<int:pk>/", Diseno3DDetalleView.as_view(), name="diseno3d-detalle"),
 ]
 
-urlpatterns = router.urls + cotizador_urls + diseno3d_urls
+# ── Carrito ───────────────────────────────────────────────────────
+carrito_urls = [
+    path("carrito/checkout/", CarritoCheckoutView.as_view(), name="carrito-checkout"),
+]
+
+# ── Portal del cliente ────────────────────────────────────────────
+# Prefijo propio (no "clientes/...") para no chocar con la ruta de detalle
+# del router (clientes/<pk>/), que capturaría "login"/"me" como si fueran un pk.
+cliente_portal_urls = [
+    path("portal-cliente/login/",       ClienteLoginView.as_view(),      name="cliente-login"),
+    path("portal-cliente/logout/",      ClienteLogoutView.as_view(),     name="cliente-logout"),
+    path("portal-cliente/me/",          ClienteMeView.as_view(),         name="cliente-me"),
+    path("portal-cliente/mis-pedidos/", ClienteMisPedidosView.as_view(), name="cliente-mis-pedidos"),
+]
+
+urlpatterns = router.urls + cotizador_urls + diseno3d_urls + carrito_urls + cliente_portal_urls

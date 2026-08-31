@@ -139,6 +139,8 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "figura":
             kwargs["widget"] = FiguraAutocompleteSelect(db_field, self.admin_site, using=kwargs.get("using"))
+        elif db_field.name in ("color", "tipo"):
+            kwargs["queryset"] = db_field.remote_field.model.objects.select_related("figura").order_by("figura__nombre", "nombre")
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_form(self, request, obj=None, **kwargs):
@@ -189,32 +191,47 @@ class PedidoAdmin(EmpresaMixin, admin.ModelAdmin):
 
 
 class OcultarListosFilter(admin.SimpleListFilter):
-    """Oculta las tareas 'Listo' por defecto (sin parámetro en la URL).
-    Se muestra como dos opciones (en vez del 'Todo' automático de Django)
-    para que el estado por defecto sea "ocultar", no "mostrar todo"."""
+    """Vista por defecto de Tareas (sin parámetro en la URL): "Tareas
+    pendientes", que excluye los estados finales (Listo, Entregado,
+    Cancelado). Se muestra como tres opciones explícitas (en vez del
+    'Todo' automático de Django) para que el estado por defecto sea
+    "pendientes", no "mostrar todo"."""
 
     title = "Vista"
     parameter_name = "ocultar_listos"
 
+    ESTADOS_FINALES     = (Tarea.Estado.LISTO, Tarea.Estado.ENTREGADO, Tarea.Estado.CANCELADO)
+    ESTADOS_TERMINADOS  = (Tarea.Estado.LISTO, Tarea.Estado.ENTREGADO)
+
     def lookups(self, request, model_admin):
-        return (("no", "Mostrar todos"),)
+        return (
+            ("no", "Mostrar todos"),
+            ("terminados", "Mostrar terminados"),
+        )
 
     def choices(self, changelist):
         yield {
-            "selected": self.value() != "no",
+            "selected": self.value() not in ("no", "terminados"),
             "query_string": changelist.get_query_string(remove=[self.parameter_name]),
-            "display": "Ocultar listos",
+            "display": "Tareas pendientes",
         }
         yield {
             "selected": self.value() == "no",
             "query_string": changelist.get_query_string({self.parameter_name: "no"}),
             "display": "Mostrar todos",
         }
+        yield {
+            "selected": self.value() == "terminados",
+            "query_string": changelist.get_query_string({self.parameter_name: "terminados"}),
+            "display": "Mostrar terminados",
+        }
 
     def queryset(self, request, queryset):
         if self.value() == "no":
             return queryset
-        return queryset.exclude(estado=Tarea.Estado.LISTO)
+        if self.value() == "terminados":
+            return queryset.filter(estado__in=self.ESTADOS_TERMINADOS)
+        return queryset.exclude(estado__in=self.ESTADOS_FINALES)
 
 
 @admin.register(Tarea)
@@ -222,7 +239,7 @@ class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
     form                = TareaForm
     grupos_empresa      = {"Maker"}
     list_display        = ("miniatura_figura", "producto","cliente","prioridad",
-                           "piezas_por_figura", "cantidad", "realizados", "restantes",
+                           "piezas_por_figura", "color_tipo", "cantidad", "realizados", "restantes",
                            "fecha_entrega", "maquina", "estado")
     list_editable       = ("realizados", "estado")
     list_filter         = (OcultarListosFilter, "estado", "prioridad", "maquina")
@@ -231,7 +248,18 @@ class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
     autocomplete_fields = ["cliente"]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("pedido__figura").prefetch_related("pedido__figura__imagenes")
+        return (
+            super().get_queryset(request)
+            .select_related("pedido__figura", "pedido__color", "pedido__tipo")
+            .prefetch_related("pedido__figura__imagenes")
+        )
+
+    @admin.display(description="Color / Tipo")
+    def color_tipo(self, obj):
+        if not obj.pedido_id:
+            return "—"
+        partes = [p.nombre for p in (obj.pedido.color, obj.pedido.tipo) if p]
+        return " / ".join(partes) if partes else "—"
 
     @admin.display(description="Miniatura")
     def miniatura_figura(self, obj):

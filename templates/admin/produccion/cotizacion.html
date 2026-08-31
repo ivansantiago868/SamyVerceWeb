@@ -372,6 +372,14 @@
         <tr>
           <td>
             <div class="desc-main">{% if pedido.figura %}{{ pedido.figura.nombre }}{% else %}—{% endif %}</div>
+            {% if pedido.numero_pedido %}<div class="desc-notes">N° Pedido: {{ pedido.numero_pedido }}</div>{% endif %}
+            {% if pedido.color or pedido.tipo %}
+            <div class="desc-notes">
+              {% if pedido.color %}Color: {{ pedido.color.nombre }}{% endif %}
+              {% if pedido.color and pedido.tipo %} · {% endif %}
+              {% if pedido.tipo %}Tipo: {{ pedido.tipo.nombre }}{% endif %}
+            </div>
+            {% endif %}
             {% if pedido.descripcion %}<div class="desc-notes">{{ pedido.descripcion }}</div>{% endif %}
           </td>
           <td class="tc">{{ pedido.cantidad }}</td>

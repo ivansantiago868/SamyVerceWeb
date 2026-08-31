@@ -7,6 +7,7 @@ class ClienteSerializer(serializers.ModelSerializer):
         model  = Cliente
         fields = "__all__"
         read_only_fields = ("empresa",)
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_nombre(self, value):
         if len(value.strip()) < 2:

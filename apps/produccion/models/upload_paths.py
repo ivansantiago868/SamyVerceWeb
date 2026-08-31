@@ -63,3 +63,21 @@ def upload_figura_procesada(instance, filename):
         empresa = 0
     figura = instance.figura_id or 0
     return f"figuras/empresa_{empresa}/figura_{figura}/ia_{_rand6()}.jpg"
+
+
+def upload_figura_color(instance, filename):
+    try:
+        empresa = instance.figura.empresa_id or 0
+    except Exception:
+        empresa = 0
+    figura = instance.figura_id or 0
+    return f"figuras/empresa_{empresa}/figura_{figura}/color_{_rand6()}{_ext(filename)}"
+
+
+def upload_figura_tipo(instance, filename):
+    try:
+        empresa = instance.figura.empresa_id or 0
+    except Exception:
+        empresa = 0
+    figura = instance.figura_id or 0
+    return f"figuras/empresa_{empresa}/figura_{figura}/tipo_{_rand6()}{_ext(filename)}"

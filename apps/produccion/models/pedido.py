@@ -4,7 +4,7 @@ from .empresa import Empresa
 from .insumo import Insumo
 from .impresora import Impresora
 from .inventario_pieza import InventarioPieza
-from .figura import Figura, FiguraPieza
+from .figura import Figura, FiguraPieza, FiguraColor, FiguraTipo
 
 
 class Pedido(models.Model):
@@ -28,6 +28,8 @@ class Pedido(models.Model):
     prioridad     = models.CharField(max_length=10, choices=Prioridad.choices, default=Prioridad.MEDIO)
     cliente       = models.ForeignKey(Cliente, on_delete=models.PROTECT, null=True, blank=True)
     figura        = models.ForeignKey(Figura,  on_delete=models.PROTECT, null=True, blank=True, verbose_name="Figura", related_name="pedidos")
+    color         = models.ForeignKey(FiguraColor, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Color", related_name="pedidos")
+    tipo          = models.ForeignKey(FiguraTipo, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Tipo", related_name="pedidos")
     cantidad      = models.PositiveIntegerField(default=0)
     realizados    = models.PositiveIntegerField(default=0)
     gr_pieza      = models.DecimalField(max_digits=8,  decimal_places=2, default=0, verbose_name="Gramos por pieza")
@@ -36,6 +38,10 @@ class Pedido(models.Model):
     maquina       = models.ForeignKey(Impresora, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Máquina")
     estado        = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
     descripcion   = models.TextField(blank=True)
+    nombre_recibe = models.CharField(max_length=255, blank=True, verbose_name="Nombre de quien recibe",
+                                     help_text="Se completa solo cuando el pedido viene del checkout del catálogo público.")
+    direccion_entrega = models.TextField(blank=True, verbose_name="Dirección de entrega",
+                                         help_text="Se completa solo cuando el pedido viene del checkout del catálogo público.")
     creado_en     = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

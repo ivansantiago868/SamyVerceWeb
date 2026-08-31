@@ -54,6 +54,8 @@ class FiguraPiezaSerializer(serializers.ModelSerializer):
 class FiguraSerializer(serializers.ModelSerializer):
     figura_piezas = FiguraPiezaSerializer(many=True, read_only=True)
     imagenes      = serializers.SerializerMethodField()
+    colores       = serializers.SerializerMethodField()
+    tipos         = serializers.SerializerMethodField()
     costo_total   = serializers.ReadOnlyField()
     precio_total  = serializers.ReadOnlyField()
     total_piezas  = serializers.ReadOnlyField()
@@ -62,13 +64,19 @@ class FiguraSerializer(serializers.ModelSerializer):
         model  = Figura
         fields = [
             "id", "nombre", "descripcion",
-            "imagenes", "costo_total", "precio_total", "total_piezas",
+            "imagenes", "colores", "tipos", "costo_total", "precio_total", "total_piezas",
             "figura_piezas", "creado_en", "actualizado_en",
         ]
         read_only_fields = ("empresa",)
 
     def get_imagenes(self, obj):
         return _imagenes_aplanadas(obj, self.context.get("request"))
+
+    def get_colores(self, obj):
+        return [{"id": c.id, "nombre": c.nombre} for c in obj.colores.all()]
+
+    def get_tipos(self, obj):
+        return [{"id": t.id, "nombre": t.nombre} for t in obj.tipos.all()]
 
 
 class FiguraPublicaSerializer(serializers.ModelSerializer):
@@ -84,10 +92,12 @@ class FiguraPublicaSerializer(serializers.ModelSerializer):
     imagenes     = serializers.SerializerMethodField()
     categorias   = serializers.SerializerMethodField()
     precio_total = serializers.SerializerMethodField()
+    colores      = serializers.SerializerMethodField()
+    tipos        = serializers.SerializerMethodField()
 
     class Meta:
         model  = Figura
-        fields = ["id", "nombre", "descripcion", "imagenes", "categorias", "precio_total"]
+        fields = ["id", "nombre", "descripcion", "imagenes", "categorias", "precio_total", "colores", "tipos"]
 
     def get_imagenes(self, obj):
         return _imagenes_aplanadas(obj, self.context.get("request"))
@@ -101,3 +111,17 @@ class FiguraPublicaSerializer(serializers.ModelSerializer):
         if comision:
             return round(float(base) * (1 + float(comision) / 100))
         return base
+
+    def get_colores(self, obj):
+        request = self.context.get("request")
+        return [
+            {"id": c.id, "nombre": c.nombre, "imagen": _url_absoluta(c.imagen, request)}
+            for c in obj.colores.all()
+        ]
+
+    def get_tipos(self, obj):
+        request = self.context.get("request")
+        return [
+            {"id": t.id, "nombre": t.nombre, "imagen": _url_absoluta(t.imagen, request)}
+            for t in obj.tipos.all()
+        ]

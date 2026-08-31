@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from .empresa import Empresa
 from .inventario_pieza import InventarioPieza
 from .insumo import Insumo
-from .upload_paths import upload_figura_imagen, upload_figura_procesada
+from .upload_paths import upload_figura_imagen, upload_figura_procesada, upload_figura_color, upload_figura_tipo
 from config.google_drive_storage import borrar_archivo_drive as _borrar_campo_drive
 
 
@@ -182,6 +182,96 @@ class FiguraArchivo3MF(models.Model):
 @receiver(post_delete, sender=FiguraArchivo3MF)
 def borrar_archivo_3mf_figura(sender, instance, **kwargs):
     _borrar_campo_drive(instance.archivo)
+
+
+class FiguraColor(models.Model):
+    """Opción de color de una figura, con su propia foto representativa."""
+    figura    = models.ForeignKey(Figura, on_delete=models.CASCADE,
+                                  related_name="colores", verbose_name="Figura")
+    nombre    = models.CharField(max_length=100, verbose_name="Nombre del color")
+    color_hex = models.CharField(max_length=7, blank=True, verbose_name="Color (hex)",
+                                 help_text="Opcional, solo para mostrar una muestra. Ej: #FF6B35")
+    imagen    = models.ImageField(upload_to=upload_figura_color, verbose_name="Imagen de este color")
+    orden     = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        ordering        = ["orden", "id"]
+        verbose_name    = "Color de figura"
+        verbose_name_plural = "Colores de figura"
+
+    def __str__(self):
+        return f"{self.nombre} — {self.figura.nombre}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.figura_id is not None:
+            max_orden = FiguraColor.objects.filter(figura_id=self.figura_id).aggregate(
+                m=Max("orden")
+            )["m"]
+            self.orden = (max_orden + 1) if max_orden is not None else 0
+
+        imagen_anterior = None
+        imagen_cambio = True
+        if self.pk:
+            try:
+                anterior_obj = FiguraColor.objects.only("imagen").get(pk=self.pk)
+                imagen_anterior = anterior_obj.imagen
+                imagen_cambio = imagen_anterior.name != self.imagen.name
+            except FiguraColor.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if imagen_cambio and imagen_anterior:
+            _borrar_campo_drive(imagen_anterior)
+
+
+@receiver(post_delete, sender=FiguraColor)
+def borrar_imagen_figura_color(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.imagen)
+
+
+class FiguraTipo(models.Model):
+    """Variante/tipo de una figura (ej. 'Para NES', 'Para Super Nintendo')."""
+    figura      = models.ForeignKey(Figura, on_delete=models.CASCADE,
+                                    related_name="tipos", verbose_name="Figura")
+    nombre      = models.CharField(max_length=100, verbose_name="Nombre del tipo",
+                                   help_text='Ej: "Para NES", "Para Super Nintendo".')
+    descripcion = models.CharField(max_length=255, blank=True, verbose_name="Descripción / notas")
+    imagen      = models.ImageField(upload_to=upload_figura_tipo, null=True, blank=True,
+                                    verbose_name="Imagen de este tipo",
+                                    help_text="Se muestra en el carrusel de imágenes de la figura.")
+    orden       = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        ordering        = ["orden", "id"]
+        verbose_name    = "Tipo de figura"
+        verbose_name_plural = "Tipos de figura"
+
+    def __str__(self):
+        return f"{self.nombre} — {self.figura.nombre}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.figura_id is not None:
+            max_orden = FiguraTipo.objects.filter(figura_id=self.figura_id).aggregate(
+                m=Max("orden")
+            )["m"]
+            self.orden = (max_orden + 1) if max_orden is not None else 0
+
+        imagen_anterior = None
+        imagen_cambio = True
+        if self.pk:
+            try:
+                anterior_obj = FiguraTipo.objects.only("imagen").get(pk=self.pk)
+                imagen_anterior = anterior_obj.imagen
+                imagen_cambio = imagen_anterior.name != self.imagen.name
+            except FiguraTipo.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+        if imagen_cambio and imagen_anterior:
+            _borrar_campo_drive(imagen_anterior)
+
+
+@receiver(post_delete, sender=FiguraTipo)
+def borrar_imagen_figura_tipo(sender, instance, **kwargs):
+    _borrar_campo_drive(instance.imagen)
 
 
 class FiguraPieza(models.Model):

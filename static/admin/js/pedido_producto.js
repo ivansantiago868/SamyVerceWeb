@@ -5,6 +5,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // nivel superior (rompía todo el archivo con "$ is not a function").
     var $ = django.jQuery;
 
+    function poblarSelect(select, opciones) {
+        if (!select) return;
+        var valorActual = select.value;
+        select.innerHTML = '';
+        var vacia = document.createElement('option');
+        vacia.value = '';
+        vacia.textContent = '---------';
+        select.appendChild(vacia);
+        opciones.forEach(function (op) {
+            var opt = document.createElement('option');
+            opt.value = op.id;
+            opt.textContent = op.nombre;
+            select.appendChild(opt);
+        });
+        var sigueValido = opciones.some(function (op) { return String(op.id) === valorActual; });
+        select.value = sigueValido ? valorActual : '';
+    }
+
     function rellenarDesdeFigura(figuraId) {
         if (!figuraId) return;
         fetch('/api/v1/figuras/' + figuraId + '/', { credentials: 'same-origin' })
@@ -14,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 var precioUnidad = document.getElementById('id_precio_unidad');
                 if (grPieza)      grPieza.value      = 0;
                 if (precioUnidad) precioUnidad.value  = d.precio_total;
+                poblarSelect(document.getElementById('id_color'), d.colores || []);
+                poblarSelect(document.getElementById('id_tipo'), d.tipos || []);
             });
     }
 
@@ -22,6 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var precioUnidad = document.getElementById('id_precio_unidad');
         if (grPieza)      grPieza.value      = '';
         if (precioUnidad) precioUnidad.value  = '';
+        poblarSelect(document.getElementById('id_color'), []);
+        poblarSelect(document.getElementById('id_tipo'), []);
     }
 
     function conMiniatura(data) {

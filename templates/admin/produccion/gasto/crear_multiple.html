@@ -59,6 +59,13 @@
       {{ form.fecha.errors }}
     </div>
 
+    <div class="form-row{% if form.color.errors %} errors{% endif %}">
+      <label for="{{ form.color.id_for_label }}">{{ form.color.label }}:</label>
+      {{ form.color }}
+      <p class="help">{{ form.color.help_text }}</p>
+      {{ form.color.errors }}
+    </div>
+
     <div class="form-row{% if form.unidades.errors %} errors{% endif %}">
       <label class="required" for="{{ form.unidades.id_for_label }}">{{ form.unidades.label }}:</label>
       {{ form.unidades }}

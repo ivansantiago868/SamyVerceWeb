@@ -1,7 +1,8 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseNotAllowed, JsonResponse
+from django.shortcuts import get_object_or_404
 
-from apps.produccion.models.figura import FiguraImagen
+from apps.produccion.models.figura import Figura, FiguraImagen
 from apps.produccion.services.vertex_imagen import procesar_en_background
 from apps.produccion.views.pdf_catalogo_figuras import _qs_y_empresa
 
@@ -32,6 +33,29 @@ def reintentar_ia_fallidas(request):
     for img in fallidas:
         if not img.imagen:
             continue
+        FiguraImagen.objects.filter(pk=img.pk).update(ia_error="")
+        procesar_en_background(FiguraImagen, img.pk, img.imagen.url)
+        ids.append(img.pk)
+
+    return JsonResponse({"ids": ids, "total": len(ids)})
+
+
+@staff_member_required
+def regenerar_ia_figura(request, figura_id):
+    """Relanza el procesamiento IA de TODAS las imágenes de una figura
+    puntual, tengan o no ya una imagen procesada exitosa — a diferencia de
+    reintentar_ia_fallidas, que solo repite las que quedaron con error."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    figuras_qs = Figura.objects.all()
+    perfil = getattr(request.user, "perfil", None)
+    if perfil and perfil.empresa_id and not request.user.is_superuser:
+        figuras_qs = figuras_qs.filter(empresa=perfil.empresa)
+    figura = get_object_or_404(figuras_qs, pk=figura_id)
+
+    ids = []
+    for img in figura.imagenes.exclude(imagen=""):
         FiguraImagen.objects.filter(pk=img.pk).update(ia_error="")
         procesar_en_background(FiguraImagen, img.pk, img.imagen.url)
         ids.append(img.pk)

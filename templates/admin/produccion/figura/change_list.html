@@ -128,6 +128,66 @@
           });
       });
     }
+
+    // ── Botón "Regenerar IA" por fila (fuerza reprocesar TODAS las
+    // imágenes de esa figura, aunque ya tengan una imagen IA exitosa) ──
+    function seguirProgresoFila(btn, ids, textoOriginal) {
+      let intentos = 0;
+      const MAX_INTENTOS = 100; // ~5 minutos a 3s cada uno
+      let poll = null;
+
+      function consultar() {
+        intentos += 1;
+        fetch('{% url "admin:figuras_estado_ia_reintento" %}?ids=' + ids.join(','))
+          .then(r => r.json())
+          .then(data => {
+            btn.textContent = `⏳ ${data.completadas + data.fallidas}/${data.total}`;
+            if (data.pendientes <= 0 || intentos >= MAX_INTENTOS) {
+              clearInterval(poll);
+              btn.disabled = false;
+              btn.textContent = data.fallidas > 0 ? `⚠️ ${data.fallidas} con error` : '✅ Listo';
+              setTimeout(() => { btn.textContent = textoOriginal; }, 4000);
+            }
+          })
+          .catch(() => {});
+      }
+
+      consultar();
+      poll = setInterval(consultar, 3000);
+    }
+
+    document.addEventListener('click', function (e) {
+      const fila = e.target.closest('.btn-regenerar-ia-figura');
+      if (!fila) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (fila.disabled) return;
+      if (!confirm(`¿Regenerar TODAS las imágenes IA de "${fila.dataset.nombre}"? Vuelve a llamar la IA (tiene costo) aunque ya tengan una imagen procesada.`)) return;
+
+      const textoOriginal = fila.textContent;
+      fila.disabled = true;
+      fila.textContent = '⏳ Procesando…';
+
+      fetch(fila.dataset.url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken ? csrfToken.value : '' },
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (!data.total) {
+            fila.disabled = false;
+            fila.textContent = textoOriginal;
+            alert('Esta figura no tiene imágenes para procesar.');
+            return;
+          }
+          seguirProgresoFila(fila, data.ids, textoOriginal);
+        })
+        .catch(() => {
+          fila.disabled = false;
+          fila.textContent = textoOriginal;
+          alert('Error al lanzar el procesamiento. Intenta de nuevo.');
+        });
+    });
   })();
   });
   </script>

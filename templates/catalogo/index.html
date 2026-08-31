@@ -116,6 +116,14 @@
     .figura-card-name { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; }
     .figura-card-desc { font-size: .8rem; color: var(--text-2); margin-bottom: .85rem; min-height: 1.2em; }
     .figura-card-precio { font-size: 1.05rem; font-weight: 800; color: var(--brand); }
+    .figura-card-footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .btn-agregar-rapido {
+      background: var(--brand); border: none; color: #fff; width: 34px; height: 34px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: background .15s, transform .15s;
+    }
+    .btn-agregar-rapido:hover { background: var(--brand-dark); transform: scale(1.08); }
+    .btn-agregar-rapido.agregado { background: #2ecc71; }
 
     /* ── Panel detalle ── */
     #detalle-panel {
@@ -138,6 +146,143 @@
 
     #empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-3); }
     #empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+    /* ── Carrito ── */
+    .btn-carrito {
+      position: relative; background: var(--surface-1); border: 1px solid var(--border);
+      color: var(--text-1); width: 40px; height: 40px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.05rem;
+    }
+    .btn-carrito:hover { border-color: var(--border-hover); }
+    #carrito-badge {
+      position: absolute; top: -6px; right: -6px; background: var(--brand); color: #fff;
+      font-size: .65rem; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; padding: 0 4px;
+    }
+    #carrito-badge.oculto { display: none; }
+
+    #carrito-panel {
+      position: fixed; top: 0; right: -420px; width: 420px; height: 100vh;
+      background: var(--surface-1); border-left: 1px solid var(--border);
+      padding: 1.5rem; overflow-y: auto; z-index: 220;
+      transition: right .25s ease; display: flex; flex-direction: column;
+    }
+    #carrito-panel.open { right: 0; }
+    #carrito-overlay {
+      position: fixed; inset: 0; background: rgba(8,11,17,.6); z-index: 219; display: none;
+    }
+    #carrito-overlay.open { display: block; }
+
+    .carrito-item { display: flex; gap: .75rem; padding: .85rem 0; border-bottom: 1px solid var(--border); }
+    .carrito-item-img {
+      width: 56px; height: 56px; border-radius: 8px; background: var(--surface-2);
+      object-fit: cover; flex-shrink: 0;
+    }
+    .carrito-item-info { flex: 1; min-width: 0; }
+    .carrito-item-nombre { font-size: .85rem; font-weight: 600; }
+    .carrito-item-opciones { font-size: .72rem; color: var(--text-2); margin-top: 1px; }
+    .carrito-item-precio { font-size: .8rem; color: var(--brand); font-weight: 700; margin-top: 4px; }
+    .carrito-qty { display: flex; align-items: center; gap: .4rem; margin-top: 6px; }
+    .carrito-qty button {
+      width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text-1); cursor: pointer; font-size: .8rem; line-height: 1;
+    }
+    .carrito-qty span { font-size: .8rem; min-width: 1.2em; text-align: center; }
+    .carrito-item-quitar { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: .95rem; }
+    .carrito-item-quitar:hover { color: var(--brand); }
+
+    .opcion-grupo { margin-top: 1rem; }
+    .opcion-grupo-label { font-size: .78rem; font-weight: 700; color: var(--text-2); margin-bottom: .5rem; }
+    .opcion-chip {
+      display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .65rem;
+      border: 1px solid var(--border); border-radius: 20px; font-size: .78rem; cursor: pointer;
+      background: var(--surface-2); color: var(--text-1); margin: 0 .35rem .35rem 0;
+    }
+    .opcion-chip.activo { border-color: var(--brand); background: var(--brand-glow); color: var(--brand); }
+    .opcion-chip img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+
+    .cantidad-selector { display: flex; align-items: center; gap: .6rem; margin-top: 1rem; }
+    .cantidad-selector button {
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text-1); cursor: pointer; font-size: 1rem;
+    }
+    .cantidad-selector span { font-size: 1rem; font-weight: 700; min-width: 1.5em; text-align: center; }
+
+    #carrito-vacio { text-align: center; color: var(--text-3); padding: 3rem 0; }
+    #carrito-vacio i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+    .checkout-field { margin-top: 1rem; }
+    .checkout-field label { display: block; font-size: .78rem; font-weight: 700; color: var(--text-2); margin-bottom: .4rem; }
+    .checkout-field input, .checkout-field textarea {
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-1);
+      border-radius: var(--r-md); padding: .6rem .8rem; font-size: .88rem; font-family: inherit;
+    }
+    .checkout-field input:focus, .checkout-field textarea:focus { outline: none; border-color: var(--brand); }
+    .checkout-error { color: #ff6b6b; font-size: .78rem; margin-top: .5rem; }
+    .checkout-confirmacion { text-align: center; padding: 2rem 0; }
+    .checkout-confirmacion i { font-size: 3rem; color: #2ecc71; display: block; margin-bottom: 1rem; }
+
+    /* ── Portal del cliente ── */
+    .btn-cuenta {
+      position: relative; background: var(--surface-1); border: 1px solid var(--border);
+      color: var(--text-1); width: 40px; height: 40px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.05rem;
+    }
+    .btn-cuenta:hover { border-color: var(--border-hover); }
+    .btn-cuenta.logueado { color: var(--brand); border-color: var(--brand); }
+
+    #cuenta-panel {
+      position: fixed; top: 0; right: -420px; width: 420px; height: 100vh;
+      background: var(--surface-1); border-left: 1px solid var(--border);
+      padding: 1.5rem; overflow-y: auto; z-index: 240;
+      transition: right .25s ease;
+    }
+    #cuenta-panel.open { right: 0; }
+    #cuenta-overlay {
+      position: fixed; inset: 0; background: rgba(8,11,17,.6); z-index: 239; display: none;
+    }
+    #cuenta-overlay.open { display: block; }
+
+    .cuenta-saludo { font-size: .95rem; color: var(--text-2); margin-bottom: 1.25rem; }
+    .cuenta-saludo strong { color: var(--text-1); }
+
+    .orden-card { border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: .75rem; overflow: hidden; }
+    .orden-header {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+      padding: .8rem .9rem; cursor: pointer; background: var(--surface-2);
+    }
+    .orden-numero { font-size: .85rem; font-weight: 700; }
+    .orden-fecha { font-size: .72rem; color: var(--text-2); margin-top: 1px; }
+    .orden-header-right { display: flex; align-items: center; gap: .6rem; flex-shrink: 0; }
+    .orden-total { font-size: .85rem; font-weight: 700; color: var(--brand); }
+    .orden-chevron { color: var(--text-2); transition: transform .15s; }
+    .orden-chevron.abierto { transform: rotate(180deg); }
+    .orden-detalle { display: none; padding: 0 .9rem; }
+    .orden-detalle.open { display: block; }
+    .orden-comprador {
+      font-size: .78rem; color: var(--text-2); padding: .75rem 0; border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .orden-comprador i { color: var(--text-3); margin-right: .3rem; }
+
+    .pedido-item { padding: .85rem 0; border-bottom: 1px solid var(--border); display: flex; gap: .75rem; }
+    .pedido-item:last-child { border-bottom: none; }
+    .pedido-item-img {
+      width: 52px; height: 52px; border-radius: 8px; background: var(--surface-2);
+      object-fit: cover; flex-shrink: 0;
+    }
+    .pedido-item-info { flex: 1; min-width: 0; }
+    .pedido-item-nombre { font-size: .85rem; font-weight: 600; }
+    .pedido-item-opciones { font-size: .72rem; color: var(--text-2); margin-top: 1px; }
+    .pedido-item-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; gap: .5rem; }
+    .pedido-item-precio { font-size: .8rem; color: var(--brand); font-weight: 700; }
+    .pedido-estado {
+      font-size: .68rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px;
+      background: var(--surface-2); color: var(--text-2); white-space: nowrap;
+    }
+    .pedido-estado.pedido-estado-listo,
+    .pedido-estado.pedido-estado-entregado { background: rgba(46,204,113,.15); color: #2ecc71; }
+    .pedido-estado.pedido-estado-cancelado { background: rgba(255,107,107,.15); color: #ff6b6b; }
   </style>
 </head>
 <body>
@@ -147,6 +292,15 @@
     <div class="brand-icon"><i class="bi bi-puzzle-fill"></i></div>
     <span class="brand-name" id="brand-name">SamyVerce</span>
   </a>
+  <div style="display:flex;gap:.6rem">
+    <button class="btn-cuenta" id="btn-cuenta" onclick="abrirCuenta()" aria-label="Mi cuenta">
+      <i class="bi bi-person"></i>
+    </button>
+    <button class="btn-carrito" onclick="abrirCarrito()" aria-label="Ver carrito">
+      <i class="bi bi-cart3"></i>
+      <span id="carrito-badge" class="oculto">0</span>
+    </button>
+  </div>
 </header>
 
 <main>
@@ -179,11 +333,27 @@
   </div>
 </main>
 
-<!-- ═══ PANEL DETALLE (solo lectura) ═══ -->
+<!-- ═══ PANEL DETALLE ═══ -->
 <div id="detalle-overlay" onclick="cerrarDetalle()"></div>
 <div id="detalle-panel">
   <button class="detalle-cerrar" onclick="cerrarDetalle()"><i class="bi bi-x-lg"></i></button>
   <div id="detalle-content" style="margin-top:.5rem"></div>
+</div>
+
+<!-- ═══ PANEL CARRITO ═══ -->
+<div id="carrito-overlay" onclick="cerrarCarrito()"></div>
+<div id="carrito-panel">
+  <button class="detalle-cerrar" onclick="cerrarCarrito()"><i class="bi bi-x-lg"></i></button>
+  <h2 style="font-size:1.1rem;font-weight:800;margin:.25rem 0 1rem"><i class="bi bi-cart3 me-2" style="color:var(--brand)"></i>Tu carrito</h2>
+  <div id="carrito-content" style="flex:1"></div>
+</div>
+
+<!-- ═══ PANEL CUENTA ═══ -->
+<div id="cuenta-overlay" onclick="cerrarCuenta()"></div>
+<div id="cuenta-panel">
+  <button class="detalle-cerrar" onclick="cerrarCuenta()"><i class="bi bi-x-lg"></i></button>
+  <h2 style="font-size:1.1rem;font-weight:800;margin:.25rem 0 1rem"><i class="bi bi-person-fill me-2" style="color:var(--brand)"></i>Mi cuenta</h2>
+  <div id="cuenta-content"></div>
 </div>
 
 <script>
@@ -215,6 +385,17 @@
     // Deep-link desde el catálogo PDF: /?figura=<id> abre el detalle directo.
     const figuraId = parseInt(params.get('figura'));
     if (figuraId) verDetalle(figuraId);
+
+    actualizarBadge();
+
+    // Si ya hay una sesión de portal activa (cookie) y no vino un link
+    // ?cliente= explícito, se aplica su catálogo (categorías/precio) igual
+    // que si hubiera entrado por su link personalizado.
+    const sesion = await verificarSesionCliente();
+    if (sesion && !clienteId) {
+      await cargarFiguras(sesion.id);
+      document.getElementById('brand-name').textContent = sesion.nombre;
+    }
   });
 
   function cop(n) {
@@ -320,18 +501,31 @@
         <div class="figura-card-body">
           <div class="figura-card-name">${f.nombre}</div>
           <div class="figura-card-desc">${f.descripcion || '&nbsp;'}</div>
-          <div class="figura-card-precio">${cop(f.precio_total)}</div>
+          <div class="figura-card-footer">
+            <div class="figura-card-precio">${cop(f.precio_total)}</div>
+            <button type="button" class="btn-agregar-rapido" onclick="agregarRapido(event, ${f.id})" aria-label="Agregar al carrito">
+              <i class="bi bi-cart-plus"></i>
+            </button>
+          </div>
         </div>
       </div>`;
   }
 
-  // ── Detalle (solo lectura) ──────────────────────────────────
+  // ── Detalle + agregar al carrito ────────────────────────────
+  let _seleccion = { colorId: null, tipoId: null, cantidad: 1 };
+
   function verDetalle(id) {
     const f = (window._figurasCache || []).find(x => x.id === id);
     const panel   = document.getElementById('detalle-panel');
     const overlay = document.getElementById('detalle-overlay');
     const cont    = document.getElementById('detalle-content');
     if (!f) return;
+
+    _seleccion = {
+      colorId: (f.colores && f.colores[0]) ? f.colores[0].id : null,
+      tipoId:  (f.tipos && f.tipos[0])     ? f.tipos[0].id   : null,
+      cantidad: 1,
+    };
 
     const imagenesValidas = (f.imagenes || []).filter(img => img.imagen);
     const carruselDetalle = imagenesValidas.length
@@ -340,6 +534,24 @@
          </div>`
       : '';
 
+    const coloresHtml = (f.colores && f.colores.length) ? `
+      <div class="opcion-grupo">
+        <div class="opcion-grupo-label">Color</div>
+        <div id="det-colores">${f.colores.map(c => `
+          <span class="opcion-chip ${c.id === _seleccion.colorId ? 'activo' : ''}" data-color-id="${c.id}" onclick="elegirColor(${c.id})">
+            ${c.imagen ? `<img src="${c.imagen}" alt="">` : ''}${c.nombre}
+          </span>`).join('')}
+        </div>
+      </div>` : '';
+
+    const tiposHtml = (f.tipos && f.tipos.length) ? `
+      <div class="opcion-grupo">
+        <div class="opcion-grupo-label">Tipo</div>
+        <div id="det-tipos">${f.tipos.map(t => `
+          <span class="opcion-chip ${t.id === _seleccion.tipoId ? 'activo' : ''}" data-tipo-id="${t.id}" onclick="elegirTipo(${t.id})">${t.nombre}</span>`).join('')}
+        </div>
+      </div>` : '';
+
     cont.innerHTML = `
       ${carruselDetalle}
       <h2 style="font-size:1.15rem;font-weight:800;margin:1rem 0 .35rem">${f.nombre}</h2>
@@ -347,7 +559,17 @@
       <div style="background:var(--surface-2);border-radius:10px;padding:1rem;text-align:center">
         <div style="font-size:1.3rem;font-weight:800;color:var(--brand)">${cop(f.precio_total)}</div>
         <div style="font-size:.72rem;color:var(--text-3);margin-top:2px">Precio total</div>
-      </div>`;
+      </div>
+      ${coloresHtml}
+      ${tiposHtml}
+      <div class="cantidad-selector">
+        <button type="button" onclick="cambiarCantidadDetalle(-1)"><i class="bi bi-dash"></i></button>
+        <span id="det-cantidad">1</span>
+        <button type="button" onclick="cambiarCantidadDetalle(1)"><i class="bi bi-plus"></i></button>
+      </div>
+      <button class="btn-brand" style="width:100%;justify-content:center;margin-top:1.25rem" onclick="agregarAlCarrito(${f.id})">
+        <i class="bi bi-cart-plus"></i> Agregar al carrito
+      </button>`;
 
     panel.classList.add('open');
     overlay.classList.add('open');
@@ -357,6 +579,417 @@
   function cerrarDetalle() {
     document.getElementById('detalle-panel').classList.remove('open');
     document.getElementById('detalle-overlay').classList.remove('open');
+  }
+
+  function elegirColor(colorId) {
+    _seleccion.colorId = colorId;
+    document.querySelectorAll('#det-colores .opcion-chip').forEach(chip => {
+      chip.classList.toggle('activo', Number(chip.dataset.colorId) === colorId);
+    });
+  }
+
+  function elegirTipo(tipoId) {
+    _seleccion.tipoId = tipoId;
+    document.querySelectorAll('#det-tipos .opcion-chip').forEach(chip => {
+      chip.classList.toggle('activo', Number(chip.dataset.tipoId) === tipoId);
+    });
+  }
+
+  function cambiarCantidadDetalle(delta) {
+    _seleccion.cantidad = Math.max(1, _seleccion.cantidad + delta);
+    document.getElementById('det-cantidad').textContent = _seleccion.cantidad;
+  }
+
+  // ── Carrito (localStorage, sin pago) ────────────────────────
+  const CARRITO_KEY = 'sv_carrito';
+
+  function leerCarrito() {
+    try {
+      const raw = localStorage.getItem(CARRITO_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  function guardarCarrito(items) {
+    localStorage.setItem(CARRITO_KEY, JSON.stringify(items));
+    actualizarBadge();
+  }
+
+  function actualizarBadge() {
+    const items = leerCarrito();
+    const total = items.reduce((s, it) => s + it.cantidad, 0);
+    const badge = document.getElementById('carrito-badge');
+    badge.textContent = total;
+    badge.classList.toggle('oculto', total === 0);
+  }
+
+  function agregarItemAlCarrito(f, cantidad, colorId, tipoId) {
+    const color = (f.colores || []).find(c => c.id === colorId);
+    const tipo  = (f.tipos   || []).find(t => t.id === tipoId);
+
+    const items = leerCarrito();
+    const clave = `${f.id}-${color ? color.id : ''}-${tipo ? tipo.id : ''}`;
+    const existente = items.find(it => it.clave === clave);
+    if (existente) {
+      existente.cantidad += cantidad;
+    } else {
+      items.push({
+        clave,
+        figuraId: f.id,
+        nombre: f.nombre,
+        imagen: (f.imagenes && f.imagenes[0]) ? f.imagenes[0].imagen : null,
+        precioUnidad: f.precio_total,
+        cantidad,
+        colorId: color ? color.id : null,
+        colorNombre: color ? color.nombre : null,
+        tipoId: tipo ? tipo.id : null,
+        tipoNombre: tipo ? tipo.nombre : null,
+      });
+    }
+    guardarCarrito(items);
+  }
+
+  function agregarAlCarrito(figuraId) {
+    const f = (window._figurasCache || []).find(x => x.id === figuraId);
+    if (!f) return;
+    agregarItemAlCarrito(f, _seleccion.cantidad, _seleccion.colorId, _seleccion.tipoId);
+    cerrarDetalle();
+    abrirCarrito();
+  }
+
+  // Agregar directo desde la tarjeta del catálogo, sin abrir el detalle.
+  // Si la figura tiene color/tipo para elegir, abre el detalle para que
+  // el usuario elija en vez de asumir la primera opción.
+  function agregarRapido(event, figuraId) {
+    event.stopPropagation();
+    const f = (window._figurasCache || []).find(x => x.id === figuraId);
+    if (!f) return;
+
+    const tieneOpciones = (f.colores && f.colores.length) || (f.tipos && f.tipos.length);
+    if (tieneOpciones) {
+      verDetalle(figuraId);
+      return;
+    }
+
+    agregarItemAlCarrito(f, 1, null, null);
+
+    const btn  = event.currentTarget;
+    const icon = btn.querySelector('i');
+    const claseOriginal = icon.className;
+    icon.className = 'bi bi-check-lg';
+    btn.classList.add('agregado');
+    setTimeout(() => {
+      icon.className = claseOriginal;
+      btn.classList.remove('agregado');
+    }, 900);
+  }
+
+  function cambiarCantidadCarrito(clave, delta) {
+    const items = leerCarrito();
+    const it = items.find(x => x.clave === clave);
+    if (!it) return;
+    it.cantidad = Math.max(1, it.cantidad + delta);
+    guardarCarrito(items);
+    renderCarrito();
+  }
+
+  function quitarDelCarrito(clave) {
+    guardarCarrito(leerCarrito().filter(x => x.clave !== clave));
+    renderCarrito();
+  }
+
+  function abrirCarrito() {
+    renderCarrito();
+    document.getElementById('carrito-panel').classList.add('open');
+    document.getElementById('carrito-overlay').classList.add('open');
+  }
+
+  function cerrarCarrito() {
+    document.getElementById('carrito-panel').classList.remove('open');
+    document.getElementById('carrito-overlay').classList.remove('open');
+  }
+
+  function renderCarrito() {
+    const items = leerCarrito();
+    const cont  = document.getElementById('carrito-content');
+    if (!items.length) {
+      cont.innerHTML = `<div id="carrito-vacio"><i class="bi bi-cart-x"></i>Tu carrito está vacío.</div>`;
+      return;
+    }
+    const total = items.reduce((s, it) => s + it.precioUnidad * it.cantidad, 0);
+    const lista = items.map(it => `
+      <div class="carrito-item">
+        ${it.imagen ? `<img class="carrito-item-img" src="${it.imagen}" alt="">` : `<div class="carrito-item-img"></div>`}
+        <div class="carrito-item-info">
+          <div class="carrito-item-nombre">${it.nombre}</div>
+          ${(it.colorNombre || it.tipoNombre) ? `<div class="carrito-item-opciones">${[it.colorNombre, it.tipoNombre].filter(Boolean).join(' · ')}</div>` : ''}
+          <div class="carrito-item-precio">${cop(it.precioUnidad * it.cantidad)}</div>
+          <div class="carrito-qty">
+            <button type="button" onclick="cambiarCantidadCarrito('${it.clave}', -1)"><i class="bi bi-dash"></i></button>
+            <span>${it.cantidad}</span>
+            <button type="button" onclick="cambiarCantidadCarrito('${it.clave}', 1)"><i class="bi bi-plus"></i></button>
+            <button type="button" class="carrito-item-quitar" onclick="quitarDelCarrito('${it.clave}')" aria-label="Quitar"><i class="bi bi-trash3"></i></button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    cont.innerHTML = `
+      <div>${lista}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <span style="font-size:.85rem;color:var(--text-2)">Total</span>
+        <span style="font-size:1.2rem;font-weight:800;color:var(--brand)">${cop(total)}</span>
+      </div>
+      <button class="btn-brand" style="width:100%;justify-content:center;margin-top:1rem" onclick="mostrarCheckout()">
+        <i class="bi bi-box-seam"></i> Finalizar pedido
+      </button>`;
+  }
+
+  // ── Checkout (sin pago: solo nombre + dirección de quien recibe) ──
+  function mostrarCheckout() {
+    const cont = document.getElementById('carrito-content');
+    cont.innerHTML = `
+      <p style="color:var(--text-2);font-size:.82rem">Sin pago en línea: coordinamos el pago al confirmar tu pedido.</p>
+      <div class="checkout-field">
+        <label for="chk-nombre">Nombre de quien recibe</label>
+        <input type="text" id="chk-nombre" placeholder="Nombre completo">
+      </div>
+      <div class="checkout-field">
+        <label for="chk-direccion">Dirección de entrega</label>
+        <textarea id="chk-direccion" rows="3" placeholder="Calle, número, ciudad"></textarea>
+      </div>
+      <div id="chk-error" class="checkout-error" style="display:none"></div>
+      <button class="btn-brand" style="width:100%;justify-content:center;margin-top:1.25rem" id="chk-btn" onclick="confirmarPedido()">
+        <i class="bi bi-check2-circle"></i> Confirmar pedido
+      </button>
+      <button class="btn-outline" style="width:100%;justify-content:center;margin-top:.6rem" onclick="renderCarrito()">
+        Volver al carrito
+      </button>`;
+  }
+
+  async function confirmarPedido() {
+    const nombre    = document.getElementById('chk-nombre').value.trim();
+    const direccion = document.getElementById('chk-direccion').value.trim();
+    const errorEl   = document.getElementById('chk-error');
+    const btn       = document.getElementById('chk-btn');
+
+    if (nombre.length < 2 || direccion.length < 5) {
+      errorEl.textContent = 'Ingresa tu nombre y una dirección válida.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = `<i class="bi bi-arrow-repeat spin"></i> Enviando…`;
+
+    const items = leerCarrito().map(it => ({
+      figura_id: it.figuraId,
+      cantidad: it.cantidad,
+      color_id: it.colorId,
+      tipo_id: it.tipoId,
+    }));
+
+    try {
+      const r = await fetch(`${BASE}/api/v1/carrito/checkout/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre_recibe: nombre, direccion, items }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'No se pudo completar el pedido.');
+
+      guardarCarrito([]);
+      document.getElementById('carrito-content').innerHTML = `
+        <div class="checkout-confirmacion">
+          <i class="bi bi-check-circle-fill"></i>
+          <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:.5rem">¡Pedido recibido!</h3>
+          <p style="color:var(--text-2);font-size:.85rem">Número de pedido</p>
+          <p style="font-weight:800;font-size:1.1rem;margin-bottom:1rem">${data.numero_pedido}</p>
+          <p style="color:var(--text-2);font-size:.82rem">Nos pondremos en contacto para coordinar la entrega y el pago.</p>
+          <button class="btn-brand" style="width:100%;justify-content:center;margin-top:1.25rem" onclick="cerrarCarrito()">Cerrar</button>
+        </div>`;
+    } catch (err) {
+      errorEl.textContent = err.message || 'No se pudo completar el pedido. Intenta de nuevo.';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = `<i class="bi bi-check2-circle"></i> Confirmar pedido`;
+    }
+  }
+
+  // ── Portal del cliente (login + mis pedidos) ────────────────
+  async function verificarSesionCliente() {
+    try {
+      const r = await fetch(`${BASE}/api/v1/portal-cliente/me/`);
+      window._clienteLogueado = r.ok ? await r.json() : null;
+    } catch {
+      window._clienteLogueado = null;
+    }
+    actualizarBtnCuenta();
+    return window._clienteLogueado;
+  }
+
+  function actualizarBtnCuenta() {
+    document.getElementById('btn-cuenta').classList.toggle('logueado', !!window._clienteLogueado);
+  }
+
+  function abrirCuenta() {
+    renderCuenta();
+    document.getElementById('cuenta-panel').classList.add('open');
+    document.getElementById('cuenta-overlay').classList.add('open');
+  }
+
+  function cerrarCuenta() {
+    document.getElementById('cuenta-panel').classList.remove('open');
+    document.getElementById('cuenta-overlay').classList.remove('open');
+  }
+
+  function renderCuenta() {
+    const cont = document.getElementById('cuenta-content');
+    if (!window._clienteLogueado) {
+      cont.innerHTML = `
+        <p style="color:var(--text-2);font-size:.82rem;margin-bottom:.25rem">Ingresá con tu número de documento para ver tus compras.</p>
+        <div class="checkout-field">
+          <label for="login-documento">Documento</label>
+          <input type="text" id="login-documento" placeholder="Número de documento">
+        </div>
+        <div class="checkout-field">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" placeholder="Contraseña">
+        </div>
+        <div id="login-error" class="checkout-error" style="display:none"></div>
+        <button class="btn-brand" style="width:100%;justify-content:center;margin-top:1.25rem" id="login-btn" onclick="iniciarSesionCliente()">
+          <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+        </button>`;
+      return;
+    }
+
+    cont.innerHTML = `
+      <div class="cuenta-saludo">Hola, <strong>${window._clienteLogueado.nombre}</strong></div>
+      <div id="mis-pedidos-lista" style="color:var(--text-3);text-align:center;padding:2rem 0">
+        <i class="bi bi-arrow-repeat spin" style="font-size:1.5rem"></i>
+      </div>
+      <button class="btn-outline" style="width:100%;justify-content:center;margin-top:1.25rem" onclick="cerrarSesionCliente()">
+        <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+      </button>`;
+    cargarMisPedidos();
+  }
+
+  async function cargarMisPedidos() {
+    const cont = document.getElementById('mis-pedidos-lista');
+    try {
+      const r = await fetch(`${BASE}/api/v1/portal-cliente/mis-pedidos/`);
+      if (!r.ok) throw new Error();
+      const ordenes = await r.json();
+      if (!ordenes.length) {
+        cont.innerHTML = `
+          <div style="color:var(--text-3);text-align:center;padding:1rem 0">
+            <i class="bi bi-bag" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+            Todavía no tenés compras registradas.
+          </div>`;
+        return;
+      }
+      cont.innerHTML = `<div style="text-align:left">${ordenes.map(renderOrdenCard).join('')}</div>`;
+    } catch {
+      cont.innerHTML = `<p style="color:var(--text-2);font-size:.82rem">No se pudieron cargar tus compras.</p>`;
+    }
+  }
+
+  function fechaCorta(iso) {
+    return new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function renderOrdenCard(orden, idx) {
+    const comprador = (orden.nombre_recibe || orden.direccion_entrega) ? `
+      <div class="orden-comprador">
+        ${orden.nombre_recibe ? `<div><i class="bi bi-person"></i> ${orden.nombre_recibe}</div>` : ''}
+        ${orden.direccion_entrega ? `<div><i class="bi bi-geo-alt"></i> ${orden.direccion_entrega}</div>` : ''}
+      </div>` : '';
+    return `
+      <div class="orden-card">
+        <div class="orden-header" onclick="toggleOrden(${idx})">
+          <div>
+            <div class="orden-numero">${orden.numero_pedido ? 'Pedido ' + orden.numero_pedido : 'Pedido'}</div>
+            <div class="orden-fecha">${fechaCorta(orden.fecha)} · ${orden.items.length} ${orden.items.length === 1 ? 'producto' : 'productos'}</div>
+          </div>
+          <div class="orden-header-right">
+            <span class="orden-total">${cop(orden.total)}</span>
+            <i class="bi bi-chevron-down orden-chevron" id="chev-${idx}"></i>
+          </div>
+        </div>
+        <div class="orden-detalle" id="det-${idx}">
+          ${comprador}
+          ${orden.items.map(renderPedidoItem).join('')}
+        </div>
+      </div>`;
+  }
+
+  function toggleOrden(idx) {
+    const det  = document.getElementById(`det-${idx}`);
+    const chev = document.getElementById(`chev-${idx}`);
+    const abierto = det.classList.toggle('open');
+    chev.classList.toggle('abierto', abierto);
+  }
+
+  function renderPedidoItem(p) {
+    const opciones = [p.color, p.tipo].filter(Boolean).join(' · ');
+    const estadoClase = 'pedido-estado-' + (p.estado || '').toLowerCase().replace(/\s+/g, '-');
+    return `
+      <div class="pedido-item">
+        ${p.imagen ? `<img class="pedido-item-img" src="${p.imagen}" alt="">` : `<div class="pedido-item-img"></div>`}
+        <div class="pedido-item-info">
+          <div class="pedido-item-nombre">${p.figura}</div>
+          ${opciones ? `<div class="pedido-item-opciones">${opciones}</div>` : ''}
+          <div class="pedido-item-meta">
+            <span class="pedido-item-precio">${cop(p.precio_total)} · x${p.cantidad}</span>
+            <span class="pedido-estado ${estadoClase}">${p.estado}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function iniciarSesionCliente() {
+    const documento = document.getElementById('login-documento').value.trim();
+    const password  = document.getElementById('login-password').value;
+    const errorEl   = document.getElementById('login-error');
+    const btn       = document.getElementById('login-btn');
+
+    if (!documento || !password) {
+      errorEl.textContent = 'Ingresá tu documento y contraseña.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = `<i class="bi bi-arrow-repeat spin"></i> Ingresando…`;
+
+    try {
+      const r = await fetch(`${BASE}/api/v1/portal-cliente/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documento, password }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'No se pudo iniciar sesión.');
+
+      window._clienteLogueado = data;
+      actualizarBtnCuenta();
+      renderCuenta();
+      await cargarFiguras(data.id);
+      document.getElementById('brand-name').textContent = data.nombre;
+    } catch (err) {
+      errorEl.textContent = err.message || 'No se pudo iniciar sesión.';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = `<i class="bi bi-box-arrow-in-right"></i> Iniciar sesión`;
+    }
+  }
+
+  async function cerrarSesionCliente() {
+    try { await fetch(`${BASE}/api/v1/portal-cliente/logout/`, { method: 'POST' }); } catch {}
+    window._clienteLogueado = null;
+    actualizarBtnCuenta();
+    renderCuenta();
+    document.getElementById('brand-name').textContent = 'SamyVerce';
+    await cargarFiguras();
   }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

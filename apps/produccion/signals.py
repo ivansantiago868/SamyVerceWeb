@@ -25,6 +25,7 @@ def crear_insumo_desde_gasto(sender, instance, created, **kwargs):
             precio=instance.costo,
             cantidad_inicial=0,
             cantidad_final=instance.peso,
+            color=instance.color,
         )
 
 

@@ -168,4 +168,9 @@ class GastoMultipleForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         label="Fecha de compra",
     )
+    color    = forms.CharField(
+        required=False, initial="#000000", label="Color",
+        help_text="Color del material comprado (ej. color del filamento).",
+        widget=forms.TextInput(attrs={"type": "color", "style": "width:52px;height:32px;padding:2px"}),
+    )
     unidades = forms.IntegerField(min_value=1, initial=1, label="Unidades")

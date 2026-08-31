@@ -11,6 +11,7 @@ class Insumo(models.Model):
     precio           = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True, verbose_name="Precio (COP)")
     cantidad_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Cantidad inicial (g)")
     cantidad_final   = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Cantidad final (g)")
+    color            = models.CharField(max_length=7, blank=True, verbose_name="Color", help_text="Se toma del Gasto que originó este insumo.")
     actualizado_en   = models.DateTimeField(auto_now=True)
 
     @property

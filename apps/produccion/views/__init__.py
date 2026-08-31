@@ -26,6 +26,13 @@ from .diseno3d_view import (
     Diseno3DListView,
     Diseno3DDetalleView,
 )
+from .carrito_view import CarritoCheckoutView
+from .cliente_portal_view import (
+    ClienteLoginView,
+    ClienteLogoutView,
+    ClienteMeView,
+    ClienteMisPedidosView,
+)
 
 __all__ = [
     "ClienteView", "ImpresoraView", "InsumoView", "GastoView",
@@ -34,4 +41,6 @@ __all__ = [
     "CotizadorRecursosView", "CotizadorView", "CotizadorLoteView",
     "CotizadorDesdeCatalogoView", "CotizadorDesdeCatalogoLoteView",
     "Diseno3DCrearView", "Diseno3DListView", "Diseno3DDetalleView",
+    "CarritoCheckoutView",
+    "ClienteLoginView", "ClienteLogoutView", "ClienteMeView", "ClienteMisPedidosView",
 ]

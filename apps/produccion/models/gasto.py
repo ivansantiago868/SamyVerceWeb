@@ -12,6 +12,7 @@ class Gasto(models.Model):
     peso     = models.DecimalField(max_digits=10, decimal_places=2, default=1000, verbose_name="Peso (g)")
     costo    = models.DecimalField(max_digits=14, decimal_places=2, verbose_name="Costo (COP)")
     fecha    = models.DateField(verbose_name="Fecha de compra")
+    color    = models.CharField(max_length=7, blank=True, verbose_name="Color", help_text="Color del material comprado (ej. color del filamento).")
 
     def save(self, *args, **kwargs):
         if not self.cuui:

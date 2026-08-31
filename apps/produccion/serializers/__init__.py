@@ -19,6 +19,8 @@ from .diseno3d       import (
     Diseno3DEstadoSerializer,
     Diseno3DListSerializer,
 )
+from .carrito        import CarritoItemSerializer, CarritoCheckoutSerializer
+from .cliente_portal  import ClientePedidoSerializer
 
 __all__ = [
     "ClienteSerializer",
@@ -38,4 +40,7 @@ __all__ = [
     "Diseno3DInputSerializer",
     "Diseno3DEstadoSerializer",
     "Diseno3DListSerializer",
+    "CarritoItemSerializer",
+    "CarritoCheckoutSerializer",
+    "ClientePedidoSerializer",
 ]

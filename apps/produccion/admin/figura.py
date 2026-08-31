@@ -1,9 +1,9 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.views.autocomplete import AutocompleteJsonView
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join, mark_safe
-from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF
+from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF, FiguraColor, FiguraTipo
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
 
 
@@ -82,6 +82,68 @@ class FiguraArchivo3MFInline(admin.TabularInline):
     verbose_name_plural = "Archivos 3MF"
 
 
+class FiguraColorInlineForm(forms.ModelForm):
+    # Declarado explícito (no solo en Meta.widgets) para fijar `initial`: un
+    # <input type="color"> nunca se envía vacío (el navegador manda "#000000"
+    # por defecto), así que sin este initial coincidiendo, Django considera
+    # "modificada" cualquier fila extra en blanco y exige nombre/imagen.
+    color_hex = forms.CharField(
+        required=False,
+        initial="#000000",
+        widget=forms.TextInput(attrs={"type": "color", "style": "width:52px;height:32px;padding:2px"}),
+    )
+
+    class Meta:
+        model   = FiguraColor
+        fields  = ("nombre", "color_hex", "imagen", "orden")
+        widgets = {"imagen": DragDropImageWidget()}
+
+
+class FiguraColorInline(admin.TabularInline):
+    model           = FiguraColor
+    form            = FiguraColorInlineForm
+    extra           = 1
+    fields          = ("nombre", "color_hex", "imagen", "orden", "preview")
+    readonly_fields = ("preview",)
+    verbose_name_plural = "Colores disponibles"
+
+    @admin.display(description="Vista previa")
+    def preview(self, obj):
+        if obj.pk and obj.imagen:
+            return format_html(
+                '<img src="{}" style="height:56px;border-radius:6px;'
+                'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
+                obj.imagen.url,
+            )
+        return format_html('<span style="color:#aaa;font-size:11px">—</span>')
+
+
+class FiguraTipoInlineForm(forms.ModelForm):
+    class Meta:
+        model   = FiguraTipo
+        fields  = ("nombre", "descripcion", "imagen", "orden")
+        widgets = {"imagen": DragDropImageWidget()}
+
+
+class FiguraTipoInline(admin.TabularInline):
+    model           = FiguraTipo
+    form            = FiguraTipoInlineForm
+    extra           = 1
+    fields          = ("nombre", "descripcion", "imagen", "orden", "preview")
+    readonly_fields = ("preview",)
+    verbose_name_plural = "Tipos / variantes (ej. \"Para NES\", \"Para Super Nintendo\")"
+
+    @admin.display(description="Vista previa")
+    def preview(self, obj):
+        if obj.pk and obj.imagen:
+            return format_html(
+                '<img src="{}" style="height:56px;border-radius:6px;'
+                'object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2)">',
+                obj.imagen.url,
+            )
+        return format_html('<span style="color:#aaa;font-size:11px">—</span>')
+
+
 class FiguraPiezaInline(admin.TabularInline):
     model               = FiguraPieza
     extra               = 1
@@ -121,13 +183,13 @@ class FiguraAdminForm(forms.ModelForm):
 class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     grupos_empresa     = {"Maker"}
     form               = FiguraAdminForm
-    list_display       = ("miniatura_ia", "nombre", "categorias_display", "etiquetas_display", "total_piezas", "costo_total_display", "precio_total_display", "descargar_3mf", "actualizado_en")
+    list_display       = ("miniatura_ia", "nombre", "categorias_display", "etiquetas_display", "total_piezas", "costo_total_display", "precio_total_display", "descargar_3mf", "btn_regenerar_ia", "actualizado_en")
     list_display_links = ("miniatura_ia", "nombre")
     list_filter        = ("categorias", "etiquetas")
     filter_horizontal  = ("categorias", "etiquetas")
     search_fields      = ("nombre", "descripcion")
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
-    inlines            = [FiguraImagenInline, FiguraArchivo3MFInline, FiguraPiezaInline]
+    inlines            = [FiguraImagenInline, FiguraColorInline, FiguraTipoInline, FiguraArchivo3MFInline, FiguraPiezaInline]
     fieldsets = (
         ("Galería", {
             "fields": ("carrusel_ia",),
@@ -155,7 +217,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         from apps.produccion.views.zip_catalogo_figuras import exportar_zip_precios
         from apps.produccion.views.ia_descripcion import generar_descripcion_ia
         from apps.produccion.views.reintentar_ia import (
-            reintentar_ia_fallidas, conteo_ia_fallidas, estado_ia_reintento,
+            reintentar_ia_fallidas, conteo_ia_fallidas, estado_ia_reintento, regenerar_ia_figura,
         )
         return [
             path("catalogo-pdf/",
@@ -176,6 +238,9 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             path("estado-ia-reintento/",
                  self.admin_site.admin_view(estado_ia_reintento),
                  name="figuras_estado_ia_reintento"),
+            path("<int:figura_id>/regenerar-ia/",
+                 self.admin_site.admin_view(regenerar_ia_figura),
+                 name="figuras_regenerar_ia"),
         ] + super().get_urls()
 
     def save_formset(self, request, form, formset, change):
@@ -210,7 +275,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         return super().change_view(request, object_id, form_url, extra_context)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("imagenes", "categorias", "etiquetas", "archivos_3mf")
+        return super().get_queryset(request).prefetch_related("imagenes", "categorias", "etiquetas", "archivos_3mf", "colores", "tipos")
 
     @admin.display(description="3MF")
     def descargar_3mf(self, obj):
@@ -229,6 +294,20 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                 (archivo.descarga_url, archivo.nombre or f"3MF #{i}")
                 for i, archivo in enumerate(archivos, start=1)
             ),
+        )
+
+    @admin.display(description="Imágenes IA")
+    def btn_regenerar_ia(self, obj):
+        url = reverse("admin:figuras_regenerar_ia", args=[obj.pk])
+        # Sin stopPropagation: el manejador de clic vive en document (delegación
+        # de eventos, ver change_list.html) y necesita que el evento burbujee.
+        return format_html(
+            '<button type="button" class="btn-regenerar-ia-figura" '
+            'data-url="{}" data-nombre="{}" '
+            'style="display:inline-block;background:#8e44ad;color:#fff;border:none;'
+            'padding:4px 10px;border-radius:4px;font-size:12px;font-weight:bold;'
+            'white-space:nowrap;cursor:pointer">🔄 Regenerar IA</button>',
+            url, obj.nombre,
         )
 
     @admin.display(description="Generar descripción")
@@ -311,7 +390,10 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         disponibles = []
         for img in obj.imagenes.all():
             for url in _urls_mostrar(img):
-                disponibles.append((img, url))
+                disponibles.append((url, None))
+        for tipo in obj.tipos.all():
+            if tipo.imagen:
+                disponibles.append((tipo.imagen.url, tipo.nombre))
 
         if not disponibles:
             con_error = [img for img in obj.imagenes.all() if img.ia_error]
@@ -330,12 +412,12 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
         slides = "".join(
             format_html(
                 '<div class="pc-slide">'
-                '<img src="{}" alt="Imagen {}" style="cursor:zoom-in;max-width:100%;height:auto" '
+                '<img src="{}" alt="{}" style="cursor:zoom-in;max-width:100%;height:auto" '
                 'onclick="window._svLightbox&&window._svLightbox.open(this.src)">'
                 '</div>',
-                url, i + 1,
+                url, etiqueta or f"Imagen {i + 1}",
             )
-            for i, (img, url) in enumerate(disponibles)
+            for i, (url, etiqueta) in enumerate(disponibles)
         )
         dots = "".join(
             format_html(
@@ -349,10 +431,10 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
                 '<a href="{}" download style="display:inline-flex;align-items:center;gap:.3rem;'
                 'background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;'
                 'padding:4px 10px;font-size:12px;color:#495057;text-decoration:none;margin:2px">'
-                '⬇ Imagen {}</a>',
-                url, i + 1,
+                '⬇ {}</a>',
+                url, etiqueta or f"Imagen {i + 1}",
             )
-            for i, (img, url) in enumerate(disponibles)
+            for i, (url, etiqueta) in enumerate(disponibles)
         )
         boton_zip = format_html(
             '<a href="/api/v1/figuras/{}/descargar-imagenes-ia/" '
