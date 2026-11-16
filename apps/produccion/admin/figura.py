@@ -1,9 +1,14 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.views.autocomplete import AutocompleteJsonView
+from django.contrib.admin.widgets import AutocompleteSelect
+from django.core.exceptions import PermissionDenied
+from django.db.models import Sum
+from django.http import JsonResponse
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join, mark_safe
-from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraArchivo3MF, FiguraColor, FiguraTipo
+from django.forms.models import BaseInlineFormSet
+from apps.produccion.models import CategoriaFigura, EtiquetaFigura, Figura, FiguraImagen, FiguraPieza, FiguraPiezaMaterial, FiguraArchivo3MF, FiguraColor, FiguraTipo
 from apps.produccion.admin.mixins import EmpresaMixin, DragDropImageWidget, DragDropFileWidget
 
 
@@ -14,6 +19,57 @@ class FiguraAutocompleteJsonView(AutocompleteJsonView):
         result = super().serialize_result(obj, to_field_name)
         result["img"] = obj.primera_imagen_url
         return result
+
+
+class InsumoColorTipoAutocompleteJsonView(AutocompleteJsonView):
+    """Muestra "Color — Tipo de material" en vez del producto/CUUI: el descuento de
+    stock se hace por color+tipo (contra el insumo marcado como activo), no por lote.
+    Solo ofrece insumos con stock disponible, agrupados por tipo de material, con
+    una sola entrada por combinación tipo+color (aunque existan varios lotes)."""
+
+    def get_queryset(self):
+        return super().get_queryset().filter(cantidad_final__gt=0).order_by("-activo", "-cantidad_final")
+
+    def serialize_result(self, obj, to_field_name):
+        result = super().serialize_result(obj, to_field_name)
+        color = obj.color or "Sin color"
+        tipo = obj.material.tipo.nombre if obj.material_id else "Sin tipo"
+        result["text"] = f"{color} — {tipo}"
+        return result
+
+    def get(self, request, *args, **kwargs):
+        self.term, self.model_admin, self.source_field, to_field_name = self.process_request(request)
+
+        if not self.has_perm(request):
+            raise PermissionDenied
+
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+
+        grupos = {}
+        orden = []
+        colores_vistos = {}
+        for obj in context["object_list"]:
+            tipo = obj.material.tipo.nombre if obj.material_id else "Sin tipo"
+            color = obj.color or "Sin color"
+            if tipo not in grupos:
+                grupos[tipo] = []
+                orden.append(tipo)
+                colores_vistos[tipo] = set()
+            if color in colores_vistos[tipo]:
+                continue  # ya hay un lote de este tipo+color representando al grupo
+            colores_vistos[tipo].add(color)
+            grupos[tipo].append(self.serialize_result(obj, to_field_name))
+
+        return JsonResponse({
+            "results": [{"text": tipo, "children": grupos[tipo]} for tipo in orden],
+            "pagination": {"more": context["page_obj"].has_next()},
+        })
+
+
+class InsumoColorTipoAutocompleteSelect(AutocompleteSelect):
+    def get_url(self):
+        return reverse("admin:figura_insumo_color_tipo_autocomplete")
 
 
 @admin.register(CategoriaFigura)
@@ -149,9 +205,21 @@ class FiguraPiezaInline(admin.TabularInline):
     extra               = 1
     can_delete          = True
     verbose_name_plural = "Piezas de la figura  (marca ✓ Eliminar + Guardar para quitar una pieza)"
-    fields              = ("pieza", "insumo", "cantidad", "subtotal_costo_display", "subtotal_precio_display")
-    readonly_fields     = ("subtotal_costo_display", "subtotal_precio_display")
-    autocomplete_fields = ["pieza", "insumo"]
+    fields              = ("pieza", "cantidad", "gramos_display", "subtotal_costo_display", "subtotal_precio_display")
+    readonly_fields     = ("gramos_display", "subtotal_costo_display", "subtotal_precio_display")
+    autocomplete_fields = ["pieza"]
+
+    @admin.display(description="Gramos configurados")
+    def gramos_display(self, obj):
+        if not obj.pk:
+            return "—"
+        configurados = FiguraPiezaMaterial.objects.filter(
+            figura=obj.figura, pieza=obj.pieza,
+        ).aggregate(total=Sum("gramos"))["total"] or 0
+        peso = obj.pieza.peso_gramos or 0
+        if configurados == peso:
+            return format_html('<span style="color:#0a7d2c">{}g / {}g ✓</span>', configurados, peso)
+        return format_html('<span style="color:#b91c1c">{}g / {}g</span>', configurados, peso)
 
     def subtotal_costo_display(self, obj):
         return f"${obj.subtotal_costo:,.0f}" if obj.pk else "—"
@@ -160,6 +228,56 @@ class FiguraPiezaInline(admin.TabularInline):
     def subtotal_precio_display(self, obj):
         return f"${obj.subtotal_precio:,.0f}" if obj.pk else "—"
     subtotal_precio_display.short_description = "Subtotal precio"
+
+
+class FiguraPiezaMaterialFormSet(BaseInlineFormSet):
+    """Valida que, por cada pieza con reparto multi-material, los gramos sumen su peso total."""
+
+    def clean(self):
+        super().clean()
+        por_pieza = {}
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data") or not form.cleaned_data:
+                continue
+            if form.cleaned_data.get("DELETE"):
+                continue
+            pieza  = form.cleaned_data.get("pieza")
+            gramos = form.cleaned_data.get("gramos")
+            if pieza is None or gramos is None:
+                continue
+            por_pieza.setdefault(pieza, 0)
+            por_pieza[pieza] += gramos
+
+        for pieza, total in por_pieza.items():
+            if pieza.peso_gramos and total != pieza.peso_gramos:
+                raise forms.ValidationError(
+                    f"Los gramos de materiales de «{pieza.nombre}» suman {total}g, "
+                    f"pero el peso de la pieza es {pieza.peso_gramos}g. Deben coincidir."
+                )
+
+
+class FiguraPiezaMaterialInline(admin.TabularInline):
+    model               = FiguraPiezaMaterial
+    formset             = FiguraPiezaMaterialFormSet
+    extra               = 1
+    can_delete          = True
+    verbose_name_plural = ("Materiales por pieza (uno o varios insumos por pieza — "
+                           "la suma de gramos de cada pieza debe igualar su peso total)")
+    fields              = ("pieza", "insumo", "gramos")
+    autocomplete_fields = ["pieza", "insumo"]
+
+    class Media:
+        js = ("admin/js/insumo_color_swatch.js",)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "insumo":
+            kwargs["widget"] = InsumoColorTipoAutocompleteSelect(db_field, self.admin_site, using=kwargs.get("using"))
+        formfield = super().formfield_for_foreignkey(db_field, request, **kwargs)
+        if db_field.name == "insumo" and formfield is not None:
+            formfield.label_from_instance = lambda obj: (
+                f"{obj.color or 'Sin color'} — {obj.material.tipo.nombre if obj.material_id else 'Sin tipo'}"
+            )
+        return formfield
 
 
 class FiguraAdminForm(forms.ModelForm):
@@ -189,7 +307,7 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
     filter_horizontal  = ("categorias", "etiquetas")
     search_fields      = ("nombre", "descripcion")
     readonly_fields    = ("costo_total_display", "precio_total_display", "creado_en", "actualizado_en", "carrusel_ia", "boton_generar_ia")
-    inlines            = [FiguraImagenInline, FiguraColorInline, FiguraTipoInline, FiguraArchivo3MFInline, FiguraPiezaInline]
+    inlines            = [FiguraImagenInline, FiguraColorInline, FiguraTipoInline, FiguraArchivo3MFInline, FiguraPiezaInline, FiguraPiezaMaterialInline]
     fieldsets = (
         ("Galería", {
             "fields": ("carrusel_ia",),
@@ -241,6 +359,9 @@ class FiguraAdmin(EmpresaMixin, admin.ModelAdmin):
             path("<int:figura_id>/regenerar-ia/",
                  self.admin_site.admin_view(regenerar_ia_figura),
                  name="figuras_regenerar_ia"),
+            path("insumo-color-tipo-autocomplete/",
+                 self.admin_site.admin_view(InsumoColorTipoAutocompleteJsonView.as_view(admin_site=self.admin_site)),
+                 name="figura_insumo_color_tipo_autocomplete"),
         ] + super().get_urls()
 
     def save_formset(self, request, form, formset, change):

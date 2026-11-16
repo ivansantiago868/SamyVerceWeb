@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 
-from apps.produccion.models import Pedido, PedidoMaterial, Tarea, FiguraPieza
+from apps.produccion.models import Pedido, PedidoMaterial, Tarea, FiguraPieza, FiguraPiezaMaterial, Insumo
 from apps.produccion.admin.figura import FiguraAutocompleteJsonView
 from apps.produccion.admin.mixins import EmpresaMixin
 
@@ -311,17 +311,39 @@ class TareaAdmin(EmpresaMixin, admin.ModelAdmin):
                 try:
                     pedido = Pedido.objects.select_related("figura").get(pk=obj.pedido_id)
                     if pedido.figura_id:
-                        fp = FiguraPieza.objects.select_related("pieza", "insumo").get(
-                            figura=pedido.figura,
-                            pieza__nombre=obj.producto,
+                        multi = list(
+                            FiguraPiezaMaterial.objects.select_related("insumo")
+                            .filter(figura=pedido.figura, pieza__nombre=obj.producto)
                         )
-                        if fp.insumo_id and fp.pieza.peso_gramos:
-                            gramos = Decimal(str(delta)) * fp.pieza.peso_gramos
-                            fp.insumo.cantidad_final = max(
-                                Decimal("0"),
-                                fp.insumo.cantidad_final - gramos,
+                        if multi:
+                            # Pieza multi-material: descuenta cada insumo por su parte en gramos,
+                            # siempre del insumo marcado como activo para ese color+tipo (no del
+                            # lote específico que se haya elegido al configurar la figura).
+                            for m in multi:
+                                activo = Insumo.objects.filter(
+                                    empresa=m.insumo.empresa,
+                                    color=m.insumo.color,
+                                    material=m.insumo.material,
+                                    activo=True,
+                                ).first() or m.insumo
+                                gramos = Decimal(str(delta)) * m.gramos
+                                activo.cantidad_final = max(
+                                    Decimal("0"),
+                                    activo.cantidad_final - gramos,
+                                )
+                                activo.save(update_fields=["cantidad_final"])
+                        else:
+                            fp = FiguraPieza.objects.select_related("pieza", "insumo").get(
+                                figura=pedido.figura,
+                                pieza__nombre=obj.producto,
                             )
-                            fp.insumo.save(update_fields=["cantidad_final"])
+                            if fp.insumo_id and fp.pieza.peso_gramos:
+                                gramos = Decimal(str(delta)) * fp.pieza.peso_gramos
+                                fp.insumo.cantidad_final = max(
+                                    Decimal("0"),
+                                    fp.insumo.cantidad_final - gramos,
+                                )
+                                fp.insumo.save(update_fields=["cantidad_final"])
                 except FiguraPieza.DoesNotExist:
                     pedido = Pedido.objects.select_related("figura").get(pk=obj.pedido_id)
 

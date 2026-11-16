@@ -299,3 +299,26 @@ class FiguraPieza(models.Model):
 
     def __str__(self):
         return f"{self.pieza.nombre} × {self.cantidad}"
+
+
+class FiguraPiezaMaterial(models.Model):
+    """
+    Reparto multi-material de una pieza (ej. impresión multi-color/AMS): varios
+    insumos, cada uno con sus gramos, que deben sumar el peso total de la pieza.
+    Si una pieza no tiene filas aquí, sigue usando el insumo único de FiguraPieza.
+    """
+    figura = models.ForeignKey(Figura, on_delete=models.CASCADE,
+                               related_name="piezas_materiales", verbose_name="Figura")
+    pieza  = models.ForeignKey(InventarioPieza, on_delete=models.PROTECT,
+                               related_name="materiales_multi", verbose_name="Pieza")
+    insumo = models.ForeignKey(Insumo, on_delete=models.PROTECT, verbose_name="Insumo / Material")
+    gramos = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gramos")
+
+    class Meta:
+        ordering        = ["pieza__nombre", "insumo__producto"]
+        unique_together = [("figura", "pieza", "insumo")]
+        verbose_name    = "Material multi-color de pieza"
+        verbose_name_plural = "Piezas multi-material"
+
+    def __str__(self):
+        return f"{self.pieza.nombre} — {self.insumo.producto} ({self.gramos}g)"
